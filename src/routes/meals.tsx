@@ -75,7 +75,7 @@ function MealPlanning() {
           </div>
           <button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
             <Plus size={20} />
             Add Meal
@@ -97,7 +97,7 @@ function MealPlanning() {
                   onChange={(e) =>
                     setFormData({ ...formData, day: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                 >
                   {daysOfWeek.map((day) => (
                     <option key={day} value={day}>
@@ -115,7 +115,7 @@ function MealPlanning() {
                   onChange={(e) =>
                     setFormData({ ...formData, mealType: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                 >
                   {mealTypes.map((type) => (
                     <option key={type} value={type}>
@@ -135,7 +135,7 @@ function MealPlanning() {
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="e.g., Spaghetti and Meatballs"
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                 />
               </div>
               <div className="md:col-span-2">
@@ -149,14 +149,14 @@ function MealPlanning() {
                   }
                   placeholder="Any special instructions or ingredients..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                 />
               </div>
             </div>
             <div className="flex gap-3 mt-4">
               <button
                 onClick={addMeal}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
               >
                 Add Meal
               </button>
@@ -200,7 +200,7 @@ function MealPlanning() {
                           {getMealsForDay(day, mealType).map((meal) => (
                             <div
                               key={meal.id}
-                              className="flex items-start justify-between gap-2 p-2 bg-blue-900/30 rounded border border-blue-700"
+                              className="flex items-start justify-between gap-2 p-2 bg-primary/10 rounded border border-primary/30"
                             >
                               <div className="flex-1">
                                 <p className="text-sm font-medium text-foreground">
@@ -214,7 +214,7 @@ function MealPlanning() {
                               </div>
                               <button
                                 onClick={() => deleteMeal(meal.id)}
-                                className="p-1 hover:bg-red-900/30 rounded text-red-400 transition-colors"
+                                className="p-1 hover:bg-destructive/20 rounded text-destructive transition-colors"
                                 aria-label="Delete meal"
                               >
                                 <Trash2 size={14} />

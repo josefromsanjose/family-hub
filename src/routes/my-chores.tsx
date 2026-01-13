@@ -100,7 +100,7 @@ function MyChores() {
             </p>
             <button
               onClick={() => navigate({ to: "/tasks" })}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
             >
               Go to Tasks
             </button>
@@ -116,13 +116,13 @@ function MyChores() {
                 <div className="text-sm text-muted-foreground">Chores to do</div>
               </div>
               <div className="bg-card rounded-lg shadow-sm p-4 border border-border">
-                <div className="text-3xl font-bold text-green-500 mb-1">
+                <div className="text-3xl font-bold text-primary mb-1">
                   {myChores.filter((c) => !isTaskDue(c)).length}
                 </div>
                 <div className="text-sm text-muted-foreground">Done!</div>
               </div>
               <div className="bg-card rounded-lg shadow-sm p-4 border border-border">
-                <div className="flex items-center gap-2 text-3xl font-bold text-orange-500 mb-1">
+                <div className="flex items-center gap-2 text-3xl font-bold text-primary mb-1">
                   <Flame size={28} />
                   {Math.max(...myChores.map((c) => getCompletionStreak(c)), 0)}
                 </div>
@@ -141,8 +141,8 @@ function MyChores() {
                     key={chore.id}
                     className={`bg-card rounded-lg shadow-sm border-2 p-6 transition-all ${
                       isDue
-                        ? "border-border hover:border-purple-500"
-                        : "border-green-600 bg-green-900/20"
+                        ? "border-border hover:border-primary"
+                        : "border-primary bg-primary/20"
                     }`}
                   >
                     <div className="flex items-start gap-4">
@@ -154,13 +154,13 @@ function MyChores() {
                         {isDue ? (
                           <Circle
                             size={32}
-                            className="text-muted-foreground hover:text-purple-500 transition-colors"
+                            className="text-muted-foreground hover:text-primary transition-colors"
                             strokeWidth={2.5}
                           />
                         ) : (
                           <CheckCircle2
                             size={32}
-                            className="text-green-500"
+                            className="text-primary"
                             strokeWidth={2.5}
                           />
                         )}
@@ -187,10 +187,10 @@ function MyChores() {
                                 <span
                                   className={`px-3 py-1 text-xs font-semibold rounded-full ${
                                     chore.recurrence === "daily"
-                                      ? "bg-blue-900/50 text-blue-300"
+                                      ? "bg-chart-1/30 text-chart-1"
                                       : chore.recurrence === "weekly"
-                                        ? "bg-purple-900/50 text-purple-300"
-                                        : "bg-orange-900/50 text-orange-300"
+                                        ? "bg-chart-2/30 text-chart-2"
+                                        : "bg-chart-4/30 text-chart-4"
                                   }`}
                                 >
                                   {chore.recurrence === "daily"
@@ -201,7 +201,7 @@ function MyChores() {
                                 </span>
                               </div>
                               {!isDue && status.completions > 0 && (
-                                <div className="flex items-center gap-1 text-sm font-medium text-green-500">
+                                <div className="flex items-center gap-1 text-sm font-medium text-primary">
                                   <CheckCircle2 size={16} />
                                   <span>
                                     Done {status.completions} time
@@ -217,7 +217,7 @@ function MyChores() {
                                 </div>
                               )}
                               {status.streak > 0 && (
-                                <div className="flex items-center gap-1 text-sm font-medium text-orange-500">
+                                <div className="flex items-center gap-1 text-sm font-medium text-primary">
                                   <Flame size={16} />
                                   <span>
                                     {status.streak} day
@@ -237,12 +237,12 @@ function MyChores() {
 
             {/* Completion Message */}
             {myChores.every((c) => !isTaskDue(c)) && (
-              <div className="mt-6 bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-center">
-                <Trophy className="mx-auto h-16 w-16 text-white mb-3" />
-                <h3 className="text-2xl font-bold text-white mb-2">
+              <div className="mt-6 bg-primary rounded-lg shadow-lg p-6 text-center">
+                <Trophy className="mx-auto h-16 w-16 text-primary-foreground mb-3" />
+                <h3 className="text-2xl font-bold text-primary-foreground mb-2">
                   Awesome job, {selectedMember}! 🎉
                 </h3>
-                <p className="text-green-100">
+                <p className="text-primary-foreground/80">
                   All your chores are done! Keep up the great work!
                 </p>
               </div>

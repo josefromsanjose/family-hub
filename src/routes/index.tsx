@@ -32,28 +32,28 @@ function Dashboard() {
             value="7 planned"
             icon={UtensilsCrossed}
             href="/meals"
-            color="bg-blue-500"
+            color="bg-chart-1"
           />
           <DashboardCard
             title="Shopping Items"
             value="12 items"
             icon={ShoppingCart}
             href="/shopping"
-            color="bg-green-500"
+            color="bg-chart-2"
           />
           <DashboardCard
             title="Active Tasks"
             value="5 tasks"
             icon={CheckSquare}
             href="/tasks"
-            color="bg-purple-500"
+            color="bg-chart-3"
           />
           <DashboardCard
             title="Upcoming Events"
             value="3 this week"
             icon={Calendar}
             href="/calendar"
-            color="bg-orange-500"
+            color="bg-chart-4"
           />
         </div>
 
@@ -107,35 +107,35 @@ function QuickActionsCard() {
           to="/meals"
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
         >
-          <UtensilsCrossed size={20} className="text-blue-500" />
+          <UtensilsCrossed size={20} className="text-primary" />
           <span className="text-foreground">Plan this week's meals</span>
         </Link>
         <Link
           to="/shopping"
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
         >
-          <ShoppingCart size={20} className="text-green-500" />
+          <ShoppingCart size={20} className="text-primary" />
           <span className="text-foreground">Create shopping list</span>
         </Link>
         <Link
           to="/tasks"
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
         >
-          <CheckSquare size={20} className="text-purple-500" />
+          <CheckSquare size={20} className="text-primary" />
           <span className="text-foreground">Add new task</span>
         </Link>
         <Link
           to="/my-chores"
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
         >
-          <ListTodo size={20} className="text-purple-500" />
+          <ListTodo size={20} className="text-primary" />
           <span className="text-foreground">View my chores</span>
         </Link>
         <Link
           to="/calendar"
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
         >
-          <Calendar size={20} className="text-orange-500" />
+          <Calendar size={20} className="text-primary" />
           <span className="text-foreground">View calendar</span>
         </Link>
       </div>
@@ -208,14 +208,14 @@ function RecentActivityCard() {
       <h2 className="text-xl font-bold text-card-foreground mb-4">Recent Activity</h2>
       <div className="space-y-4">
         <div className="flex items-start gap-3">
-          <div className="w-2 h-2 bg-green-500 rounded-full mt-2" />
+          <div className="w-2 h-2 bg-chart-2 rounded-full mt-2" />
           <div className="flex-1">
             <p className="text-sm text-foreground">Shopping list updated</p>
             <p className="text-xs text-muted-foreground">2 hours ago</p>
           </div>
         </div>
         <div className="flex items-start gap-3">
-          <div className="w-2 h-2 bg-blue-500 rounded-full mt-2" />
+          <div className="w-2 h-2 bg-chart-1 rounded-full mt-2" />
           <div className="flex-1">
             <p className="text-sm text-foreground">
               Meal plan created for this week
@@ -224,7 +224,7 @@ function RecentActivityCard() {
           </div>
         </div>
         <div className="flex items-start gap-3">
-          <div className="w-2 h-2 bg-purple-500 rounded-full mt-2" />
+          <div className="w-2 h-2 bg-chart-3 rounded-full mt-2" />
           <div className="flex-1">
             <p className="text-sm text-foreground">
               Task completed: Grocery shopping

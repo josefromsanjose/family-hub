@@ -70,7 +70,7 @@ function ShoppingLists() {
           </div>
           <button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
             <Plus size={20} />
             Add Item
@@ -88,7 +88,7 @@ function ShoppingLists() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Milk, Bread, Chicken"
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                   onKeyPress={(e) => e.key === "Enter" && addItem()}
                 />
               </div>
@@ -99,7 +99,7 @@ function ShoppingLists() {
                   value={formData.quantity}
                   onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
                   placeholder="e.g., 2 lbs, 1 gallon"
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                   onKeyPress={(e) => e.key === "Enter" && addItem()}
                 />
               </div>
@@ -108,7 +108,7 @@ function ShoppingLists() {
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                 >
                   {categories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -121,7 +121,7 @@ function ShoppingLists() {
             <div className="flex gap-3 mt-4">
               <button
                 onClick={addItem}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
               >
                 Add Item
               </button>
@@ -142,7 +142,7 @@ function ShoppingLists() {
             <p className="text-muted-foreground mb-4">Start adding items to your shopping list</p>
             <button
               onClick={() => setShowAddForm(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
             >
               <Plus size={20} />
               Add Your First Item
@@ -173,7 +173,7 @@ function ShoppingLists() {
                           aria-label={item.completed ? "Mark as incomplete" : "Mark as complete"}
                         >
                           {item.completed ? (
-                            <CheckCircle2 size={24} className="text-green-500" />
+                            <CheckCircle2 size={24} className="text-primary" />
                           ) : (
                             <Circle size={24} className="text-muted-foreground" />
                           )}
@@ -192,7 +192,7 @@ function ShoppingLists() {
                         </div>
                         <button
                           onClick={() => deleteItem(item.id)}
-                          className="p-2 hover:bg-red-900/30 rounded text-red-400 transition-colors"
+                          className="p-2 hover:bg-destructive/20 rounded text-destructive transition-colors"
                           aria-label="Delete item"
                         >
                           <Trash2 size={18} />

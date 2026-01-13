@@ -176,7 +176,7 @@ function Settings() {
                       <div className="flex gap-2">
                         <button
                           onClick={saveEdit}
-                          className="p-2 hover:bg-green-900/30 rounded text-green-500 transition-colors"
+                          className="p-2 hover:bg-primary/20 rounded text-primary transition-colors"
                           aria-label="Save"
                         >
                           <Save size={20} />
@@ -206,14 +206,14 @@ function Settings() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => startEdit(member)}
-                          className="p-2 hover:bg-blue-900/30 rounded text-blue-400 transition-colors"
+                          className="p-2 hover:bg-primary/20 rounded text-primary transition-colors"
                           aria-label="Edit member"
                         >
                           <Edit2 size={18} />
                         </button>
                         <button
                           onClick={() => handleDelete(member.id)}
-                          className="p-2 hover:bg-red-900/30 rounded text-red-400 transition-colors"
+                          className="p-2 hover:bg-destructive/20 rounded text-destructive transition-colors"
                           aria-label="Delete member"
                         >
                           <Trash2 size={18} />

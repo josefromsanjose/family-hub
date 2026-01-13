@@ -14,9 +14,9 @@ interface Event {
 }
 
 const eventTypes = [
-  { value: "appointment", label: "Appointment", color: "bg-blue-900/50 text-blue-300 border-blue-600" },
-  { value: "event", label: "Event", color: "bg-green-900/50 text-green-300 border-green-600" },
-  { value: "reminder", label: "Reminder", color: "bg-orange-900/50 text-orange-300 border-orange-600" },
+  { value: "appointment", label: "Appointment", color: "bg-chart-1/30 text-chart-1 border-chart-1/50" },
+  { value: "event", label: "Event", color: "bg-chart-2/30 text-chart-2 border-chart-2/50" },
+  { value: "reminder", label: "Reminder", color: "bg-chart-4/30 text-chart-4 border-chart-4/50" },
 ];
 
 function Calendar() {
@@ -95,7 +95,7 @@ function Calendar() {
           </div>
           <button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
             <Plus size={20} />
             Add Event
@@ -113,7 +113,7 @@ function Calendar() {
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="e.g., Doctor appointment, School play, Birthday party"
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                 />
               </div>
               <div className="md:col-span-2">
@@ -125,7 +125,7 @@ function Calendar() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Additional details..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                 />
               </div>
               <div>
@@ -137,7 +137,7 @@ function Calendar() {
                     setFormData({ ...formData, date: e.target.value });
                     setSelectedDate(e.target.value);
                   }}
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                 />
               </div>
               <div>
@@ -146,7 +146,7 @@ function Calendar() {
                   type="time"
                   value={formData.time}
                   onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                 />
               </div>
               <div>
@@ -156,7 +156,7 @@ function Calendar() {
                   onChange={(e) =>
                     setFormData({ ...formData, type: e.target.value as Event["type"] })
                   }
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                 >
                   {eventTypes.map((type) => (
                     <option key={type.value} value={type.value}>
@@ -169,7 +169,7 @@ function Calendar() {
             <div className="flex gap-3 mt-4">
               <button
                 onClick={addEvent}
-                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
               >
                 Add Event
               </button>
@@ -241,7 +241,7 @@ function Calendar() {
                               </div>
                               <button
                                 onClick={() => deleteEvent(event.id)}
-                                className="p-2 hover:bg-red-900/30 rounded text-red-400 transition-colors flex-shrink-0"
+                                className="p-2 hover:bg-destructive/20 rounded text-destructive transition-colors flex-shrink-0"
                                 aria-label="Delete event"
                               >
                                 <Trash2 size={18} />

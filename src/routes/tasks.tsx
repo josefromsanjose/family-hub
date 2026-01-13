@@ -108,22 +108,22 @@ function TasksAndChores() {
   const getPriorityColor = (priority: Task["priority"]) => {
     switch (priority) {
       case "high":
-        return "bg-red-900/50 text-red-300 border-red-600";
+        return "bg-destructive/30 text-destructive border-destructive/50";
       case "medium":
-        return "bg-yellow-900/50 text-yellow-300 border-yellow-600";
+        return "bg-chart-4/30 text-chart-4 border-chart-4/50";
       case "low":
-        return "bg-green-900/50 text-green-300 border-green-600";
+        return "bg-chart-2/30 text-chart-2 border-chart-2/50";
     }
   };
 
   const getRecurrenceColor = (recurrence: Task["recurrence"]) => {
     switch (recurrence) {
       case "daily":
-        return "bg-blue-900/50 text-blue-300 border-blue-600";
+        return "bg-chart-1/30 text-chart-1 border-chart-1/50";
       case "weekly":
-        return "bg-purple-900/50 text-purple-300 border-purple-600";
+        return "bg-chart-2/30 text-chart-2 border-chart-2/50";
       case "monthly":
-        return "bg-orange-900/50 text-orange-300 border-orange-600";
+        return "bg-chart-4/30 text-chart-4 border-chart-4/50";
       default:
         return "";
     }
@@ -162,7 +162,7 @@ function TasksAndChores() {
           </div>
           <button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
             <Plus size={20} />
             Add Task
@@ -288,7 +288,7 @@ function TasksAndChores() {
             <div className="flex gap-3 mt-4">
               <button
                 onClick={handleAddTask}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
               >
                 Add Task
               </button>
@@ -307,7 +307,7 @@ function TasksAndChores() {
             onClick={() => setFilter("all")}
             className={`px-4 py-2 rounded-lg transition-colors ${
               filter === "all"
-                ? "bg-purple-600 text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-card text-foreground hover:bg-accent border border-border"
             }`}
           >
@@ -317,7 +317,7 @@ function TasksAndChores() {
             onClick={() => setFilter("active")}
             className={`px-4 py-2 rounded-lg transition-colors ${
               filter === "active"
-                ? "bg-purple-600 text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-card text-foreground hover:bg-accent border border-border"
             }`}
           >
@@ -327,7 +327,7 @@ function TasksAndChores() {
             onClick={() => setFilter("completed")}
             className={`px-4 py-2 rounded-lg transition-colors ${
               filter === "completed"
-                ? "bg-purple-600 text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-card text-foreground hover:bg-accent border border-border"
             }`}
           >
@@ -337,7 +337,7 @@ function TasksAndChores() {
             onClick={() => setFilter("recurring")}
             className={`px-4 py-2 rounded-lg transition-colors ${
               filter === "recurring"
-                ? "bg-purple-600 text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-card text-foreground hover:bg-accent border border-border"
             }`}
           >
@@ -347,7 +347,7 @@ function TasksAndChores() {
             onClick={() => setFilter("one-time")}
             className={`px-4 py-2 rounded-lg transition-colors ${
               filter === "one-time"
-                ? "bg-purple-600 text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-card text-foreground hover:bg-accent border border-border"
             }`}
           >
@@ -379,7 +379,7 @@ function TasksAndChores() {
             {filter !== "all" && (
               <button
                 onClick={() => setFilter("all")}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
               >
                 View All Tasks
               </button>
@@ -411,7 +411,7 @@ function TasksAndChores() {
                       {isDue ? (
                         <Circle size={24} className="text-muted-foreground" />
                       ) : (
-                        <CheckCircle2 size={24} className="text-green-500" />
+                        <CheckCircle2 size={24} className="text-primary" />
                       )}
                     </button>
                     <div className="flex-1">
@@ -459,7 +459,7 @@ function TasksAndChores() {
                             )}
                             {task.recurrence &&
                               periodCompletions.length > 0 && (
-                                <div className="text-sm text-green-500 font-medium">
+                                <div className="text-sm text-primary font-medium">
                                   ✓ Done {periodCompletions.length} time
                                   {periodCompletions.length > 1
                                     ? "s"
@@ -483,7 +483,7 @@ function TasksAndChores() {
                         </div>
                         <button
                           onClick={() => deleteTask(task.id)}
-                          className="p-2 hover:bg-red-900/30 rounded text-red-400 transition-colors flex-shrink-0"
+                          className="p-2 hover:bg-destructive/20 rounded text-destructive transition-colors flex-shrink-0"
                           aria-label="Delete task"
                         >
                           <Trash2 size={18} />
