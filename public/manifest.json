@@ -1,0 +1,54 @@
+{
+  "short_name": "Household Hub",
+  "name": "Household Hub - Family Management",
+  "description": "Manage meals, shopping, chores, and schedules for your family",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#3b82f6",
+  "background_color": "#f9fafb",
+  "categories": ["productivity", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Shopping List",
+      "short_name": "Shopping",
+      "description": "View shopping list",
+      "url": "/shopping",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Chores",
+      "short_name": "Chores",
+      "description": "View my chores",
+      "url": "/my-chores",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Meal Planning",
+      "short_name": "Meals",
+      "description": "Plan meals",
+      "url": "/meals",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    }
+  ]
+}

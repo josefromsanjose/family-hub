@@ -1,0 +1,163 @@
+// Prisma Schema for Household Hub
+// PostgreSQL database (Supabase)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// Household Members
+// ============================================================================
+
+model HouseholdMember {
+  id        String   @id @default(uuid())
+  name      String
+  role      String?
+  color     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  assignedTasks Task[]
+  completions   CompletionRecord[]
+
+  @@index([name])
+  @@map("household_members")
+}
+
+// ============================================================================
+// Tasks & Chores
+// ============================================================================
+
+enum TaskPriority {
+  low
+  medium
+  high
+}
+
+enum TaskRecurrence {
+  daily
+  weekly
+  monthly
+}
+
+model Task {
+  id          String          @id @default(uuid())
+  title       String
+  description String?
+  assignedToId String?        // Foreign key to HouseholdMember
+  dueDate     DateTime?
+  priority    TaskPriority    @default(medium)
+  recurrence  TaskRecurrence? // If set, this is a recurring chore
+  completed   Boolean         @default(false) // For one-time tasks only
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  // Relations
+  assignedTo  HouseholdMember? @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  completions CompletionRecord[]
+
+  @@index([assignedToId])
+  @@index([recurrence])
+  @@index([completed])
+  @@index([priority])
+  @@map("tasks")
+}
+
+model CompletionRecord {
+  id          String   @id @default(uuid())
+  taskId      String
+  completedAt DateTime @default(now())
+  completedById String // Foreign key to HouseholdMember
+
+  // Relations
+  task        Task            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  completedBy HouseholdMember @relation(fields: [completedById], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([completedAt])
+  @@index([completedById])
+  @@map("completion_records")
+}
+
+// ============================================================================
+// Meal Planning
+// ============================================================================
+
+enum MealType {
+  breakfast
+  lunch
+  dinner
+}
+
+model Meal {
+  id        String   @id @default(uuid())
+  name      String   // e.g., "Spaghetti and Meatballs"
+  date      DateTime // Specific date for this meal
+  mealType  MealType
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+  @@index([mealType])
+  @@map("meals")
+}
+
+// ============================================================================
+// Shopping Lists
+// ============================================================================
+
+model ShoppingItem {
+  id          String   @id @default(uuid())
+  name        String
+  quantity    String?  // e.g., "2 lbs", "1 gallon"
+  category    String   // e.g., "Produce", "Meat & Seafood", "Dairy"
+  completed   Boolean  @default(false)
+  listId      String?  // NULL = global list, future: can add ShoppingList model
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([completed])
+  @@index([listId])
+  @@map("shopping_items")
+}
+
+// ============================================================================
+// Calendar Events
+// ============================================================================
+
+enum EventType {
+  appointment
+  event
+  reminder
+}
+
+enum EventRecurrence {
+  daily
+  weekly
+  monthly
+}
+
+model CalendarEvent {
+  id          String            @id @default(uuid())
+  title       String
+  description String?
+  date        DateTime          // Start date
+  time        String?           // Optional time (HH:mm format)
+  type        EventType
+  recurrence  EventRecurrence?  // NULL = one-time event
+  endDate     DateTime?         // For recurring: when recurrence ends (optional)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([date])
+  @@index([type])
+  @@index([recurrence])
+  @@map("calendar_events")
+}

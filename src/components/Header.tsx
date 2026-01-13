@@ -1,0 +1,89 @@
+import { Link, useLocation } from "@tanstack/react-router";
+import { useState } from "react";
+import { Menu, X, Home, Calendar, ShoppingCart, CheckSquare, UtensilsCrossed, Settings, ListTodo } from "lucide-react";
+
+const navigation = [
+  { name: "Dashboard", href: "/", icon: Home },
+  { name: "Meal Planning", href: "/meals", icon: UtensilsCrossed },
+  { name: "Shopping Lists", href: "/shopping", icon: ShoppingCart },
+  { name: "Tasks & Chores", href: "/tasks", icon: CheckSquare },
+  { name: "My Chores", href: "/my-chores", icon: ListTodo },
+  { name: "Calendar", href: "/calendar", icon: Calendar },
+  { name: "Settings", href: "/settings", icon: Settings },
+];
+
+export default function Header() {
+  const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+
+  const closeMenu = () => setIsOpen(false);
+
+  return (
+    <>
+      <header className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="p-4 flex items-center">
+          <button
+            onClick={() => setIsOpen(true)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu size={24} />
+          </button>
+          <h1 className="ml-4 text-xl font-semibold">
+            <Link to="/" className="text-gray-900 hover:text-gray-700">
+              <span className="font-extrabold">🏠 Household Hub</span>
+            </Link>
+          </h1>
+        </div>
+      </header>
+
+      <aside
+        className={`fixed top-0 left-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <h2 className="text-xl font-bold text-gray-900">Navigation</h2>
+          <button
+            onClick={closeMenu}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Close menu"
+          >
+            <X size={24} />
+          </button>
+        </div>
+        <nav className="flex-1 overflow-y-auto p-4">
+          <ul className="space-y-2">
+            {navigation.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.href;
+              return (
+                <li key={item.name}>
+                  <Link
+                    to={item.href}
+                    onClick={closeMenu}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                      isActive
+                        ? "bg-blue-50 text-blue-700 font-medium"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon size={20} />
+                    <span>{item.name}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </aside>
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={closeMenu}
+          aria-hidden="true"
+        />
+      )}
+    </>
+  );
+}
