@@ -20,9 +20,20 @@ Family Hub is a Progressive Web Application (PWA) built with TanStack Start, Rea
 
 ### Data Layer
 
-- **Prisma** (v7.0.0) - Type-safe ORM
-- **PostgreSQL** (via Supabase) - Relational database
+- **Prisma** (v7.0.0) - Type-safe ORM for database queries
+- **PostgreSQL** (via Supabase) - Relational database with connection pooling
 - **Prisma Client** - Generated database client
+- **Supabase Storage** (future) - File storage for recipe photos, receipts, etc.
+- **Clerk** (future) - Authentication and user management
+
+**Architecture Decision:** We use a hybrid approach:
+
+- **Prisma** for all database queries (better query API, type safety, migrations)
+- **Clerk** for authentication (better UX for family apps, advanced features)
+- **Supabase PostgreSQL** for the database (managed, reliable, scalable)
+- **Supabase Storage** for file uploads (can be used alongside Prisma)
+
+This gives us the best of each tool while maintaining flexibility.
 
 ### State Management
 
@@ -153,6 +164,12 @@ flowchart TD
 - Environment-based logging
 - Connection string validation
 - Global instance for hot reload compatibility
+- Uses connection pooling (port 6543) for serverless compatibility
+
+**Connection Setup:**
+
+- **Pooled connection** (`DATABASE_URL`): Used for application queries (port 6543)
+- **Direct connection** (`DIRECT_URL`): Used for migrations only (port 5432)
 
 **Usage Pattern:**
 
@@ -165,6 +182,21 @@ const tasks = await prisma.task.findMany({
   include: { assignedTo: true },
 });
 ```
+
+**Why Prisma over Supabase.js?**
+
+- Superior query API and type safety
+- Better developer experience (Prisma Studio)
+- Excellent migration system
+- Database-agnostic (can switch providers)
+- More mature and battle-tested
+
+**Why Clerk over Supabase Auth?**
+
+- Better UX for family apps (invite flows, family accounts)
+- More advanced auth features (social logins, MFA, user management)
+- Better developer experience
+- Independent from database provider
 
 ## State Management Architecture
 
@@ -397,9 +429,16 @@ npm run build  # Vite + Nitro build
 
 **Why:** Simple, built-in React solution. Sufficient for current scope. Can migrate to Zustand/Redux if needed later.
 
-### 3. Prisma ORM
+### 3. Prisma + Clerk + Supabase (Hybrid Approach)
 
-**Why:** Type-safe database access, excellent TypeScript support, migration system, works well with PostgreSQL.
+**Why:** We use a hybrid approach to get the best of each tool:
+
+- **Prisma**: Best query API, type safety, migration system, Prisma Studio
+- **Clerk**: Best auth UX for family apps, advanced features, better developer experience
+- **Supabase PostgreSQL**: Managed database with connection pooling for serverless
+- **Supabase Storage**: Built-in file storage (can be used alongside Prisma)
+
+This approach gives us maximum flexibility and the best developer experience for each concern.
 
 ### 4. Network-First Service Worker
 
@@ -433,9 +472,10 @@ npm run build  # Vite + Nitro build
    - Conflict resolution strategies
 
 4. **Authentication**
-   - Supabase Auth integration
+   - Clerk integration for user authentication
    - Multi-household support
    - User roles and permissions
+   - Family invite flows
 
 5. **State Management**
    - Consider Zustand or TanStack Query
@@ -471,11 +511,12 @@ npm run build  # Vite + Nitro build
 
 ### Future Security
 
-- **Authentication:** Supabase Auth
-- **Authorization:** Row-level security policies
-- **Input Validation:** Server-side validation
+- **Authentication:** Clerk (better UX for family apps)
+- **Authorization:** Application-level permissions (Clerk + Prisma)
+- **Input Validation:** Server-side validation with Zod
 - **Rate Limiting:** API rate limits
 - **CORS:** Proper CORS configuration
+- **Database Security:** Connection pooling, SSL required
 
 ## Development Workflow
 
@@ -485,10 +526,10 @@ npm run build  # Vite + Nitro build
 
    ```bash
    npm install
-   cp .env.example .env.local
-   # Add DATABASE_URL to .env.local
+   # Create .env.local with DATABASE_URL and DIRECT_URL
+   # See docs/DATABASE.md for connection string setup
    npm run db:generate
-   npm run db:push
+   npm run db:push  # First time only - creates all tables
    ```
 
 2. **Development:**
@@ -538,11 +579,19 @@ npm run build  # Vite + Nitro build
 
 ### Required
 
-- `DATABASE_URL` - PostgreSQL connection string (Supabase)
+- `DATABASE_URL` - PostgreSQL connection string with pooling (port 6543)
+- `DIRECT_URL` - Direct PostgreSQL connection for migrations (port 5432)
 
-### Optional
+### Optional (Future)
 
+- `VITE_SUPABASE_URL` - Supabase project URL (for Storage)
+- `VITE_SUPABASE_ANON_KEY` - Supabase publishable key (for Storage)
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (server-side Storage operations)
+- `CLERK_PUBLISHABLE_KEY` - Clerk publishable key (for authentication)
+- `CLERK_SECRET_KEY` - Clerk secret key (server-side auth)
 - `NODE_ENV` - Environment (development/production)
+
+**Note:** All environment variables are stored in `.env.local` (not committed to git). See `docs/DATABASE.md` for detailed setup instructions.
 
 ## Database Schema Summary
 

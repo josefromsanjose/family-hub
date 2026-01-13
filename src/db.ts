@@ -1,4 +1,6 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 
 declare global {
   var __prisma: PrismaClient | undefined;
@@ -10,10 +12,14 @@ if (!databaseUrl) {
   throw new Error("DATABASE_URL environment variable is not set");
 }
 
+// Create PostgreSQL connection pool
+const pool = new Pool({ connectionString: databaseUrl });
+const adapter = new PrismaPg(pool);
+
 export const prisma =
   globalThis.__prisma ||
   new PrismaClient({
-    url: databaseUrl,
+    adapter,
     log:
       process.env.NODE_ENV === "development"
         ? ["query", "error", "warn"]
