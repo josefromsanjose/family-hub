@@ -14,9 +14,9 @@ interface Event {
 }
 
 const eventTypes = [
-  { value: "appointment", label: "Appointment", color: "bg-blue-100 text-blue-800 border-blue-300" },
-  { value: "event", label: "Event", color: "bg-green-100 text-green-800 border-green-300" },
-  { value: "reminder", label: "Reminder", color: "bg-orange-100 text-orange-800 border-orange-300" },
+  { value: "appointment", label: "Appointment", color: "bg-blue-900/50 text-blue-300 border-blue-600" },
+  { value: "event", label: "Event", color: "bg-green-900/50 text-green-300 border-green-600" },
+  { value: "reminder", label: "Reminder", color: "bg-orange-900/50 text-orange-300 border-orange-600" },
 ];
 
 function Calendar() {
@@ -86,12 +86,12 @@ function Calendar() {
   const upcomingEvents = getUpcomingEvents();
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Family Calendar</h1>
-            <p className="text-gray-600">Keep track of appointments, events, and reminders</p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Family Calendar</h1>
+            <p className="text-muted-foreground">Keep track of appointments, events, and reminders</p>
           </div>
           <button
             onClick={() => setShowAddForm(!showAddForm)}
@@ -103,21 +103,21 @@ function Calendar() {
         </div>
 
         {showAddForm && (
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-6 border border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Add New Event</h2>
+          <div className="bg-card rounded-lg shadow-sm p-6 mb-6 border border-border">
+            <h2 className="text-xl font-bold text-card-foreground mb-4">Add New Event</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Event Title</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Event Title</label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="e.g., Doctor appointment, School play, Birthday party"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Description (optional)
                 </label>
                 <textarea
@@ -125,11 +125,11 @@ function Calendar() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Additional details..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Date</label>
                 <input
                   type="date"
                   value={formData.date}
@@ -137,26 +137,26 @@ function Calendar() {
                     setFormData({ ...formData, date: e.target.value });
                     setSelectedDate(e.target.value);
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Time (optional)</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Time (optional)</label>
                 <input
                   type="time"
                   value={formData.time}
                   onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Event Type</label>
                 <select
                   value={formData.type}
                   onChange={(e) =>
                     setFormData({ ...formData, type: e.target.value as Event["type"] })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 >
                   {eventTypes.map((type) => (
                     <option key={type.value} value={type.value}>
@@ -175,7 +175,7 @@ function Calendar() {
               </button>
               <button
                 onClick={() => setShowAddForm(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-accent transition-colors"
               >
                 Cancel
               </button>
@@ -185,13 +185,13 @@ function Calendar() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Events by Date</h2>
+            <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+              <h2 className="text-xl font-bold text-card-foreground mb-4">Events by Date</h2>
               <div className="space-y-4">
                 {events.length === 0 ? (
                   <div className="text-center py-12">
-                    <CalendarIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                    <p className="text-gray-600">No events scheduled yet</p>
+                    <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">No events scheduled yet</p>
                   </div>
                 ) : (
                   Object.entries(
@@ -203,8 +203,8 @@ function Calendar() {
                   )
                     .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
                     .map(([date, dateEvents]) => (
-                      <div key={date} className="border-b border-gray-200 pb-4 last:border-0">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                      <div key={date} className="border-b border-border pb-4 last:border-0">
+                        <h3 className="text-lg font-semibold text-foreground mb-3">
                           {new Date(date).toLocaleDateString("en-US", {
                             weekday: "long",
                             year: "numeric",
@@ -216,7 +216,7 @@ function Calendar() {
                           {dateEvents.map((event) => (
                             <div
                               key={event.id}
-                              className="flex items-start justify-between gap-4 p-3 rounded-lg border"
+                              className="flex items-start justify-between gap-4 p-3 rounded-lg border border-border"
                             >
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
@@ -228,20 +228,20 @@ function Calendar() {
                                     {eventTypes.find((et) => et.value === event.type)?.label}
                                   </span>
                                   {event.time && (
-                                    <div className="flex items-center gap-1 text-sm text-gray-600">
+                                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                       <Clock size={14} />
                                       <span>{event.time}</span>
                                     </div>
                                   )}
                                 </div>
-                                <h4 className="font-medium text-gray-900">{event.title}</h4>
+                                <h4 className="font-medium text-foreground">{event.title}</h4>
                                 {event.description && (
-                                  <p className="text-sm text-gray-600 mt-1">{event.description}</p>
+                                  <p className="text-sm text-muted-foreground mt-1">{event.description}</p>
                                 )}
                               </div>
                               <button
                                 onClick={() => deleteEvent(event.id)}
-                                className="p-2 hover:bg-red-100 rounded text-red-600 transition-colors flex-shrink-0"
+                                className="p-2 hover:bg-red-900/30 rounded text-red-400 transition-colors flex-shrink-0"
                                 aria-label="Delete event"
                               >
                                 <Trash2 size={18} />
@@ -257,16 +257,16 @@ function Calendar() {
           </div>
 
           <div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Upcoming Events</h2>
+            <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+              <h2 className="text-xl font-bold text-card-foreground mb-4">Upcoming Events</h2>
               {upcomingEvents.length === 0 ? (
-                <p className="text-gray-600 text-sm">No upcoming events</p>
+                <p className="text-muted-foreground text-sm">No upcoming events</p>
               ) : (
                 <div className="space-y-3">
                   {upcomingEvents.map((event) => (
                     <div
                       key={event.id}
-                      className="p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                      className="p-3 rounded-lg border border-border hover:bg-accent transition-colors"
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <span
@@ -277,8 +277,8 @@ function Calendar() {
                           {eventTypes.find((et) => et.value === event.type)?.label}
                         </span>
                       </div>
-                      <h4 className="font-medium text-gray-900 text-sm mb-1">{event.title}</h4>
-                      <p className="text-xs text-gray-600">
+                      <h4 className="font-medium text-foreground text-sm mb-1">{event.title}</h4>
+                      <p className="text-xs text-muted-foreground">
                         {new Date(event.date).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",

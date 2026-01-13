@@ -15,13 +15,13 @@ export const Route = createFileRoute("/")({ component: Dashboard });
 
 function Dashboard() {
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             Welcome Back! 👋
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Here's what's happening in your household today
           </p>
         </div>
@@ -83,12 +83,12 @@ function DashboardCard({
   return (
     <Link
       to={href}
-      className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow border border-gray-200"
+      className="bg-card rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow border border-border"
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
+          <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+          <p className="text-2xl font-bold text-card-foreground">{value}</p>
         </div>
         <div className={`${color} p-3 rounded-lg`}>
           <Icon size={24} className="text-white" />
@@ -100,43 +100,43 @@ function DashboardCard({
 
 function QuickActionsCard() {
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-      <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+    <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
+      <h2 className="text-xl font-bold text-card-foreground mb-4">Quick Actions</h2>
       <div className="space-y-3">
         <Link
           to="/meals"
-          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
         >
           <UtensilsCrossed size={20} className="text-blue-500" />
-          <span className="text-gray-700">Plan this week's meals</span>
+          <span className="text-foreground">Plan this week's meals</span>
         </Link>
         <Link
           to="/shopping"
-          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
         >
           <ShoppingCart size={20} className="text-green-500" />
-          <span className="text-gray-700">Create shopping list</span>
+          <span className="text-foreground">Create shopping list</span>
         </Link>
         <Link
           to="/tasks"
-          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
         >
           <CheckSquare size={20} className="text-purple-500" />
-          <span className="text-gray-700">Add new task</span>
+          <span className="text-foreground">Add new task</span>
         </Link>
         <Link
           to="/my-chores"
-          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
         >
           <ListTodo size={20} className="text-purple-500" />
-          <span className="text-gray-700">View my chores</span>
+          <span className="text-foreground">View my chores</span>
         </Link>
         <Link
           to="/calendar"
-          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
         >
           <Calendar size={20} className="text-orange-500" />
-          <span className="text-gray-700">View calendar</span>
+          <span className="text-foreground">View calendar</span>
         </Link>
       </div>
     </div>
@@ -147,12 +147,12 @@ function HouseholdMembersCard() {
   const { members } = useHousehold();
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+    <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-900">Household Members</h2>
+        <h2 className="text-xl font-bold text-card-foreground">Household Members</h2>
         <Link
           to="/settings"
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+          className="p-2 hover:bg-accent rounded-lg transition-colors text-muted-foreground"
           aria-label="Manage members"
         >
           <Settings size={18} />
@@ -160,11 +160,11 @@ function HouseholdMembersCard() {
       </div>
       {members.length === 0 ? (
         <div className="text-center py-4">
-          <Users className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-          <p className="text-sm text-gray-600 mb-3">No members added yet</p>
+          <Users className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+          <p className="text-sm text-muted-foreground mb-3">No members added yet</p>
           <Link
             to="/settings"
-            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
             Add Members
           </Link>
@@ -174,16 +174,16 @@ function HouseholdMembersCard() {
           {members.map((member) => (
             <div key={member.id} className="flex items-center gap-3">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${member.color || "bg-gray-500"}`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${member.color || "bg-muted"}`}
               >
                 {member.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 truncate">
+                <p className="font-medium text-card-foreground truncate">
                   {member.name}
                 </p>
                 {member.role && (
-                  <p className="text-xs text-gray-600 truncate">
+                  <p className="text-xs text-muted-foreground truncate">
                     {member.role}
                   </p>
                 )}
@@ -192,7 +192,7 @@ function HouseholdMembersCard() {
           ))}
           <Link
             to="/settings"
-            className="block mt-4 text-center text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="block mt-4 text-center text-sm text-primary hover:text-primary/80 font-medium"
           >
             Manage Members →
           </Link>
@@ -204,32 +204,32 @@ function HouseholdMembersCard() {
 
 function RecentActivityCard() {
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-      <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
+    <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
+      <h2 className="text-xl font-bold text-card-foreground mb-4">Recent Activity</h2>
       <div className="space-y-4">
         <div className="flex items-start gap-3">
           <div className="w-2 h-2 bg-green-500 rounded-full mt-2" />
           <div className="flex-1">
-            <p className="text-sm text-gray-900">Shopping list updated</p>
-            <p className="text-xs text-gray-500">2 hours ago</p>
+            <p className="text-sm text-foreground">Shopping list updated</p>
+            <p className="text-xs text-muted-foreground">2 hours ago</p>
           </div>
         </div>
         <div className="flex items-start gap-3">
           <div className="w-2 h-2 bg-blue-500 rounded-full mt-2" />
           <div className="flex-1">
-            <p className="text-sm text-gray-900">
+            <p className="text-sm text-foreground">
               Meal plan created for this week
             </p>
-            <p className="text-xs text-gray-500">Yesterday</p>
+            <p className="text-xs text-muted-foreground">Yesterday</p>
           </div>
         </div>
         <div className="flex items-start gap-3">
           <div className="w-2 h-2 bg-purple-500 rounded-full mt-2" />
           <div className="flex-1">
-            <p className="text-sm text-gray-900">
+            <p className="text-sm text-foreground">
               Task completed: Grocery shopping
             </p>
-            <p className="text-xs text-gray-500">2 days ago</p>
+            <p className="text-xs text-muted-foreground">2 days ago</p>
           </div>
         </div>
       </div>

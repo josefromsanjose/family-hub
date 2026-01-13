@@ -49,17 +49,17 @@ function MyChores() {
   const selectedMemberData = members.find((m) => m.name === selectedMember);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Chores</h1>
-          <p className="text-gray-600 mb-4">
+          <h1 className="text-3xl font-bold text-foreground mb-2">My Chores</h1>
+          <p className="text-muted-foreground mb-4">
             Check off your chores as you complete them!
           </p>
 
           {/* Member Selector */}
-          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="bg-card rounded-lg shadow-sm p-4 border border-border">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Who are you?
             </label>
             <div className="flex gap-2 flex-wrap">
@@ -69,15 +69,15 @@ function MyChores() {
                   onClick={() => setSelectedMember(member.name)}
                   className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
                     selectedMember === member.name
-                      ? "bg-blue-600 text-white shadow-md"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "bg-secondary text-secondary-foreground hover:bg-accent"
                   }`}
                 >
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold ${
                       selectedMember === member.name
-                        ? member.color || "bg-gray-500"
-                        : member.color || "bg-gray-400"
+                        ? member.color || "bg-muted"
+                        : member.color || "bg-muted"
                     }`}
                   >
                     {member.name.charAt(0).toUpperCase()}
@@ -90,12 +90,12 @@ function MyChores() {
         </div>
 
         {myChores.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm p-12 border border-gray-200 text-center">
-            <Circle className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          <div className="bg-card rounded-lg shadow-sm p-12 border border-border text-center">
+            <Circle className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+            <h3 className="text-xl font-semibold text-foreground mb-2">
               No chores assigned yet!
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-muted-foreground mb-4">
               {selectedMember} doesn't have any recurring chores assigned.
             </p>
             <button
@@ -109,24 +109,24 @@ function MyChores() {
           <>
             {/* Summary Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-                <div className="text-3xl font-bold text-gray-900 mb-1">
+              <div className="bg-card rounded-lg shadow-sm p-4 border border-border">
+                <div className="text-3xl font-bold text-foreground mb-1">
                   {myChores.filter((c) => isTaskDue(c)).length}
                 </div>
-                <div className="text-sm text-gray-600">Chores to do</div>
+                <div className="text-sm text-muted-foreground">Chores to do</div>
               </div>
-              <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-                <div className="text-3xl font-bold text-green-600 mb-1">
+              <div className="bg-card rounded-lg shadow-sm p-4 border border-border">
+                <div className="text-3xl font-bold text-green-500 mb-1">
                   {myChores.filter((c) => !isTaskDue(c)).length}
                 </div>
-                <div className="text-sm text-gray-600">Done!</div>
+                <div className="text-sm text-muted-foreground">Done!</div>
               </div>
-              <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-                <div className="flex items-center gap-2 text-3xl font-bold text-orange-600 mb-1">
+              <div className="bg-card rounded-lg shadow-sm p-4 border border-border">
+                <div className="flex items-center gap-2 text-3xl font-bold text-orange-500 mb-1">
                   <Flame size={28} />
                   {Math.max(...myChores.map((c) => getCompletionStreak(c)), 0)}
                 </div>
-                <div className="text-sm text-gray-600">Best streak</div>
+                <div className="text-sm text-muted-foreground">Best streak</div>
               </div>
             </div>
 
@@ -139,10 +139,10 @@ function MyChores() {
                 return (
                   <div
                     key={chore.id}
-                    className={`bg-white rounded-lg shadow-sm border-2 p-6 transition-all ${
+                    className={`bg-card rounded-lg shadow-sm border-2 p-6 transition-all ${
                       isDue
-                        ? "border-gray-300 hover:border-purple-400"
-                        : "border-green-300 bg-green-50"
+                        ? "border-border hover:border-purple-500"
+                        : "border-green-600 bg-green-900/20"
                     }`}
                   >
                     <div className="flex items-start gap-4">
@@ -154,13 +154,13 @@ function MyChores() {
                         {isDue ? (
                           <Circle
                             size={32}
-                            className="text-gray-400 hover:text-purple-600 transition-colors"
+                            className="text-muted-foreground hover:text-purple-500 transition-colors"
                             strokeWidth={2.5}
                           />
                         ) : (
                           <CheckCircle2
                             size={32}
-                            className="text-green-600"
+                            className="text-green-500"
                             strokeWidth={2.5}
                           />
                         )}
@@ -171,14 +171,14 @@ function MyChores() {
                             <h3
                               className={`text-xl font-bold mb-2 ${
                                 isDue
-                                  ? "text-gray-900"
-                                  : "text-gray-600 line-through"
+                                  ? "text-foreground"
+                                  : "text-muted-foreground line-through"
                               }`}
                             >
                               {chore.title}
                             </h3>
                             {chore.description && (
-                              <p className="text-sm text-gray-600 mb-3">
+                              <p className="text-sm text-muted-foreground mb-3">
                                 {chore.description}
                               </p>
                             )}
@@ -187,10 +187,10 @@ function MyChores() {
                                 <span
                                   className={`px-3 py-1 text-xs font-semibold rounded-full ${
                                     chore.recurrence === "daily"
-                                      ? "bg-blue-100 text-blue-800"
+                                      ? "bg-blue-900/50 text-blue-300"
                                       : chore.recurrence === "weekly"
-                                        ? "bg-purple-100 text-purple-800"
-                                        : "bg-orange-100 text-orange-800"
+                                        ? "bg-purple-900/50 text-purple-300"
+                                        : "bg-orange-900/50 text-orange-300"
                                   }`}
                                 >
                                   {chore.recurrence === "daily"
@@ -201,7 +201,7 @@ function MyChores() {
                                 </span>
                               </div>
                               {!isDue && status.completions > 0 && (
-                                <div className="flex items-center gap-1 text-sm font-medium text-green-600">
+                                <div className="flex items-center gap-1 text-sm font-medium text-green-500">
                                   <CheckCircle2 size={16} />
                                   <span>
                                     Done {status.completions} time
@@ -217,7 +217,7 @@ function MyChores() {
                                 </div>
                               )}
                               {status.streak > 0 && (
-                                <div className="flex items-center gap-1 text-sm font-medium text-orange-600">
+                                <div className="flex items-center gap-1 text-sm font-medium text-orange-500">
                                   <Flame size={16} />
                                   <span>
                                     {status.streak} day

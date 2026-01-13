@@ -20,17 +20,17 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-white border-b border-gray-200 shadow-sm">
+      <header className="bg-background border-b border-border shadow-sm">
         <div className="p-4 flex items-center">
           <button
             onClick={() => setIsOpen(true)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-accent rounded-lg transition-colors"
             aria-label="Open menu"
           >
             <Menu size={24} />
           </button>
           <h1 className="ml-4 text-xl font-semibold">
-            <Link to="/" className="text-gray-900 hover:text-gray-700">
+            <Link to="/" className="text-foreground hover:text-muted-foreground">
               <span className="font-extrabold">🏠 Household Hub</span>
             </Link>
           </h1>
@@ -38,15 +38,15 @@ export default function Header() {
       </header>
 
       <aside
-        className={`fixed top-0 left-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed top-0 left-0 h-full w-80 bg-sidebar shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">Navigation</h2>
+        <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
+          <h2 className="text-xl font-bold text-sidebar-foreground">Navigation</h2>
           <button
             onClick={closeMenu}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-sidebar-accent rounded-lg transition-colors"
             aria-label="Close menu"
           >
             <X size={24} />
@@ -64,8 +64,8 @@ export default function Header() {
                     onClick={closeMenu}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                       isActive
-                        ? "bg-blue-50 text-blue-700 font-medium"
-                        : "text-gray-700 hover:bg-gray-50"
+                        ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent"
                     }`}
                   >
                     <Icon size={20} />

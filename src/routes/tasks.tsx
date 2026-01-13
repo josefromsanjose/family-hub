@@ -108,22 +108,22 @@ function TasksAndChores() {
   const getPriorityColor = (priority: Task["priority"]) => {
     switch (priority) {
       case "high":
-        return "bg-red-100 text-red-800 border-red-300";
+        return "bg-red-900/50 text-red-300 border-red-600";
       case "medium":
-        return "bg-yellow-100 text-yellow-800 border-yellow-300";
+        return "bg-yellow-900/50 text-yellow-300 border-yellow-600";
       case "low":
-        return "bg-green-100 text-green-800 border-green-300";
+        return "bg-green-900/50 text-green-300 border-green-600";
     }
   };
 
   const getRecurrenceColor = (recurrence: Task["recurrence"]) => {
     switch (recurrence) {
       case "daily":
-        return "bg-blue-100 text-blue-800 border-blue-300";
+        return "bg-blue-900/50 text-blue-300 border-blue-600";
       case "weekly":
-        return "bg-purple-100 text-purple-800 border-purple-300";
+        return "bg-purple-900/50 text-purple-300 border-purple-600";
       case "monthly":
-        return "bg-orange-100 text-orange-800 border-orange-300";
+        return "bg-orange-900/50 text-orange-300 border-orange-600";
       default:
         return "";
     }
@@ -147,14 +147,14 @@ function TasksAndChores() {
   const oneTimeTasks = tasks.filter((task) => !task.recurrence).length;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               Tasks & Chores
             </h1>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               {tasks.length > 0
                 ? `${activeTasks} active, ${completedTasks} completed`
                 : "Manage household tasks and assign them to family members"}
@@ -170,13 +170,13 @@ function TasksAndChores() {
         </div>
 
         {showAddForm && (
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-6 border border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
+          <div className="bg-card rounded-lg shadow-sm p-6 mb-6 border border-border">
+            <h2 className="text-xl font-bold text-card-foreground mb-4">
               Add New Task
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Task Title
                 </label>
                 <input
@@ -186,11 +186,11 @@ function TasksAndChores() {
                     setFormData({ ...formData, title: e.target.value })
                   }
                   placeholder="e.g., Take out trash, Vacuum living room"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Description (optional)
                 </label>
                 <textarea
@@ -200,11 +200,11 @@ function TasksAndChores() {
                   }
                   placeholder="Additional details..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Assign To
                 </label>
                 <select
@@ -212,7 +212,7 @@ function TasksAndChores() {
                   onChange={(e) =>
                     setFormData({ ...formData, assignedTo: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
                   <option value="">Unassigned</option>
                   {members.map((member) => (
@@ -223,7 +223,7 @@ function TasksAndChores() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Due Date
                 </label>
                 <input
@@ -232,17 +232,17 @@ function TasksAndChores() {
                   onChange={(e) =>
                     setFormData({ ...formData, dueDate: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   disabled={!!formData.recurrence}
                 />
                 {formData.recurrence && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Due date disabled for recurring tasks
                   </p>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Priority
                 </label>
                 <select
@@ -253,7 +253,7 @@ function TasksAndChores() {
                       priority: e.target.value as Task["priority"],
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -261,7 +261,7 @@ function TasksAndChores() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Recurrence (optional)
                 </label>
                 <select
@@ -276,7 +276,7 @@ function TasksAndChores() {
                         | "monthly",
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
                   <option value="">None (One-time task)</option>
                   <option value="daily">Daily</option>
@@ -294,7 +294,7 @@ function TasksAndChores() {
               </button>
               <button
                 onClick={() => setShowAddForm(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-accent transition-colors"
               >
                 Cancel
               </button>
@@ -308,7 +308,7 @@ function TasksAndChores() {
             className={`px-4 py-2 rounded-lg transition-colors ${
               filter === "all"
                 ? "bg-purple-600 text-white"
-                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300"
+                : "bg-card text-foreground hover:bg-accent border border-border"
             }`}
           >
             All ({tasks.length})
@@ -318,7 +318,7 @@ function TasksAndChores() {
             className={`px-4 py-2 rounded-lg transition-colors ${
               filter === "active"
                 ? "bg-purple-600 text-white"
-                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300"
+                : "bg-card text-foreground hover:bg-accent border border-border"
             }`}
           >
             Active ({activeTasks})
@@ -328,7 +328,7 @@ function TasksAndChores() {
             className={`px-4 py-2 rounded-lg transition-colors ${
               filter === "completed"
                 ? "bg-purple-600 text-white"
-                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300"
+                : "bg-card text-foreground hover:bg-accent border border-border"
             }`}
           >
             Completed ({completedTasks})
@@ -338,7 +338,7 @@ function TasksAndChores() {
             className={`px-4 py-2 rounded-lg transition-colors ${
               filter === "recurring"
                 ? "bg-purple-600 text-white"
-                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300"
+                : "bg-card text-foreground hover:bg-accent border border-border"
             }`}
           >
             Recurring ({recurringTasks})
@@ -348,7 +348,7 @@ function TasksAndChores() {
             className={`px-4 py-2 rounded-lg transition-colors ${
               filter === "one-time"
                 ? "bg-purple-600 text-white"
-                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300"
+                : "bg-card text-foreground hover:bg-accent border border-border"
             }`}
           >
             One-time ({oneTimeTasks})
@@ -356,9 +356,9 @@ function TasksAndChores() {
         </div>
 
         {getFilteredTasks().length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm p-12 border border-gray-200 text-center">
-            <CheckCircle2 className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <div className="bg-card rounded-lg shadow-sm p-12 border border-border text-center">
+            <CheckCircle2 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">
               {filter === "completed"
                 ? "No completed tasks yet"
                 : filter === "active"
@@ -369,7 +369,7 @@ function TasksAndChores() {
                       ? "No one-time tasks"
                       : "No tasks yet"}
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-muted-foreground mb-4">
               {filter === "all"
                 ? "Start adding tasks to keep your household organized"
                 : filter === "active"
@@ -396,8 +396,8 @@ function TasksAndChores() {
               return (
                 <div
                   key={task.id}
-                  className={`bg-white rounded-lg shadow-sm border p-6 transition-colors ${
-                    !isDue ? "bg-gray-50 border-gray-200" : "border-gray-200"
+                  className={`bg-card rounded-lg shadow-sm border p-6 transition-colors ${
+                    !isDue ? "bg-secondary border-border" : "border-border"
                   }`}
                 >
                   <div className="flex items-start gap-4">
@@ -409,9 +409,9 @@ function TasksAndChores() {
                       }
                     >
                       {isDue ? (
-                        <Circle size={24} className="text-gray-400" />
+                        <Circle size={24} className="text-muted-foreground" />
                       ) : (
-                        <CheckCircle2 size={24} className="text-green-600" />
+                        <CheckCircle2 size={24} className="text-green-500" />
                       )}
                     </button>
                     <div className="flex-1">
@@ -421,8 +421,8 @@ function TasksAndChores() {
                             <h3
                               className={`text-lg font-semibold ${
                                 !isDue
-                                  ? "text-gray-500 line-through"
-                                  : "text-gray-900"
+                                  ? "text-muted-foreground line-through"
+                                  : "text-foreground"
                               }`}
                             >
                               {task.title}
@@ -440,26 +440,26 @@ function TasksAndChores() {
                             )}
                           </div>
                           {task.description && (
-                            <p className="text-sm text-gray-600 mb-3">
+                            <p className="text-sm text-muted-foreground mb-3">
                               {task.description}
                             </p>
                           )}
                           <div className="flex flex-wrap items-center gap-4">
                             {task.assignedTo && (
-                              <div className="flex items-center gap-1 text-sm text-gray-600">
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                 <User size={16} />
                                 <span>{task.assignedTo}</span>
                               </div>
                             )}
                             {!task.recurrence && task.dueDate && (
-                              <div className="text-sm text-gray-600">
+                              <div className="text-sm text-muted-foreground">
                                 Due:{" "}
                                 {new Date(task.dueDate).toLocaleDateString()}
                               </div>
                             )}
                             {task.recurrence &&
                               periodCompletions.length > 0 && (
-                                <div className="text-sm text-green-600 font-medium">
+                                <div className="text-sm text-green-500 font-medium">
                                   ✓ Done {periodCompletions.length} time
                                   {periodCompletions.length > 1
                                     ? "s"
@@ -483,7 +483,7 @@ function TasksAndChores() {
                         </div>
                         <button
                           onClick={() => deleteTask(task.id)}
-                          className="p-2 hover:bg-red-100 rounded text-red-600 transition-colors flex-shrink-0"
+                          className="p-2 hover:bg-red-900/30 rounded text-red-400 transition-colors flex-shrink-0"
                           aria-label="Delete task"
                         >
                           <Trash2 size={18} />
