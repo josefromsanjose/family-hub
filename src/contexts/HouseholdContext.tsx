@@ -18,6 +18,7 @@ export interface HouseholdMember {
   id: string;
   name: string;
   role: HouseholdRole;
+  locale: HouseholdMemberResponse["locale"];
   relation: HouseholdRelation | null;
   relationLabel: string | null;
   color: string | null;
@@ -31,6 +32,7 @@ interface HouseholdContextType {
   addMember: (member: {
     name: string;
     role?: HouseholdRole;
+    locale?: HouseholdMemberResponse["locale"];
     relation?: HouseholdRelation;
     relationLabel?: string;
     color?: string;
@@ -50,6 +52,7 @@ function mapToMember(response: HouseholdMemberResponse): HouseholdMember {
     id: response.id,
     name: response.name,
     role: response.role,
+    locale: response.locale,
     relation: response.relation,
     relationLabel: response.relationLabel,
     color: response.color,
@@ -101,6 +104,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
     (member: {
       name: string;
       role?: HouseholdRole;
+      locale?: HouseholdMemberResponse["locale"];
       relation?: HouseholdRelation;
       relationLabel?: string;
       color?: string;
@@ -109,6 +113,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
         data: {
           name: member.name,
           role: member.role || "child",
+          locale: member.locale,
           relation: member.relation,
           relationLabel: member.relationLabel,
           color: member.color,
@@ -125,6 +130,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
           id,
           name: updates.name,
           role: updates.role,
+          locale: updates.locale,
           relation: updates.relation,
           relationLabel: updates.relationLabel,
           color: updates.color || undefined,

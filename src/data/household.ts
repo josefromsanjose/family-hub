@@ -1,8 +1,13 @@
-import type { HouseholdRelation, HouseholdRole } from "@prisma/client";
+import type {
+  HouseholdRelation,
+  HouseholdRole,
+  MemberLocale,
+} from "@prisma/client";
 
 export const DEFAULT_OWNER_ROLE: HouseholdRole = "admin";
 export const DEFAULT_OWNER_RELATION: HouseholdRelation = "parent";
 export const DEFAULT_NEW_MEMBER_ROLE = "child" satisfies HouseholdRole;
+export const DEFAULT_MEMBER_LOCALE: MemberLocale = "en";
 
 export type AssignableRole = "adult" | "child";
 

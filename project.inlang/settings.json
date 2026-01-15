@@ -1,0 +1,11 @@
+{
+  "$schema": "https://inlang.com/schema/project.json",
+  "sourceLanguageTag": "en",
+  "languageTags": ["en", "es"],
+  "modules": [
+    "C:/Projects/tanstack/family-hub/node_modules/@inlang/plugin-message-format/dist/index.js"
+  ],
+  "plugin.inlang.messageFormat": {
+    "pathPattern": "C:/Projects/tanstack/family-hub/project.inlang/messages/{locale}.json"
+  }
+}

@@ -57,12 +57,18 @@ enum HouseholdRelation {
   other
 }
 
+enum MemberLocale {
+  en
+  es
+}
+
 model HouseholdMember {
   id          String         @id @default(uuid())
   householdId String
   clerkUserId String?        @unique
   name        String
   role        HouseholdRole
+  locale      MemberLocale   @default(en)
   relation    HouseholdRelation?
   relationLabel String?
   color       String?

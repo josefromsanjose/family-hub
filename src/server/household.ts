@@ -1,8 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { auth, clerkClient } from "@clerk/tanstack-react-start/server";
-import { Prisma, HouseholdRelation, HouseholdRole } from "@prisma/client";
+import {
+  Prisma,
+  HouseholdRelation,
+  HouseholdRole,
+  MemberLocale,
+} from "@prisma/client";
 import { prisma } from "@/db";
 import {
+  DEFAULT_MEMBER_LOCALE,
   DEFAULT_NEW_MEMBER_ROLE,
   DEFAULT_OWNER_RELATION,
   DEFAULT_OWNER_ROLE,
@@ -52,6 +58,7 @@ export const ensureHouseholdForCurrentUser = createServerFn({
         data: {
           clerkUserId: userId,
           name: memberName,
+          locale: DEFAULT_MEMBER_LOCALE,
           role: DEFAULT_OWNER_ROLE,
           relation: DEFAULT_OWNER_RELATION,
           household: {
@@ -110,6 +117,7 @@ export type HouseholdMemberResponse = {
   clerkUserId: string | null;
   name: string;
   role: HouseholdRole;
+  locale: MemberLocale;
   relation: HouseholdRelation | null;
   relationLabel: string | null;
   color: string | null;
@@ -155,6 +163,7 @@ export const getHouseholdMembers = createServerFn({ method: "GET" }).handler(
 export type CreateMemberInput = {
   name: string;
   role?: HouseholdRole;
+  locale?: MemberLocale;
   relation?: HouseholdRelation;
   relationLabel?: string;
   color?: string;
@@ -193,6 +202,7 @@ export const createHouseholdMember = createServerFn({ method: "POST" })
         householdId,
         name: data.name.trim(),
         role: data.role || DEFAULT_NEW_MEMBER_ROLE,
+        ...(data.locale !== undefined && { locale: data.locale }),
         relation: data.relation,
         relationLabel: data.relationLabel?.trim() || null,
         color: data.color || colors[memberCount % colors.length],
@@ -207,6 +217,7 @@ export type UpdateMemberInput = {
   id: string;
   name?: string;
   role?: HouseholdRole;
+  locale?: MemberLocale;
   relation?: HouseholdRelation | null;
   relationLabel?: string | null;
   color?: string;
@@ -240,6 +251,7 @@ export const updateHouseholdMember = createServerFn({ method: "POST" })
       data: {
         ...(data.name !== undefined && { name: data.name.trim() }),
         ...(data.role !== undefined && { role: data.role }),
+        ...(data.locale !== undefined && { locale: data.locale }),
         ...(data.relation !== undefined && { relation: data.relation }),
         ...(data.relationLabel !== undefined && {
           relationLabel: data.relationLabel?.trim() || null,
@@ -290,3 +302,20 @@ export const deleteHouseholdMember = createServerFn({ method: "POST" })
 
     return { success: true };
   });
+
+export const getCurrentMemberLocale = createServerFn({ method: "GET" }).handler(
+  async (): Promise<MemberLocale> => {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return "en";
+    }
+
+    const member = await prisma.householdMember.findUnique({
+      where: { clerkUserId: userId },
+      select: { locale: true },
+    });
+
+    return member?.locale ?? "en";
+  }
+);
