@@ -3,9 +3,9 @@
   "sourceLanguageTag": "en",
   "languageTags": ["en", "es"],
   "modules": [
-    "C:/Projects/tanstack/family-hub/node_modules/@inlang/plugin-message-format/dist/index.js"
+    "https://cdn.jsdelivr.net/npm/@inlang/plugin-message-format@latest/dist/index.js"
   ],
   "plugin.inlang.messageFormat": {
-    "pathPattern": "C:/Projects/tanstack/family-hub/project.inlang/messages/{locale}.json"
+    "pathPattern": "./project.inlang/messages/{locale}.json"
   }
 }

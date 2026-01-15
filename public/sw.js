@@ -2,11 +2,12 @@
 // Network-first strategy for API/data (online database)
 // Cache-first strategy for app shell (offline app loading)
 
-const CACHE_NAME = 'household-hub-v1';
+const CACHE_NAME = 'household-hub-v2';
 const urlsToCache = [
-  '/',
+  // Only cache truly static assets on install
+  // '/' requires auth so we cache it on first successful navigation instead
   '/manifest.json',
-  // Assets will be cached automatically as they're requested
+  '/favicon.ico',
 ];
 
 // Install event - cache app shell
