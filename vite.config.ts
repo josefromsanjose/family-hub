@@ -1,6 +1,5 @@
 import { defineConfig, type PluginOption } from "vite";
 import path from "node:path";
-import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
@@ -8,17 +7,10 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 
-const config = defineConfig(({ command }) => {
+const config = defineConfig(() => {
   const plugins: PluginOption[] = [
-    // Paraglide plugin only for build - dev uses CLI pre-compile to avoid Windows watch loops
-    ...(command === "build"
-      ? [
-          paraglideVitePlugin({
-            project: "./project.inlang",
-            outdir: "./generated/paraglide",
-          }),
-        ]
-      : []),
+    // Paraglide is compiled via CLI (npm run i18n:compile) before vite build
+    // to avoid issues with the vite plugin on different platforms
     devtools(),
     nitro(),
     // this is the plugin that enables path aliases
