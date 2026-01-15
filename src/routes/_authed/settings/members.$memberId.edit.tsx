@@ -6,7 +6,6 @@ import type { HouseholdRole } from "@prisma/client";
 import { getHouseholdMembers, updateHouseholdMember } from "@/server/household";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { m } from "@paraglide/messages";
 import { MemberNameSection } from "@/routes/_authed/settings/-components/MemberNameSection";
 import { MemberRoleSection } from "@/routes/_authed/settings/-components/MemberRoleSection";
 import { MemberRelationSection } from "@/routes/_authed/settings/-components/MemberRelationSection";
@@ -110,7 +109,9 @@ function MemberEditPage() {
       <div className="min-h-screen bg-background p-6">
         <div className="max-w-2xl mx-auto">
           <Card className="border border-destructive bg-destructive/10 p-6 text-center">
-            <p className="text-destructive">{m.error_loading_members()}</p>
+            <p className="text-destructive">
+              Error loading household members. Please try again.
+            </p>
           </Card>
         </div>
       </div>

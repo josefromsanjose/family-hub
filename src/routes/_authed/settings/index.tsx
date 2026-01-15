@@ -1,14 +1,6 @@
-import { createFileRoute, Link, useRouteContext } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Plus,
-  Trash2,
-  Edit2,
-  Users,
-  Loader2,
-  User,
-  Languages,
-} from "lucide-react";
+import { Plus, Trash2, Edit2, Users, Loader2, User } from "lucide-react";
 import {
   getHouseholdMembers,
   deleteHouseholdMember,
@@ -19,8 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { m } from "@paraglide/messages";
-import { LanguageSection } from "@/routes/_authed/settings/-components/LanguageSection";
 
 export const Route = createFileRoute("/_authed/settings/")({
   loader: async () => {
@@ -35,18 +25,17 @@ export const Route = createFileRoute("/_authed/settings/")({
 function getRoleLabel(role: HouseholdRole) {
   switch (role) {
     case "admin":
-      return m.role_admin();
+      return "Admin";
     case "adult":
-      return m.role_adult();
+      return "Adult";
     case "child":
     default:
-      return m.role_child();
+      return "Child";
   }
 }
 
 function Settings() {
   const queryClient = useQueryClient();
-  const { userId } = useRouteContext({ from: "__root__" });
   const { members: initialMembers } = Route.useLoaderData();
 
   // Fetch members with TanStack Query
@@ -65,10 +54,10 @@ function Settings() {
 
   const handleDelete = (member: HouseholdMemberResponse) => {
     if (member.clerkUserId) {
-      alert(m.member_delete_owner_error());
+      alert("Cannot delete the household owner");
       return;
     }
-    if (confirm(m.member_delete_confirm())) {
+    if (confirm("Are you sure you want to remove this household member?")) {
       deleteMutation.mutate({ data: { id: member.id } });
     }
   };
@@ -78,7 +67,9 @@ function Settings() {
       <div className="min-h-screen bg-background p-6">
         <div className="max-w-4xl mx-auto">
           <div className="bg-destructive/10 border border-destructive rounded-lg p-6 text-center">
-            <p className="text-destructive">{m.error_loading_members()}</p>
+            <p className="text-destructive">
+              Error loading household members. Please try again.
+            </p>
           </div>
         </div>
       </div>
@@ -90,17 +81,17 @@ function Settings() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            {m.settings_title()}
-          </h1>
-          <p className="text-muted-foreground">{m.settings_subtitle()}</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Settings</h1>
+          <p className="text-muted-foreground">
+            Manage your household members and preferences
+          </p>
         </div>
 
         {/* Section header */}
         <div className="flex items-center gap-3 mb-6">
           <Users className="text-muted-foreground" size={24} />
           <h2 className="text-xl font-bold text-foreground">
-            {m.household_members_heading()}
+            Household Members
           </h2>
         </div>
 
@@ -119,8 +110,6 @@ function Settings() {
             />
           ))}
         </div>
-        {/* Language Section */}
-        <LanguageSection members={members} userId={userId} />
       </div>
     </div>
   );
@@ -135,22 +124,10 @@ function SettingsPending() {
           <Skeleton className="h-4 w-64" />
         </div>
 
-        <div className="flex items-center gap-3 mb-3">
-          <Languages className="text-muted-foreground" size={24} />
-          <h2 className="text-xl font-bold text-foreground">
-            {m.language_heading()}
-          </h2>
-        </div>
-        <Skeleton className="h-4 w-56 mb-6" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-          <Skeleton className="h-20 w-full rounded-xl" />
-          <Skeleton className="h-20 w-full rounded-xl" />
-        </div>
-
         <div className="flex items-center gap-3 mb-6">
           <Users className="text-muted-foreground" size={24} />
           <h2 className="text-xl font-bold text-foreground">
-            {m.household_members_heading()}
+            Household Members
           </h2>
         </div>
 
@@ -181,10 +158,10 @@ function AddMemberCard() {
 
           {/* Label */}
           <h3 className="font-semibold text-muted-foreground text-lg mb-1">
-            {m.add_member_title()}
+            Add Member
           </h3>
           <p className="text-sm text-muted-foreground">
-            {m.add_member_subtitle()}
+            Add a new family member
           </p>
         </CardContent>
       </Card>
@@ -230,7 +207,7 @@ function MemberCard({ member, onDelete, isDeleting }: MemberCardProps) {
           </Avatar>
           {member.clerkUserId && (
             <span className="absolute -bottom-1 -right-1 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-              {m.member_you()}
+              You
             </span>
           )}
         </div>
@@ -251,7 +228,7 @@ function MemberCard({ member, onDelete, isDeleting }: MemberCardProps) {
             params={{ memberId: member.id }}
           >
             <Edit2 size={16} />
-            {m.member_edit()}
+            Edit
           </Link>
         </Button>
         {!member.clerkUserId && (

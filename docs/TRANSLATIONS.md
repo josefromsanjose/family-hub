@@ -1,6 +1,48 @@
 # Translations
 
+> **STATUS: DISABLED** - Translation support has been temporarily removed due to production deployment issues. See [Known Issues](#known-issues-production-deployment) below.
+
 This app uses [Paraglide JS](https://inlang.com/m/gerre34r/library-inlang-paraglideJs) for internationalization. Translations are compiled into type-safe functions at build time.
+
+---
+
+## Known Issues: Production Deployment
+
+### Problem
+
+When deploying to Vercel with TanStack Start (Nitro), the paraglide message functions are `undefined` at runtime, causing:
+
+```
+TypeError: (void 0) is not a function
+```
+
+### What We Tried
+
+1. **Fixed `project.inlang/settings.json`** - Removed hardcoded Windows paths, used CDN URL for plugin and relative path for messages
+2. **CLI pre-compilation** - Added `npm run i18n:compile` to build script before `vite build`
+3. **Vite plugin** - Used `paraglideVitePlugin` to handle compilation during build
+4. **Nitro alias configuration** - Added `@paraglide` alias to Nitro config
+5. **Explicit file aliases** - Mapped `@paraglide/messages`, `@paraglide/runtime` directly to `.js` files
+6. **Committed generated files** - Removed paraglide's internal `.gitignore` and committed `generated/paraglide/` to git
+
+### Root Cause (Suspected)
+
+The issue appears to be with how Nitro/Vercel bundles the serverless function. The paraglide modules are either:
+
+- Not being included in the bundle
+- Being tree-shaken away
+- Not resolving correctly during SSR
+
+### Future Fix
+
+To re-enable translations:
+
+1. Investigate Nitro's `serverAssets` or `publicAssets` configuration
+2. Try `noExternal` option to force inline bundling
+3. Consider alternative i18n libraries that work better with Nitro (e.g., `i18next`)
+4. Open issue with paraglide-js or TanStack Start maintainers
+
+---
 
 ## Supported Languages
 
@@ -13,12 +55,12 @@ To add a new language, update `project.inlang/settings.json` and create the corr
 
 ## Quick Reference
 
-| Task | Location |
-|------|----------|
-| Add/edit translations | `project.inlang/messages/en.json` and `es.json` |
-| Use translations in UI | `import { m } from "@paraglide/messages"` |
-| Change user's language | Settings page or `useLocale()` hook |
-| Recompile translations | `npm run i18n:compile` or restart dev server |
+| Task                   | Location                                        |
+| ---------------------- | ----------------------------------------------- |
+| Add/edit translations  | `project.inlang/messages/en.json` and `es.json` |
+| Use translations in UI | `import { m } from "@paraglide/messages"`       |
+| Change user's language | Settings page or `useLocale()` hook             |
+| Recompile translations | `npm run i18n:compile` or restart dev server    |
 
 ---
 
@@ -42,6 +84,7 @@ src/contexts/LocaleContext.tsx  # Locale state management
 ### Step 1: Add the key to both language files
 
 **`project.inlang/messages/en.json`**
+
 ```json
 {
   "welcome_message": "Welcome to Family Hub",
@@ -50,6 +93,7 @@ src/contexts/LocaleContext.tsx  # Locale state management
 ```
 
 **`project.inlang/messages/es.json`**
+
 ```json
 {
   "welcome_message": "Bienvenido a Family Hub",
@@ -121,7 +165,7 @@ import { useLocale } from "@/contexts/LocaleContext";
 
 function LanguageSwitcher() {
   const { locale, setLocale } = useLocale();
-  
+
   return (
     <button onClick={() => setLocale(locale === "en" ? "es" : "en")}>
       {locale === "en" ? "Español" : "English"}
@@ -141,11 +185,11 @@ function LanguageSwitcher() {
 
 ## Where Translations Are Currently Used
 
-| File | Keys Used |
-|------|-----------|
-| `src/routes/_authed/settings/index.tsx` | `settings_title`, `settings_subtitle`, `household_members_heading`, role/member keys |
-| `src/routes/_authed/settings/-components/LanguageSection.tsx` | `language_heading`, `language_description`, `language_option_*` |
-| `src/routes/_authed/settings/members.$memberId.edit.tsx` | Member form labels |
+| File                                                          | Keys Used                                                                            |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `src/routes/_authed/settings/index.tsx`                       | `settings_title`, `settings_subtitle`, `household_members_heading`, role/member keys |
+| `src/routes/_authed/settings/-components/LanguageSection.tsx` | `language_heading`, `language_description`, `language_option_*`                      |
+| `src/routes/_authed/settings/members.$memberId.edit.tsx`      | Member form labels                                                                   |
 
 ---
 
@@ -158,6 +202,7 @@ feature_element_description
 ```
 
 Examples:
+
 - `settings_title` - Settings page title
 - `member_delete_confirm` - Member deletion confirmation message
 - `language_option_english` - Language selection option
@@ -168,7 +213,6 @@ Examples:
 
 1. **Start dev server**: `npm run dev`
    - Compiles translations once at startup
-   
 2. **Edit translations**: Modify files in `project.inlang/messages/`
 
 3. **See changes**: Restart the dev server
@@ -182,13 +226,16 @@ Examples:
 ## Troubleshooting
 
 **TypeScript can't find `@paraglide/messages`**
+
 - Ensure `src/paraglide.d.ts` exists with the module declarations
 - Run `npm run i18n:compile` to generate the files
 
 **Translations not updating**
+
 - Restart the dev server after editing message files
 - The Paraglide watch mode is disabled due to Windows file watcher issues
 
 **Missing translation key error**
+
 - Add the key to ALL language files (`en.json` AND `es.json`)
 - Keys must exist in every locale file

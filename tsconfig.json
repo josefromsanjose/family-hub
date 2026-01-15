@@ -22,8 +22,7 @@
     "noUncheckedSideEffectImports": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@paraglide/*": ["./generated/paraglide/*"]
+      "@/*": ["./src/*"]
     }
   }
 }

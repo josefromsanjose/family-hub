@@ -302,20 +302,3 @@ export const deleteHouseholdMember = createServerFn({ method: "POST" })
 
     return { success: true };
   });
-
-export const getCurrentMemberLocale = createServerFn({ method: "GET" }).handler(
-  async (): Promise<MemberLocale> => {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return "en";
-    }
-
-    const member = await prisma.householdMember.findUnique({
-      where: { clerkUserId: userId },
-      select: { locale: true },
-    });
-
-    return member?.locale ?? "en";
-  }
-);
