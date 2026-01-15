@@ -1,18 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Plus, Trash2, CheckCircle2, Circle, User, Repeat } from "lucide-react";
-import { useHousehold } from "@/contexts/HouseholdContext";
 import { useTasks, Task } from "@/contexts/TasksContext";
 
-export const Route = createFileRoute("/_authed/tasks")({
+export const Route = createFileRoute("/_authed/tasks/")({
   component: TasksAndChores,
 });
 
 function TasksAndChores() {
-  const { members } = useHousehold();
   const {
     tasks,
-    addTask,
     updateTask,
     deleteTask,
     completeTask,
@@ -20,41 +17,9 @@ function TasksAndChores() {
     isTaskDue,
     getCompletionsThisPeriod,
   } = useTasks();
-  const [showAddForm, setShowAddForm] = useState(false);
   const [filter, setFilter] = useState<
     "all" | "active" | "completed" | "recurring" | "one-time"
   >("all");
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    assignedTo: "",
-    dueDate: "",
-    priority: "medium" as Task["priority"],
-    recurrence: "" as "" | "daily" | "weekly" | "monthly",
-  });
-
-  const handleAddTask = () => {
-    if (!formData.title.trim()) return;
-
-    addTask({
-      title: formData.title,
-      description: formData.description || undefined,
-      assignedTo: formData.assignedTo || undefined,
-      dueDate: formData.dueDate || undefined,
-      priority: formData.priority,
-      recurrence: formData.recurrence || undefined,
-    });
-
-    setFormData({
-      title: "",
-      description: "",
-      assignedTo: "",
-      dueDate: "",
-      priority: "medium",
-      recurrence: "",
-    });
-    setShowAddForm(false);
-  };
 
   const handleToggleTask = (task: Task) => {
     if (task.recurrence) {
@@ -162,147 +127,14 @@ function TasksAndChores() {
                 : "Manage household tasks and assign them to family members"}
             </p>
           </div>
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
+          <Link
+            to="/tasks/new"
             className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
             <Plus size={20} />
             Add Task
-          </button>
+          </Link>
         </div>
-
-        {showAddForm && (
-          <div className="bg-card rounded-lg shadow-sm p-6 mb-6 border border-border">
-            <h2 className="text-xl font-bold text-card-foreground mb-4">
-              Add New Task
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Task Title
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                  placeholder="e.g., Take out trash, Vacuum living room"
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Description (optional)
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  placeholder="Additional details..."
-                  rows={3}
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Assign To
-                </label>
-                <select
-                  value={formData.assignedTo}
-                  onChange={(e) =>
-                    setFormData({ ...formData, assignedTo: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                >
-                  <option value="">Unassigned</option>
-                  {members.map((member) => (
-                    <option key={member.id} value={member.name}>
-                      {member.name} {member.role ? `(${member.role})` : ""}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Due Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.dueDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, dueDate: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  disabled={!!formData.recurrence}
-                />
-                {formData.recurrence && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Due date disabled for recurring tasks
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Priority
-                </label>
-                <select
-                  value={formData.priority}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      priority: e.target.value as Task["priority"],
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Recurrence (optional)
-                </label>
-                <select
-                  value={formData.recurrence}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      recurrence: e.target.value as
-                        | ""
-                        | "daily"
-                        | "weekly"
-                        | "monthly",
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                >
-                  <option value="">None (One-time task)</option>
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={handleAddTask}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                Add Task
-              </button>
-              <button
-                onClick={() => setShowAddForm(false)}
-                className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-accent transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
 
         <div className="mb-4 flex gap-2 flex-wrap">
           <button
