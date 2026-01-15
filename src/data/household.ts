@@ -42,5 +42,5 @@ export const RELATION_OPTIONS: {
   // { id: "guardian", label: "Guardian", description: "Caregiver or guardian" },
   // { id: "partner", label: "Partner", description: "Spouse or partner" },
   // { id: "roommate", label: "Roommate", description: "Shared household" },
-  // { id: "other", label: "Other", description: "Custom relationship" },
+  { id: "other", label: "Other", description: "Custom relationship" },
 ];
