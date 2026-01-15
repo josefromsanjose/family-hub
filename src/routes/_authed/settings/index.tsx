@@ -1,12 +1,9 @@
 import { createFileRoute, Link, useRouteContext } from "@tanstack/react-router";
-import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Plus,
   Trash2,
   Edit2,
-  Save,
-  X,
   Users,
   Loader2,
   User,
@@ -14,7 +11,6 @@ import {
 } from "lucide-react";
 import {
   getHouseholdMembers,
-  updateHouseholdMember,
   deleteHouseholdMember,
   type HouseholdMemberResponse,
 } from "@/server/household";
@@ -22,7 +18,6 @@ import type { HouseholdRole } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@paraglide/messages";
 import { LanguageSection } from "@/routes/_authed/settings/-components/LanguageSection";
@@ -61,56 +56,12 @@ function Settings() {
     initialData: initialMembers,
   });
 
-  // Mutations
-  const updateMutation = useMutation({
-    mutationFn: updateHouseholdMember,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["household-members"] });
-      setEditingId(null);
-      setEditData(null);
-    },
-  });
-
   const deleteMutation = useMutation({
     mutationFn: deleteHouseholdMember,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["household-members"] });
     },
   });
-
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editData, setEditData] = useState<{
-    id: string;
-    name: string;
-    role: HouseholdRole;
-    color: string | null;
-  } | null>(null);
-
-  const startEdit = (member: HouseholdMemberResponse) => {
-    setEditingId(member.id);
-    setEditData({
-      id: member.id,
-      name: member.name,
-      role: member.role,
-      color: member.color,
-    });
-  };
-
-  const saveEdit = () => {
-    if (!editData || !editData.name.trim()) return;
-    updateMutation.mutate({
-      data: {
-        id: editData.id,
-        name: editData.name.trim(),
-        role: editData.role,
-      },
-    });
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-    setEditData(null);
-  };
 
   const handleDelete = (member: HouseholdMemberResponse) => {
     if (member.clerkUserId) {
@@ -163,14 +114,7 @@ function Settings() {
             <MemberCard
               key={member.id}
               member={member}
-              isEditing={editingId === member.id}
-              editData={editData}
-              onStartEdit={() => startEdit(member)}
-              onSaveEdit={saveEdit}
-              onCancelEdit={cancelEdit}
               onDelete={() => handleDelete(member)}
-              onEditDataChange={setEditData}
-              isUpdating={updateMutation.isPending}
               isDeleting={deleteMutation.isPending}
             />
           ))}
@@ -269,100 +213,11 @@ function MemberCardSkeleton() {
 // Member Card Component
 interface MemberCardProps {
   member: HouseholdMemberResponse;
-  isEditing: boolean;
-  editData: {
-    id: string;
-    name: string;
-    role: HouseholdRole;
-    color: string | null;
-  } | null;
-  onStartEdit: () => void;
-  onSaveEdit: () => void;
-  onCancelEdit: () => void;
   onDelete: () => void;
-  onEditDataChange: (
-    data: {
-      id: string;
-      name: string;
-      role: HouseholdRole;
-      color: string | null;
-    } | null
-  ) => void;
-  isUpdating: boolean;
   isDeleting: boolean;
 }
 
-function MemberCard({
-  member,
-  isEditing,
-  editData,
-  onStartEdit,
-  onSaveEdit,
-  onCancelEdit,
-  onDelete,
-  onEditDataChange,
-  isUpdating,
-  isDeleting,
-}: MemberCardProps) {
-  if (isEditing) {
-    return (
-      <Card className="border-2 border-primary">
-        <CardContent className="flex flex-col items-center pt-6">
-          {/* Avatar */}
-          <Avatar className="w-20 h-20 mb-4">
-            <AvatarFallback className={member.color || "bg-muted"}>
-              <User className="w-10 h-10 text-white/80" />
-            </AvatarFallback>
-          </Avatar>
-
-          {/* Edit form */}
-          <div className="w-full space-y-3">
-            <Input
-              value={editData?.name || ""}
-              onChange={(e) =>
-                onEditDataChange({
-                  ...editData!,
-                  name: e.target.value,
-                })
-              }
-              placeholder={m.member_name_placeholder()}
-              className="text-center"
-            />
-            <select
-              value={editData?.role || "child"}
-              onChange={(e) =>
-                onEditDataChange({
-                  ...editData!,
-                  role: e.target.value as HouseholdRole,
-                })
-              }
-              className="w-full h-9 px-3 rounded-md border border-input bg-background text-foreground text-sm"
-              disabled={member.clerkUserId !== null}
-            >
-              <option value="admin">{m.role_admin()}</option>
-              <option value="adult">{m.role_adult()}</option>
-              <option value="child">{m.role_child()}</option>
-            </select>
-          </div>
-        </CardContent>
-
-        <CardFooter className="gap-2">
-          <Button onClick={onSaveEdit} disabled={isUpdating} className="flex-1">
-            {isUpdating ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <Save size={18} />
-            )}
-            {m.member_save()}
-          </Button>
-          <Button variant="outline" size="icon" onClick={onCancelEdit}>
-            <X size={18} />
-          </Button>
-        </CardFooter>
-      </Card>
-    );
-  }
-
+function MemberCard({ member, onDelete, isDeleting }: MemberCardProps) {
   return (
     <Card className="hover:border-primary/50 transition-colors">
       <CardContent className="flex flex-col items-center pt-6">
@@ -390,14 +245,14 @@ function MemberCard({
       </CardContent>
 
       <CardFooter className="gap-2">
-        <Button
-          variant="outline"
-          onClick={onStartEdit}
-          className="flex-1"
-          size="sm"
-        >
-          <Edit2 size={16} />
-          {m.member_edit()}
+        <Button variant="outline" className="flex-1" size="sm" asChild>
+          <Link
+            to="/settings/members/$memberId/edit"
+            params={{ memberId: member.id }}
+          >
+            <Edit2 size={16} />
+            {m.member_edit()}
+          </Link>
         </Button>
         {!member.clerkUserId && (
           <Button

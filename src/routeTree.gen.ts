@@ -20,6 +20,7 @@ import { Route as AuthedMealsRouteImport } from './routes/_authed/meals'
 import { Route as AuthedCalendarRouteImport } from './routes/_authed/calendar'
 import { Route as AuthedSettingsIndexRouteImport } from './routes/_authed/settings/index'
 import { Route as AuthedSettingsMembersNewRouteImport } from './routes/_authed/settings/members.new'
+import { Route as AuthedSettingsMembersMemberIdEditRouteImport } from './routes/_authed/settings/members.$memberId.edit'
 
 const SignUpRoute = SignUpRouteImport.update({
   id: '/sign-up',
@@ -76,6 +77,12 @@ const AuthedSettingsMembersNewRoute =
     path: '/settings/members/new',
     getParentRoute: () => AuthedRoute,
   } as any)
+const AuthedSettingsMembersMemberIdEditRoute =
+  AuthedSettingsMembersMemberIdEditRouteImport.update({
+    id: '/settings/members/$memberId/edit',
+    path: '/settings/members/$memberId/edit',
+    getParentRoute: () => AuthedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/sign-in': typeof SignInRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthedIndexRoute
   '/settings': typeof AuthedSettingsIndexRoute
   '/settings/members/new': typeof AuthedSettingsMembersNewRoute
+  '/settings/members/$memberId/edit': typeof AuthedSettingsMembersMemberIdEditRoute
 }
 export interface FileRoutesByTo {
   '/sign-in': typeof SignInRoute
@@ -100,6 +108,7 @@ export interface FileRoutesByTo {
   '/': typeof AuthedIndexRoute
   '/settings': typeof AuthedSettingsIndexRoute
   '/settings/members/new': typeof AuthedSettingsMembersNewRoute
+  '/settings/members/$memberId/edit': typeof AuthedSettingsMembersMemberIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -114,6 +123,7 @@ export interface FileRoutesById {
   '/_authed/': typeof AuthedIndexRoute
   '/_authed/settings/': typeof AuthedSettingsIndexRoute
   '/_authed/settings/members/new': typeof AuthedSettingsMembersNewRoute
+  '/_authed/settings/members/$memberId/edit': typeof AuthedSettingsMembersMemberIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/settings'
     | '/settings/members/new'
+    | '/settings/members/$memberId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/sign-in'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/'
     | '/settings'
     | '/settings/members/new'
+    | '/settings/members/$memberId/edit'
   id:
     | '__root__'
     | '/_authed'
@@ -153,6 +165,7 @@ export interface FileRouteTypes {
     | '/_authed/'
     | '/_authed/settings/'
     | '/_authed/settings/members/new'
+    | '/_authed/settings/members/$memberId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -240,6 +253,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedSettingsMembersNewRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/settings/members/$memberId/edit': {
+      id: '/_authed/settings/members/$memberId/edit'
+      path: '/settings/members/$memberId/edit'
+      fullPath: '/settings/members/$memberId/edit'
+      preLoaderRoute: typeof AuthedSettingsMembersMemberIdEditRouteImport
+      parentRoute: typeof AuthedRoute
+    }
   }
 }
 
@@ -252,6 +272,7 @@ interface AuthedRouteChildren {
   AuthedIndexRoute: typeof AuthedIndexRoute
   AuthedSettingsIndexRoute: typeof AuthedSettingsIndexRoute
   AuthedSettingsMembersNewRoute: typeof AuthedSettingsMembersNewRoute
+  AuthedSettingsMembersMemberIdEditRoute: typeof AuthedSettingsMembersMemberIdEditRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
@@ -263,6 +284,8 @@ const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedIndexRoute: AuthedIndexRoute,
   AuthedSettingsIndexRoute: AuthedSettingsIndexRoute,
   AuthedSettingsMembersNewRoute: AuthedSettingsMembersNewRoute,
+  AuthedSettingsMembersMemberIdEditRoute:
+    AuthedSettingsMembersMemberIdEditRoute,
 }
 
 const AuthedRouteWithChildren =

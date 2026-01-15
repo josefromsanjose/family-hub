@@ -4,16 +4,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Users, Loader2, Check } from "lucide-react";
 import { createHouseholdMember } from "@/server/household";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { SelectionCard } from "@/components/touch/SelectionCard";
+import { DEFAULT_NEW_MEMBER_ROLE, type AssignableRole } from "@/data/household";
+import { MemberNameSection } from "@/routes/_authed/settings/-components/MemberNameSection";
+import { MemberRoleSection } from "@/routes/_authed/settings/-components/MemberRoleSection";
+import { MemberRelationSection } from "@/routes/_authed/settings/-components/MemberRelationSection";
 import {
-  DEFAULT_NEW_MEMBER_ROLE,
-  RELATION_OPTIONS,
-  ROLE_OPTIONS,
-  type AssignableRole,
-} from "@/data/household";
-import type { HouseholdRelation } from "@prisma/client";
+  isMemberNameValid,
+  isMemberRelationValid,
+  type MemberFormData,
+} from "@/routes/_authed/settings/-components/member-form";
 
 export const Route = createFileRoute("/_authed/settings/members/new")({
   component: NewMemberWizard,
@@ -28,102 +28,44 @@ const STEPS = [
 ] as const;
 
 type StepId = (typeof STEPS)[number]["id"];
-const ROLE_CONFIRM_COPY: Record<AssignableRole, string> = {
+const ROLE_CONFIRM_COPY: Record<AssignableRole | "admin", string> = {
+  admin: "Can manage tasks and household items",
   adult: "Can manage tasks and household items",
   child: "Can view and complete assigned tasks",
 };
 
-// Member data being collected
-interface MemberData {
-  name: string;
-  role: AssignableRole;
-  relation: HouseholdRelation | null;
-  relationLabel: string;
-}
-
-const STEP_VALIDATORS: Record<StepId, (data: MemberData) => boolean> = {
-  name: (data) => data.name.trim().length > 0,
+const STEP_VALIDATORS: Record<StepId, (data: MemberFormData) => boolean> = {
+  name: isMemberNameValid,
   role: () => true,
-  relation: (data) =>
-    data.relation !== "other" || data.relationLabel.trim().length > 0,
+  relation: isMemberRelationValid,
   confirm: () => true,
 };
 
 interface StepProps {
-  data: MemberData;
-  onChange: (next: Partial<MemberData>) => void;
+  data: MemberFormData;
+  onChange: (next: Partial<MemberFormData>) => void;
   onEnter: () => void;
   canProceed: boolean;
   mutationError: unknown;
 }
 
 const NameStep = ({ data, onChange, onEnter, canProceed }: StepProps) => (
-  <div className="space-y-4">
-    <Input
-      data-wizard-input="name"
-      type="text"
-      placeholder="e.g., Emma, Dad, Grandma"
-      value={data.name}
-      autoFocus
-      onChange={(e) => onChange({ name: e.target.value })}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" && canProceed) {
-          onEnter();
-        }
-      }}
-      className="h-14 text-lg px-4"
-      autoComplete="off"
-    />
-    <p className="text-sm text-muted-foreground text-center">
-      Enter the name of the household member you want to add
-    </p>
-  </div>
+  <MemberNameSection
+    data={data}
+    onChange={onChange}
+    onEnter={onEnter}
+    canProceed={canProceed}
+    autoFocus
+    helperText="Enter the name of the household member you want to add"
+  />
 );
 
 const RoleStep = ({ data, onChange }: StepProps) => (
-  <div className="space-y-3">
-    {ROLE_OPTIONS.map((option) => (
-      <SelectionCard
-        key={option.id}
-        label={option.label}
-        description={option.description}
-        selected={data.role === option.id}
-        onSelect={() => onChange({ role: option.id })}
-      />
-    ))}
-  </div>
+  <MemberRoleSection data={data} onChange={onChange} />
 );
 
 const RelationStep = ({ data, onChange }: StepProps) => (
-  <div className="space-y-4">
-    <div className="space-y-3">
-      {RELATION_OPTIONS.map((option) => (
-        <SelectionCard
-          key={option.id}
-          label={option.label}
-          description={option.description}
-          selected={data.relation === option.id}
-          onSelect={() =>
-            onChange({
-              relation: option.id,
-              relationLabel:
-                option.id === "other" ? data.relationLabel : option.label,
-            })
-          }
-        />
-      ))}
-    </div>
-    {data.relation === "other" && (
-      <Input
-        type="text"
-        placeholder="e.g., Godparent, Nanny, Family Friend"
-        value={data.relationLabel}
-        onChange={(e) => onChange({ relationLabel: e.target.value })}
-        className="h-12 text-base px-4"
-        autoComplete="off"
-      />
-    )}
-  </div>
+  <MemberRelationSection data={data} onChange={onChange} />
 );
 
 const ConfirmStep = ({ data, mutationError }: StepProps) => (
@@ -180,7 +122,7 @@ function NewMemberWizard() {
 
   // Wizard state
   const [currentStep, setCurrentStep] = useState(0);
-  const [data, setData] = useState<MemberData>({
+  const [data, setData] = useState<MemberFormData>({
     name: "",
     role: DEFAULT_NEW_MEMBER_ROLE,
     relation: null,
@@ -241,7 +183,7 @@ function NewMemberWizard() {
   }, [step.optional, isLastStep]);
 
   const updateData = useCallback(
-    (next: Partial<MemberData>) => {
+    (next: Partial<MemberFormData>) => {
       setData((prev) => ({ ...prev, ...next }));
     },
     [setData]

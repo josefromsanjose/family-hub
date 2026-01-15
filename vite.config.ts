@@ -10,6 +10,7 @@ import { nitro } from "nitro/vite";
 
 const config = defineConfig(({ command }) => {
   const plugins: PluginOption[] = [
+    // Paraglide plugin only for build - dev uses CLI pre-compile to avoid Windows watch loops
     ...(command === "build"
       ? [
           paraglideVitePlugin({
