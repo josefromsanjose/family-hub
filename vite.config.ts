@@ -9,6 +9,14 @@ import { nitro } from "nitro/vite";
 
 const paraglideDir = path.resolve(__dirname, "generated/paraglide");
 
+// Explicit aliases for paraglide modules
+const paraglideAliases = {
+  "@paraglide/messages": path.join(paraglideDir, "messages.js"),
+  "@paraglide/runtime": path.join(paraglideDir, "runtime.js"),
+  "@paraglide/server": path.join(paraglideDir, "server.js"),
+  "@paraglide": paraglideDir,
+};
+
 const config = defineConfig(() => {
   const plugins: PluginOption[] = [
     // Paraglide is compiled via CLI (npm run i18n:compile) before vite build
@@ -16,12 +24,7 @@ const config = defineConfig(() => {
     devtools(),
     nitro({
       // Ensure paraglide modules are bundled into the serverless function
-      rollupConfig: {
-        external: [],
-      },
-      alias: {
-        "@paraglide": paraglideDir,
-      },
+      alias: paraglideAliases,
     }),
     // this is the plugin that enables path aliases
     viteTsConfigPaths({
@@ -37,10 +40,11 @@ const config = defineConfig(() => {
     // See https://github.com/TanStack/router/issues/5738
     resolve: {
       alias: [
-        {
-          find: "@paraglide",
-          replacement: paraglideDir,
-        },
+        // Explicit file mappings for paraglide (order matters - specific before general)
+        { find: "@paraglide/messages", replacement: path.join(paraglideDir, "messages.js") },
+        { find: "@paraglide/runtime", replacement: path.join(paraglideDir, "runtime.js") },
+        { find: "@paraglide/server", replacement: path.join(paraglideDir, "server.js") },
+        { find: "@paraglide", replacement: paraglideDir },
         { find: "use-sync-external-store/shim/index.js", replacement: "react" },
       ],
     },
