@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "npm run i18n:compile && vite dev --port 3000",
     "build": "npm run i18n:compile && vite build",
-    "postinstall": "prisma generate",
+    "prebuild": "prisma generate",
     "i18n:compile": "npx paraglide-js compile --project ./project.inlang --outdir ./generated/paraglide --emit-ts-declarations",
     "preview": "vite preview",
     "test": "vitest run",
