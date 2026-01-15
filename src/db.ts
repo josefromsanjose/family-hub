@@ -27,8 +27,10 @@ connectionUrl.searchParams.delete("sslmode");
 
 const pool = new Pool({
   connectionString: connectionUrl.toString(),
-  // SSL is not enforced on Supabase, so disable for development
-  ssl: isProduction ? true : false,
+  // For Supabase connection pooler on Vercel, use rejectUnauthorized: false
+  // This still encrypts the connection but doesn't verify the certificate chain
+  // (Supabase's CA isn't in Node.js's default trust store)
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
 });
 const adapter = new PrismaPg(pool);
 
