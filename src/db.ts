@@ -12,7 +12,6 @@ const databaseUrl = isProduction
   ? process.env.DATABASE_URL
   : process.env.DIRECT_URL || process.env.DATABASE_URL;
 
-console.log("databaseUrl", databaseUrl);
 if (!databaseUrl) {
   throw new Error(
     isProduction

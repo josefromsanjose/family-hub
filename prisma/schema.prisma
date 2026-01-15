@@ -39,9 +39,22 @@ model Household {
 // ============================================================================
 
 enum HouseholdRole {
-  owner
+  admin
+  adult
+  child
+}
+
+enum HouseholdRelation {
   parent
   child
+  grandparent
+  sibling
+  aunt_uncle
+  cousin
+  guardian
+  partner
+  roommate
+  other
 }
 
 model HouseholdMember {
@@ -50,6 +63,8 @@ model HouseholdMember {
   clerkUserId String?        @unique
   name        String
   role        HouseholdRole
+  relation    HouseholdRelation?
+  relationLabel String?
   color       String?
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt

@@ -1,81 +1,164 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, ReactNode, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { HouseholdRelation, HouseholdRole } from "@prisma/client";
+import {
+  getHouseholdMembers,
+  createHouseholdMember,
+  updateHouseholdMember,
+  deleteHouseholdMember,
+  type HouseholdMemberResponse,
+} from "@/server/household";
 
+// Re-export the type from server for convenience
+export type { HouseholdMemberResponse };
+export type { HouseholdRelation, HouseholdRole };
+
+// Simplified member interface for backward compatibility
 export interface HouseholdMember {
   id: string;
   name: string;
-  role?: string;
-  color?: string;
+  role: HouseholdRole;
+  relation: HouseholdRelation | null;
+  relationLabel: string | null;
+  color: string | null;
+  clerkUserId?: string | null;
 }
 
 interface HouseholdContextType {
   members: HouseholdMember[];
-  addMember: (member: Omit<HouseholdMember, "id">) => void;
+  isLoading: boolean;
+  error: Error | null;
+  addMember: (member: {
+    name: string;
+    role?: HouseholdRole;
+    relation?: HouseholdRelation;
+    relationLabel?: string;
+    color?: string;
+  }) => void;
   updateMember: (id: string, member: Partial<HouseholdMember>) => void;
   deleteMember: (id: string) => void;
   getMemberById: (id: string) => HouseholdMember | undefined;
 }
 
-const HouseholdContext = createContext<HouseholdContextType | undefined>(undefined);
+const HouseholdContext = createContext<HouseholdContextType | undefined>(
+  undefined
+);
 
-const STORAGE_KEY = "household-members";
-
-const defaultMembers: HouseholdMember[] = [
-  { id: "1", name: "Mom", role: "Parent", color: "bg-pink-500" },
-  { id: "2", name: "Dad", role: "Parent", color: "bg-blue-500" },
-];
-
-const colors = [
-  "bg-pink-500",
-  "bg-blue-500",
-  "bg-green-500",
-  "bg-yellow-500",
-  "bg-purple-500",
-  "bg-orange-500",
-  "bg-red-500",
-  "bg-indigo-500",
-];
+// Map server response to HouseholdMember
+function mapToMember(response: HouseholdMemberResponse): HouseholdMember {
+  return {
+    id: response.id,
+    name: response.name,
+    role: response.role,
+    relation: response.relation,
+    relationLabel: response.relationLabel,
+    color: response.color,
+    clerkUserId: response.clerkUserId,
+  };
+}
 
 export function HouseholdProvider({ children }: { children: ReactNode }) {
-  const [members, setMembers] = useState<HouseholdMember[]>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        return JSON.parse(stored);
-      }
-      return defaultMembers;
-    } catch {
-      return defaultMembers;
-    }
+  const queryClient = useQueryClient();
+
+  // Fetch members with TanStack Query
+  const {
+    data: membersData = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["household-members"],
+    queryFn: () => getHouseholdMembers(),
   });
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(members));
-  }, [members]);
+  // Map server response to member format
+  const members = membersData.map(mapToMember);
 
-  const addMember = (member: Omit<HouseholdMember, "id">) => {
-    const newMember: HouseholdMember = {
-      ...member,
-      id: Date.now().toString(),
-      color: member.color || colors[members.length % colors.length],
-    };
-    setMembers([...members, newMember]);
-  };
+  // Create mutation
+  const createMutation = useMutation({
+    mutationFn: createHouseholdMember,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["household-members"] });
+    },
+  });
 
-  const updateMember = (id: string, updates: Partial<HouseholdMember>) => {
-    setMembers(members.map((m) => (m.id === id ? { ...m, ...updates } : m)));
-  };
+  // Update mutation
+  const updateMutation = useMutation({
+    mutationFn: updateHouseholdMember,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["household-members"] });
+    },
+  });
 
-  const deleteMember = (id: string) => {
-    setMembers(members.filter((m) => m.id !== id));
-  };
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: deleteHouseholdMember,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["household-members"] });
+    },
+  });
 
-  const getMemberById = (id: string) => {
-    return members.find((m) => m.id === id);
-  };
+  const addMember = useCallback(
+    (member: {
+      name: string;
+      role?: HouseholdRole;
+      relation?: HouseholdRelation;
+      relationLabel?: string;
+      color?: string;
+    }) => {
+      createMutation.mutate({
+        data: {
+          name: member.name,
+          role: member.role || "child",
+          relation: member.relation,
+          relationLabel: member.relationLabel,
+          color: member.color,
+        },
+      });
+    },
+    [createMutation]
+  );
+
+  const updateMember = useCallback(
+    (id: string, updates: Partial<HouseholdMember>) => {
+      updateMutation.mutate({
+        data: {
+          id,
+          name: updates.name,
+          role: updates.role,
+          relation: updates.relation,
+          relationLabel: updates.relationLabel,
+          color: updates.color || undefined,
+        },
+      });
+    },
+    [updateMutation]
+  );
+
+  const deleteMember = useCallback(
+    (id: string) => {
+      deleteMutation.mutate({ data: { id } });
+    },
+    [deleteMutation]
+  );
+
+  const getMemberById = useCallback(
+    (id: string) => {
+      return members.find((m) => m.id === id);
+    },
+    [members]
+  );
 
   return (
     <HouseholdContext.Provider
-      value={{ members, addMember, updateMember, deleteMember, getMemberById }}
+      value={{
+        members,
+        isLoading,
+        error: error as Error | null,
+        addMember,
+        updateMember,
+        deleteMember,
+        getMemberById,
+      }}
     >
       {children}
     </HouseholdContext.Provider>

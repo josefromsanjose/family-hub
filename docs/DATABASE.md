@@ -293,6 +293,10 @@ After the first-time setup, **always use migrations** for schema changes.
    git commit -m "feat: add reminder fields to tasks"
    ```
 
+### Rare but sometims needed (reset the db)
+
+⚠️ **Never run with user approval `npx dotenv -e .env.local -- prisma migrate reset --force`**
+
 ### Important Rules
 
 ⚠️ **Never use `db:push` after first-time setup**
@@ -313,7 +317,7 @@ After the first-time setup, **always use migrations** for schema changes.
 
 1. **Household** - Household container for all data
 2. **HouseholdMember** - Family members with roles, colors, and Clerk IDs
-3. **RolePermission** - Global role default permissions (data-driven templates)
+3. **RolePermission** - Global role default permissions (admin/adult/child)
 4. **MemberPermission** - Per-member permissions (source of truth)
 5. **Task** - Tasks and chores (one-time and recurring)
 6. **CompletionRecord** - Completion history for recurring tasks
@@ -326,7 +330,7 @@ After the first-time setup, **always use migrations** for schema changes.
 - `Household.ownerId` → `HouseholdMember.id` (owner reference, set after member creation)
 - `HouseholdMember.householdId` → `Household.id` (cascade delete)
 - `MemberPermission.memberId` → `HouseholdMember.id` (cascade delete)
-- `RolePermission.role` → `HouseholdRole` enum (global template per role)
+- `RolePermission.role` → `HouseholdRole` enum (admin/adult/child)
 - `Task.householdId` → `Household.id` (cascade delete)
 - `CompletionRecord.householdId` → `Household.id` (cascade delete)
 - `Meal.householdId` → `Household.id` (cascade delete)
@@ -338,7 +342,9 @@ After the first-time setup, **always use migrations** for schema changes.
 
 ### Permissions Model
 
-- `RolePermission` defines **global default permissions** for each role.
+- `HouseholdRole` represents permission tiers (admin/adult/child).
+- `Household.ownerId` tracks the household owner separately from role.
+- `RolePermission` defines **global default permissions** per role.
 - At member creation, permissions are **copied** into `MemberPermission`.
 - `MemberPermission` is the **source of truth** and does not auto-update if role defaults change.
 

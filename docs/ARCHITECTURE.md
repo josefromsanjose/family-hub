@@ -143,7 +143,7 @@ flowchart TD
 
 - `Household` - Household container for all data
 - `HouseholdMember` - Family members with roles, colors, and Clerk IDs
-- `RolePermission` - Global role default permissions (templates)
+- `RolePermission` - Global role default permissions (admin/adult/child)
 - `MemberPermission` - Per-member permissions (source of truth)
 - `Task` - Tasks and chores (one-time and recurring)
 - `CompletionRecord` - Completion history for recurring tasks
@@ -156,7 +156,7 @@ flowchart TD
 - `Household.ownerId` → `HouseholdMember.id` (owner reference)
 - `HouseholdMember.householdId` → `Household.id` (cascade delete)
 - `MemberPermission.memberId` → `HouseholdMember.id` (cascade delete)
-- `RolePermission.role` → `HouseholdRole` enum (global template per role)
+- `RolePermission.role` → `HouseholdRole` enum (admin/adult/child)
 - `Task.householdId` → `Household.id` (cascade delete)
 - `CompletionRecord.householdId` → `Household.id` (cascade delete)
 - `Meal.householdId` → `Household.id` (cascade delete)
@@ -168,6 +168,8 @@ flowchart TD
 
 **Permissions Model:**
 
+- `HouseholdRole` represents permission tiers (admin/adult/child).
+- `Household.ownerId` tracks the household owner separately from role.
 - `RolePermission` defines **global default permissions** per role.
 - At member creation, defaults are copied into `MemberPermission`.
 - `MemberPermission` is the **runtime source of truth** and does not auto-update if role defaults change.
