@@ -1,16 +1,39 @@
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
+import {
+  HeadContent,
+  Scripts,
+  createRootRoute,
+  Outlet,
+} from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
+import { createServerFn } from "@tanstack/react-start";
+import { auth } from "@clerk/tanstack-react-start/server";
 
-import { useEffect } from "react";
-import Header from "../components/Header";
-import { HouseholdProvider } from "../contexts/HouseholdContext";
-import { TasksProvider } from "../contexts/TasksContext";
+import AppClerkProvider from "@/integrations/clerk/provider";
+import Header from "@/components/Header";
+import { HouseholdProvider } from "@/contexts/HouseholdContext";
+import { TasksProvider } from "@/contexts/TasksContext";
 import { registerServiceWorker } from "../utils/registerServiceWorker";
 
 import appCss from "../styles.css?url";
 
+const fetchClerkAuth = createServerFn({ method: "GET" }).handler(async () => {
+  const { userId } = await auth();
+
+  return {
+    userId,
+  };
+});
+
 export const Route = createRootRoute({
+  beforeLoad: async () => {
+    const { userId } = await fetchClerkAuth();
+
+    return {
+      userId,
+    };
+  },
   head: () => ({
     meta: [
       {
@@ -32,6 +55,10 @@ export const Route = createRootRoute({
       },
       {
         name: "apple-mobile-web-app-capable",
+        content: "yes",
+      },
+      {
+        name: "mobile-web-app-capable",
         content: "yes",
       },
       {
@@ -62,8 +89,18 @@ export const Route = createRootRoute({
     ],
   }),
 
-  shellComponent: RootDocument,
+  shellComponent: RootComponent,
 });
+
+function RootComponent() {
+  return (
+    <AppClerkProvider>
+      <RootDocument>
+        <Outlet />
+      </RootDocument>
+    </AppClerkProvider>
+  );
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   useEffect(() => {

@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Plus, Trash2, Edit2, Save, X, Users } from "lucide-react";
-import { useHousehold, HouseholdMember } from "../contexts/HouseholdContext";
+import { useHousehold, HouseholdMember } from "@/contexts/HouseholdContext";
 
-export const Route = createFileRoute("/settings")({ component: Settings });
+export const Route = createFileRoute("/_authed/settings")({
+  component: Settings,
+});
 
 function Settings() {
   const { members, addMember, updateMember, deleteMember } = useHousehold();
@@ -56,14 +58,18 @@ function Settings() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Settings</h1>
-          <p className="text-muted-foreground">Manage your household members and preferences</p>
+          <p className="text-muted-foreground">
+            Manage your household members and preferences
+          </p>
         </div>
 
         <div className="bg-card rounded-lg shadow-sm border border-border p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <Users className="text-muted-foreground" size={24} />
-              <h2 className="text-xl font-bold text-card-foreground">Household Members</h2>
+              <h2 className="text-xl font-bold text-card-foreground">
+                Household Members
+              </h2>
             </div>
             <button
               onClick={() => setShowAddForm(!showAddForm)}
@@ -76,14 +82,20 @@ function Settings() {
 
           {showAddForm && (
             <div className="mb-6 p-4 bg-secondary rounded-lg border border-border">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Add New Member</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-4">
+                Add New Member
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Name</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">
+                    Name
+                  </label>
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     placeholder="e.g., Sarah, John, Emma"
                     className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                     onKeyPress={(e) => e.key === "Enter" && handleAdd()}
@@ -96,7 +108,9 @@ function Settings() {
                   <input
                     type="text"
                     value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, role: e.target.value })
+                    }
                     placeholder="e.g., Parent, Child, Teenager"
                     className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                     onKeyPress={(e) => e.key === "Enter" && handleAdd()}
@@ -126,7 +140,9 @@ function Settings() {
           {members.length === 0 ? (
             <div className="text-center py-12">
               <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground mb-4">No household members yet</p>
+              <p className="text-muted-foreground mb-4">
+                No household members yet
+              </p>
               <button
                 onClick={() => setShowAddForm(true)}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
@@ -155,7 +171,10 @@ function Settings() {
                             type="text"
                             value={editData?.name || ""}
                             onChange={(e) =>
-                              setEditData({ ...editData!, name: e.target.value })
+                              setEditData({
+                                ...editData!,
+                                name: e.target.value,
+                              })
                             }
                             className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                             placeholder="Name"
@@ -166,7 +185,10 @@ function Settings() {
                             type="text"
                             value={editData?.role || ""}
                             onChange={(e) =>
-                              setEditData({ ...editData!, role: e.target.value })
+                              setEditData({
+                                ...editData!,
+                                role: e.target.value,
+                              })
                             }
                             className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                             placeholder="Role (optional)"
@@ -198,9 +220,13 @@ function Settings() {
                         {member.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-foreground">{member.name}</h3>
+                        <h3 className="font-semibold text-foreground">
+                          {member.name}
+                        </h3>
                         {member.role && (
-                          <p className="text-sm text-muted-foreground">{member.role}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {member.role}
+                          </p>
                         )}
                       </div>
                       <div className="flex gap-2">
@@ -228,13 +254,16 @@ function Settings() {
         </div>
 
         <div className="bg-card rounded-lg shadow-sm border border-border p-6">
-          <h2 className="text-xl font-bold text-card-foreground mb-4">About Household Hub</h2>
+          <h2 className="text-xl font-bold text-card-foreground mb-4">
+            About Household Hub
+          </h2>
           <p className="text-muted-foreground mb-4">
-            Household Hub helps you manage your family's daily life - from meal planning to task
-            management, shopping lists, and calendar events.
+            Household Hub helps you manage your family's daily life - from meal
+            planning to task management, shopping lists, and calendar events.
           </p>
           <p className="text-sm text-muted-foreground">
-            All data is stored locally in your browser. Your information stays private and secure.
+            All data is stored locally in your browser. Your information stays
+            private and secure.
           </p>
         </div>
       </div>

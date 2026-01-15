@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Plus, Trash2, CheckCircle2, Circle, ShoppingCart } from "lucide-react";
 
-export const Route = createFileRoute("/shopping")({ component: ShoppingLists });
+export const Route = createFileRoute("/_authed/shopping")({ component: ShoppingLists });
 
 interface ShoppingItem {
   id: string;

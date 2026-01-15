@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
-export const Route = createFileRoute("/meals")({ component: MealPlanning });
+export const Route = createFileRoute("/_authed/meals")({ component: MealPlanning });
 
 const daysOfWeek = [
   "Monday",

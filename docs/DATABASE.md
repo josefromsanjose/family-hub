@@ -311,26 +311,51 @@ After the first-time setup, **always use migrations** for schema changes.
 
 ### Models
 
-1. **HouseholdMember** - Family members with roles and colors
-2. **Task** - Tasks and chores (one-time and recurring)
-3. **CompletionRecord** - Completion history for recurring tasks
-4. **Meal** - Meal planning entries
-5. **ShoppingItem** - Shopping list items
-6. **CalendarEvent** - Calendar events (one-time and recurring)
+1. **Household** - Household container for all data
+2. **HouseholdMember** - Family members with roles, colors, and Clerk IDs
+3. **RolePermission** - Global role default permissions (data-driven templates)
+4. **MemberPermission** - Per-member permissions (source of truth)
+5. **Task** - Tasks and chores (one-time and recurring)
+6. **CompletionRecord** - Completion history for recurring tasks
+7. **Meal** - Meal planning entries
+8. **ShoppingItem** - Shopping list items
+9. **CalendarEvent** - Calendar events (one-time and recurring)
 
 ### Key Relationships
 
+- `Household.ownerId` → `HouseholdMember.id` (owner reference, set after member creation)
+- `HouseholdMember.householdId` → `Household.id` (cascade delete)
+- `MemberPermission.memberId` → `HouseholdMember.id` (cascade delete)
+- `RolePermission.role` → `HouseholdRole` enum (global template per role)
+- `Task.householdId` → `Household.id` (cascade delete)
+- `CompletionRecord.householdId` → `Household.id` (cascade delete)
+- `Meal.householdId` → `Household.id` (cascade delete)
+- `ShoppingItem.householdId` → `Household.id` (cascade delete)
+- `CalendarEvent.householdId` → `Household.id` (cascade delete)
 - `Task.assignedToId` → `HouseholdMember.id` (optional)
 - `CompletionRecord.taskId` → `Task.id` (cascade delete)
 - `CompletionRecord.completedById` → `HouseholdMember.id` (cascade delete)
+
+### Permissions Model
+
+- `RolePermission` defines **global default permissions** for each role.
+- At member creation, permissions are **copied** into `MemberPermission`.
+- `MemberPermission` is the **source of truth** and does not auto-update if role defaults change.
 
 ### Indexes
 
 Indexes are defined in the schema for optimal query performance:
 
-- `household_members.name` - Member lookup
+- `households.name` - Household lookup
+- `household_members.householdId` - Household scoping
+- `member_permissions.memberId` - Member permission lookup
+- `member_permissions.permission` - Permission filtering
+- `role_permissions.role` - Role default lookup
+- `role_permissions.permission` - Permission filtering
+- `tasks.householdId` - Household scoping
 - `tasks.assignedToId` - Task assignment queries
 - `tasks.recurrence` - Recurring task filtering
+- `completion_records.householdId` - Household scoping
 - `completion_records.taskId` - Completion history
 - `completion_records.completedAt` - Date-based queries
 

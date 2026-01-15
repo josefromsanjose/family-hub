@@ -9,190 +9,258 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TasksRouteImport } from './routes/tasks'
-import { Route as ShoppingRouteImport } from './routes/shopping'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as MyChoresRouteImport } from './routes/my-chores'
-import { Route as MealsRouteImport } from './routes/meals'
-import { Route as CalendarRouteImport } from './routes/calendar'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as SignUpRouteImport } from './routes/sign-up'
+import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as AuthedRouteImport } from './routes/_authed'
+import { Route as AuthedIndexRouteImport } from './routes/_authed/index'
+import { Route as AuthedTasksRouteImport } from './routes/_authed/tasks'
+import { Route as AuthedShoppingRouteImport } from './routes/_authed/shopping'
+import { Route as AuthedSettingsRouteImport } from './routes/_authed/settings'
+import { Route as AuthedMyChoresRouteImport } from './routes/_authed/my-chores'
+import { Route as AuthedMealsRouteImport } from './routes/_authed/meals'
+import { Route as AuthedCalendarRouteImport } from './routes/_authed/calendar'
 
-const TasksRoute = TasksRouteImport.update({
-  id: '/tasks',
-  path: '/tasks',
+const SignUpRoute = SignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ShoppingRoute = ShoppingRouteImport.update({
-  id: '/shopping',
-  path: '/shopping',
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
+const AuthedRoute = AuthedRouteImport.update({
+  id: '/_authed',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MyChoresRoute = MyChoresRouteImport.update({
-  id: '/my-chores',
-  path: '/my-chores',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MealsRoute = MealsRouteImport.update({
-  id: '/meals',
-  path: '/meals',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CalendarRoute = CalendarRouteImport.update({
-  id: '/calendar',
-  path: '/calendar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
+const AuthedIndexRoute = AuthedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedTasksRoute = AuthedTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedShoppingRoute = AuthedShoppingRouteImport.update({
+  id: '/shopping',
+  path: '/shopping',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedSettingsRoute = AuthedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedMyChoresRoute = AuthedMyChoresRouteImport.update({
+  id: '/my-chores',
+  path: '/my-chores',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedMealsRoute = AuthedMealsRouteImport.update({
+  id: '/meals',
+  path: '/meals',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedCalendarRoute = AuthedCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => AuthedRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/calendar': typeof CalendarRoute
-  '/meals': typeof MealsRoute
-  '/my-chores': typeof MyChoresRoute
-  '/settings': typeof SettingsRoute
-  '/shopping': typeof ShoppingRoute
-  '/tasks': typeof TasksRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
+  '/calendar': typeof AuthedCalendarRoute
+  '/meals': typeof AuthedMealsRoute
+  '/my-chores': typeof AuthedMyChoresRoute
+  '/settings': typeof AuthedSettingsRoute
+  '/shopping': typeof AuthedShoppingRoute
+  '/tasks': typeof AuthedTasksRoute
+  '/': typeof AuthedIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/calendar': typeof CalendarRoute
-  '/meals': typeof MealsRoute
-  '/my-chores': typeof MyChoresRoute
-  '/settings': typeof SettingsRoute
-  '/shopping': typeof ShoppingRoute
-  '/tasks': typeof TasksRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
+  '/calendar': typeof AuthedCalendarRoute
+  '/meals': typeof AuthedMealsRoute
+  '/my-chores': typeof AuthedMyChoresRoute
+  '/settings': typeof AuthedSettingsRoute
+  '/shopping': typeof AuthedShoppingRoute
+  '/tasks': typeof AuthedTasksRoute
+  '/': typeof AuthedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/calendar': typeof CalendarRoute
-  '/meals': typeof MealsRoute
-  '/my-chores': typeof MyChoresRoute
-  '/settings': typeof SettingsRoute
-  '/shopping': typeof ShoppingRoute
-  '/tasks': typeof TasksRoute
+  '/_authed': typeof AuthedRouteWithChildren
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
+  '/_authed/calendar': typeof AuthedCalendarRoute
+  '/_authed/meals': typeof AuthedMealsRoute
+  '/_authed/my-chores': typeof AuthedMyChoresRoute
+  '/_authed/settings': typeof AuthedSettingsRoute
+  '/_authed/shopping': typeof AuthedShoppingRoute
+  '/_authed/tasks': typeof AuthedTasksRoute
+  '/_authed/': typeof AuthedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
+    | '/sign-in'
+    | '/sign-up'
     | '/calendar'
     | '/meals'
     | '/my-chores'
     | '/settings'
     | '/shopping'
     | '/tasks'
+    | '/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
+    | '/sign-in'
+    | '/sign-up'
     | '/calendar'
     | '/meals'
     | '/my-chores'
     | '/settings'
     | '/shopping'
     | '/tasks'
+    | '/'
   id:
     | '__root__'
-    | '/'
-    | '/calendar'
-    | '/meals'
-    | '/my-chores'
-    | '/settings'
-    | '/shopping'
-    | '/tasks'
+    | '/_authed'
+    | '/sign-in'
+    | '/sign-up'
+    | '/_authed/calendar'
+    | '/_authed/meals'
+    | '/_authed/my-chores'
+    | '/_authed/settings'
+    | '/_authed/shopping'
+    | '/_authed/tasks'
+    | '/_authed/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  CalendarRoute: typeof CalendarRoute
-  MealsRoute: typeof MealsRoute
-  MyChoresRoute: typeof MyChoresRoute
-  SettingsRoute: typeof SettingsRoute
-  ShoppingRoute: typeof ShoppingRoute
-  TasksRoute: typeof TasksRoute
+  AuthedRoute: typeof AuthedRouteWithChildren
+  SignInRoute: typeof SignInRoute
+  SignUpRoute: typeof SignUpRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/tasks': {
-      id: '/tasks'
-      path: '/tasks'
-      fullPath: '/tasks'
-      preLoaderRoute: typeof TasksRouteImport
+    '/sign-up': {
+      id: '/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/shopping': {
-      id: '/shopping'
-      path: '/shopping'
-      fullPath: '/shopping'
-      preLoaderRoute: typeof ShoppingRouteImport
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
+    '/_authed': {
+      id: '/_authed'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/my-chores': {
-      id: '/my-chores'
-      path: '/my-chores'
-      fullPath: '/my-chores'
-      preLoaderRoute: typeof MyChoresRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/meals': {
-      id: '/meals'
-      path: '/meals'
-      fullPath: '/meals'
-      preLoaderRoute: typeof MealsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/calendar': {
-      id: '/calendar'
-      path: '/calendar'
-      fullPath: '/calendar'
-      preLoaderRoute: typeof CalendarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
+    '/_authed/': {
+      id: '/_authed/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthedIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/tasks': {
+      id: '/_authed/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof AuthedTasksRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/shopping': {
+      id: '/_authed/shopping'
+      path: '/shopping'
+      fullPath: '/shopping'
+      preLoaderRoute: typeof AuthedShoppingRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/settings': {
+      id: '/_authed/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthedSettingsRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/my-chores': {
+      id: '/_authed/my-chores'
+      path: '/my-chores'
+      fullPath: '/my-chores'
+      preLoaderRoute: typeof AuthedMyChoresRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/meals': {
+      id: '/_authed/meals'
+      path: '/meals'
+      fullPath: '/meals'
+      preLoaderRoute: typeof AuthedMealsRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/calendar': {
+      id: '/_authed/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof AuthedCalendarRouteImport
+      parentRoute: typeof AuthedRoute
     }
   }
 }
 
+interface AuthedRouteChildren {
+  AuthedCalendarRoute: typeof AuthedCalendarRoute
+  AuthedMealsRoute: typeof AuthedMealsRoute
+  AuthedMyChoresRoute: typeof AuthedMyChoresRoute
+  AuthedSettingsRoute: typeof AuthedSettingsRoute
+  AuthedShoppingRoute: typeof AuthedShoppingRoute
+  AuthedTasksRoute: typeof AuthedTasksRoute
+  AuthedIndexRoute: typeof AuthedIndexRoute
+}
+
+const AuthedRouteChildren: AuthedRouteChildren = {
+  AuthedCalendarRoute: AuthedCalendarRoute,
+  AuthedMealsRoute: AuthedMealsRoute,
+  AuthedMyChoresRoute: AuthedMyChoresRoute,
+  AuthedSettingsRoute: AuthedSettingsRoute,
+  AuthedShoppingRoute: AuthedShoppingRoute,
+  AuthedTasksRoute: AuthedTasksRoute,
+  AuthedIndexRoute: AuthedIndexRoute,
+}
+
+const AuthedRouteWithChildren =
+  AuthedRoute._addFileChildren(AuthedRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  CalendarRoute: CalendarRoute,
-  MealsRoute: MealsRoute,
-  MyChoresRoute: MyChoresRoute,
-  SettingsRoute: SettingsRoute,
-  ShoppingRoute: ShoppingRoute,
-  TasksRoute: TasksRoute,
+  AuthedRoute: AuthedRouteWithChildren,
+  SignInRoute: SignInRoute,
+  SignUpRoute: SignUpRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

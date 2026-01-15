@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Plus, Trash2, CheckCircle2, Circle, User, Repeat } from "lucide-react";
-import { useHousehold } from "../contexts/HouseholdContext";
-import { useTasks, Task } from "../contexts/TasksContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
+import { useTasks, Task } from "@/contexts/TasksContext";
 
-export const Route = createFileRoute("/tasks")({ component: TasksAndChores });
+export const Route = createFileRoute("/_authed/tasks")({
+  component: TasksAndChores,
+});
 
 function TasksAndChores() {
   const { members } = useHousehold();

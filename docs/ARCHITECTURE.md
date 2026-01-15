@@ -141,7 +141,10 @@ flowchart TD
 
 **Models:**
 
-- `HouseholdMember` - Family members with roles and colors
+- `Household` - Household container for all data
+- `HouseholdMember` - Family members with roles, colors, and Clerk IDs
+- `RolePermission` - Global role default permissions (templates)
+- `MemberPermission` - Per-member permissions (source of truth)
 - `Task` - Tasks and chores (one-time and recurring)
 - `CompletionRecord` - Completion history for recurring tasks
 - `Meal` - Meal planning entries
@@ -150,9 +153,24 @@ flowchart TD
 
 **Key Relationships:**
 
+- `Household.ownerId` → `HouseholdMember.id` (owner reference)
+- `HouseholdMember.householdId` → `Household.id` (cascade delete)
+- `MemberPermission.memberId` → `HouseholdMember.id` (cascade delete)
+- `RolePermission.role` → `HouseholdRole` enum (global template per role)
+- `Task.householdId` → `Household.id` (cascade delete)
+- `CompletionRecord.householdId` → `Household.id` (cascade delete)
+- `Meal.householdId` → `Household.id` (cascade delete)
+- `ShoppingItem.householdId` → `Household.id` (cascade delete)
+- `CalendarEvent.householdId` → `Household.id` (cascade delete)
 - `Task.assignedToId` → `HouseholdMember.id` (optional)
 - `CompletionRecord.taskId` → `Task.id` (cascade delete)
 - `CompletionRecord.completedById` → `HouseholdMember.id` (cascade delete)
+
+**Permissions Model:**
+
+- `RolePermission` defines **global default permissions** per role.
+- At member creation, defaults are copied into `MemberPermission`.
+- `MemberPermission` is the **runtime source of truth** and does not auto-update if role defaults change.
 
 ### Prisma Client
 
@@ -587,6 +605,7 @@ This approach gives us maximum flexibility and the best developer experience for
 - `VITE_SUPABASE_URL` - Supabase project URL (for Storage)
 - `VITE_SUPABASE_ANON_KEY` - Supabase publishable key (for Storage)
 - `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (server-side Storage operations)
+- `VITE_CLERK_PUBLISHABLE_KEY` - Clerk publishable key (for authentication)
 - `CLERK_PUBLISHABLE_KEY` - Clerk publishable key (for authentication)
 - `CLERK_SECRET_KEY` - Clerk secret key (server-side auth)
 - `NODE_ENV` - Environment (development/production)

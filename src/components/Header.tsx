@@ -1,6 +1,18 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu, X, Home, Calendar, ShoppingCart, CheckSquare, UtensilsCrossed, Settings, ListTodo } from "lucide-react";
+import {
+  Menu,
+  X,
+  Home,
+  Calendar,
+  ShoppingCart,
+  CheckSquare,
+  UtensilsCrossed,
+  Settings,
+  ListTodo,
+} from "lucide-react";
+import HeaderUser from "../integrations/clerk/header-user";
+import { useAuthState } from "@/utils/auth";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
@@ -15,25 +27,36 @@ const navigation = [
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { isSignedIn } = useAuthState();
 
   const closeMenu = () => setIsOpen(false);
+
+  if (!isSignedIn) {
+    return null;
+  }
 
   return (
     <>
       <header className="bg-background border-b border-border shadow-sm">
-        <div className="p-4 flex items-center">
-          <button
-            onClick={() => setIsOpen(true)}
-            className="p-2 hover:bg-accent rounded-lg transition-colors"
-            aria-label="Open menu"
-          >
-            <Menu size={24} />
-          </button>
-          <h1 className="ml-4 text-xl font-semibold">
-            <Link to="/" className="text-foreground hover:text-muted-foreground">
-              <span className="font-extrabold">🏠 Household Hub</span>
-            </Link>
-          </h1>
+        <div className="p-4 flex items-center justify-between w-full">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsOpen(true)}
+              className="p-2 hover:bg-accent rounded-lg transition-colors"
+              aria-label="Open menu"
+            >
+              <Menu size={24} />
+            </button>
+            <h1 className="ml-4 text-xl font-semibold">
+              <Link
+                to="/"
+                className="text-foreground hover:text-muted-foreground"
+              >
+                <span className="font-extrabold">Family Hub</span>
+              </Link>
+            </h1>
+          </div>
+          <HeaderUser />
         </div>
       </header>
 
@@ -43,7 +66,9 @@ export default function Header() {
         }`}
       >
         <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
-          <h2 className="text-xl font-bold text-sidebar-foreground">Navigation</h2>
+          <h2 className="text-xl font-bold text-sidebar-foreground">
+            Navigation
+          </h2>
           <button
             onClick={closeMenu}
             className="p-2 hover:bg-sidebar-accent rounded-lg transition-colors"
@@ -79,7 +104,7 @@ export default function Header() {
       </aside>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 bg-black/60 z-40"
           onClick={closeMenu}
           aria-hidden="true"
         />

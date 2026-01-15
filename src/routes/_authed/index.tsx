@@ -9,9 +9,9 @@ import {
   Settings,
   ListTodo,
 } from "lucide-react";
-import { useHousehold } from "../contexts/HouseholdContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
 
-export const Route = createFileRoute("/")({ component: Dashboard });
+export const Route = createFileRoute("/_authed/")({ component: Dashboard });
 
 function Dashboard() {
   return (
@@ -87,7 +87,9 @@ function DashboardCard({
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+          <p className="text-sm font-medium text-muted-foreground mb-1">
+            {title}
+          </p>
           <p className="text-2xl font-bold text-card-foreground">{value}</p>
         </div>
         <div className={`${color} p-3 rounded-lg`}>
@@ -101,7 +103,9 @@ function DashboardCard({
 function QuickActionsCard() {
   return (
     <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
-      <h2 className="text-xl font-bold text-card-foreground mb-4">Quick Actions</h2>
+      <h2 className="text-xl font-bold text-card-foreground mb-4">
+        Quick Actions
+      </h2>
       <div className="space-y-3">
         <Link
           to="/meals"
@@ -149,7 +153,9 @@ function HouseholdMembersCard() {
   return (
     <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-card-foreground">Household Members</h2>
+        <h2 className="text-xl font-bold text-card-foreground">
+          Household Members
+        </h2>
         <Link
           to="/settings"
           className="p-2 hover:bg-accent rounded-lg transition-colors text-muted-foreground"
@@ -161,7 +167,9 @@ function HouseholdMembersCard() {
       {members.length === 0 ? (
         <div className="text-center py-4">
           <Users className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-          <p className="text-sm text-muted-foreground mb-3">No members added yet</p>
+          <p className="text-sm text-muted-foreground mb-3">
+            No members added yet
+          </p>
           <Link
             to="/settings"
             className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
@@ -205,7 +213,9 @@ function HouseholdMembersCard() {
 function RecentActivityCard() {
   return (
     <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
-      <h2 className="text-xl font-bold text-card-foreground mb-4">Recent Activity</h2>
+      <h2 className="text-xl font-bold text-card-foreground mb-4">
+        Recent Activity
+      </h2>
       <div className="space-y-4">
         <div className="flex items-start gap-3">
           <div className="w-2 h-2 bg-chart-2 rounded-full mt-2" />

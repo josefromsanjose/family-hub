@@ -1,10 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { CheckCircle2, Circle, User, Trophy, Flame } from "lucide-react";
-import { useHousehold } from "../contexts/HouseholdContext";
-import { useTasks, Task } from "../contexts/TasksContext";
+import { CheckCircle2, Circle, Trophy, Flame } from "lucide-react";
+import { useHousehold } from "@/contexts/HouseholdContext";
+import { useTasks, Task } from "@/contexts/TasksContext";
 
-export const Route = createFileRoute("/my-chores")({ component: MyChores });
+export const Route = createFileRoute("/_authed/my-chores")({
+  component: MyChores,
+});
 
 function MyChores() {
   const { members } = useHousehold();
@@ -113,7 +115,9 @@ function MyChores() {
                 <div className="text-3xl font-bold text-foreground mb-1">
                   {myChores.filter((c) => isTaskDue(c)).length}
                 </div>
-                <div className="text-sm text-muted-foreground">Chores to do</div>
+                <div className="text-sm text-muted-foreground">
+                  Chores to do
+                </div>
               </div>
               <div className="bg-card rounded-lg shadow-sm p-4 border border-border">
                 <div className="text-3xl font-bold text-primary mb-1">

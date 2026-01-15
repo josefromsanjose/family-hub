@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Plus, Trash2, Calendar as CalendarIcon, Clock } from "lucide-react";
 
-export const Route = createFileRoute("/calendar")({ component: Calendar });
+export const Route = createFileRoute("/_authed/calendar")({ component: Calendar });
 
 interface Event {
   id: string;
