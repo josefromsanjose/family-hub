@@ -21,8 +21,8 @@ export function AssigneeStep({ data, onChange, members }: AssigneeStepProps) {
           key={member.id}
           name={member.name}
           color={member.color || "bg-muted"}
-          selected={data.assignedTo === member.name}
-          onSelect={() => onChange({ assignedTo: member.name })}
+          selected={data.assignedTo === member.id}
+          onSelect={() => onChange({ assignedTo: member.id })}
         />
       ))}
     </div>

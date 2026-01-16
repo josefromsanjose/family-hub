@@ -172,6 +172,7 @@ export function TaskWizard() {
               recurrenceLabel={recurrenceLabel}
               priorityLabel={priorityLabel}
               PriorityIcon={PriorityIcon}
+              members={members}
             />
           )}
         </div>

@@ -1,14 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2, Circle, Trophy, Flame } from "lucide-react";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useTasks, Task } from "@/contexts/TasksContext";
 
-export const Route = createFileRoute("/_authed/my-chores")({
+export const Route = createFileRoute("/_authed/members/$memberId/chores")({
   component: MyChores,
 });
 
 function MyChores() {
+  const { memberId } = Route.useParams();
   const { members } = useHousehold();
   const {
     tasks,
@@ -19,18 +20,24 @@ function MyChores() {
     getCompletionStreak,
   } = useTasks();
   const navigate = useNavigate();
-  const [selectedMember, setSelectedMember] = useState<string>(
-    members[0]?.name || ""
+  const [selectedMemberId, setSelectedMemberId] = useState<string>(
+    memberId || members[0]?.id || ""
   );
+
+  useEffect(() => {
+    if (memberId) {
+      setSelectedMemberId(memberId);
+    }
+  }, [memberId]);
 
   // Get recurring tasks assigned to selected member
   const myChores = tasks.filter(
-    (task) => task.recurrence && task.assignedTo === selectedMember
+    (task) => task.recurrence && task.assignedTo === selectedMemberId
   );
 
   const handleToggleChore = (task: Task) => {
     if (isTaskDue(task)) {
-      completeTask(task.id, selectedMember);
+      completeTask(task.id, selectedMemberId);
     } else {
       uncompleteTask(task.id);
     }
@@ -48,7 +55,8 @@ function MyChores() {
     };
   };
 
-  const selectedMemberData = members.find((m) => m.name === selectedMember);
+  const selectedMemberData = members.find((m) => m.id === selectedMemberId);
+  const selectedMemberName = selectedMemberData?.name || "";
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -68,16 +76,16 @@ function MyChores() {
               {members.map((member) => (
                 <button
                   key={member.id}
-                  onClick={() => setSelectedMember(member.name)}
+                  onClick={() => setSelectedMemberId(member.id)}
                   className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
-                    selectedMember === member.name
+                    selectedMemberId === member.id
                       ? "bg-primary text-primary-foreground shadow-md"
                       : "bg-secondary text-secondary-foreground hover:bg-accent"
                   }`}
                 >
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold ${
-                      selectedMember === member.name
+                      selectedMemberId === member.id
                         ? member.color || "bg-muted"
                         : member.color || "bg-muted"
                     }`}
@@ -98,7 +106,7 @@ function MyChores() {
               No chores assigned yet!
             </h3>
             <p className="text-muted-foreground mb-4">
-              {selectedMember} doesn't have any recurring chores assigned.
+              {selectedMemberName} doesn't have any recurring chores assigned.
             </p>
             <button
               onClick={() => navigate({ to: "/tasks" })}
@@ -244,7 +252,7 @@ function MyChores() {
               <div className="mt-6 bg-primary rounded-lg shadow-lg p-6 text-center">
                 <Trophy className="mx-auto h-16 w-16 text-primary-foreground mb-3" />
                 <h3 className="text-2xl font-bold text-primary-foreground mb-2">
-                  Awesome job, {selectedMember}! 🎉
+                  Awesome job, {selectedMemberName}! 🎉
                 </h3>
                 <p className="text-primary-foreground/80">
                   All your chores are done! Keep up the great work!

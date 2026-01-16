@@ -19,7 +19,6 @@ const navigation = [
   { name: "Meal Planning", href: "/meals", icon: UtensilsCrossed },
   { name: "Shopping Lists", href: "/shopping", icon: ShoppingCart },
   { name: "Tasks & Chores", href: "/tasks", icon: CheckSquare },
-  { name: "My Chores", href: "/my-chores", icon: ListTodo },
   { name: "Calendar", href: "/calendar", icon: Calendar },
   { name: "Settings", href: "/settings", icon: Settings },
 ];

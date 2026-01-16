@@ -1,10 +1,20 @@
+import { createContext, useContext, useCallback, ReactNode } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
+  getTasks,
+  getCompletionRecords,
+  createTask,
+  updateTask as updateTaskServer,
+  deleteTask as deleteTaskServer,
+  completeTask as completeTaskServer,
+  uncompleteTask as uncompleteTaskServer,
+  type CreateTaskInput,
+  type UpdateTaskInput,
+  type DeleteTaskInput,
+  type CompleteTaskInput,
+  type UncompleteTaskInput,
+} from "@/server/tasks";
+import { useHousehold } from "@/contexts/HouseholdContext";
 
 export interface Task {
   id: string;
@@ -40,9 +50,6 @@ interface TasksContextType {
 
 const TasksContext = createContext<TasksContextType | undefined>(undefined);
 
-const TASKS_STORAGE_KEY = "household-tasks";
-const COMPLETIONS_STORAGE_KEY = "task-completions";
-
 function isSameDay(date1: Date, date2: Date): boolean {
   return (
     date1.getFullYear() === date2.getFullYear() &&
@@ -67,94 +74,143 @@ function isSameMonth(date1: Date, date2: Date): boolean {
 }
 
 export function TasksProvider({ children }: { children: ReactNode }) {
-  const [tasks, setTasks] = useState<Task[]>(() => {
-    try {
-      const stored = localStorage.getItem(TASKS_STORAGE_KEY);
-      if (stored) {
-        return JSON.parse(stored);
-      }
-      return [];
-    } catch {
-      return [];
-    }
+  const queryClient = useQueryClient();
+  const { members } = useHousehold();
+
+  // Fetch tasks with TanStack Query
+  const { data: tasksData = [] } = useQuery({
+    queryKey: ["tasks"],
+    queryFn: () => getTasks(),
   });
 
-  const [completions, setCompletions] = useState<CompletionRecord[]>(() => {
-    try {
-      const stored = localStorage.getItem(COMPLETIONS_STORAGE_KEY);
-      if (stored) {
-        return JSON.parse(stored);
-      }
-      return [];
-    } catch {
-      return [];
-    }
+  // Fetch completions with TanStack Query
+  const { data: completionsData = [] } = useQuery({
+    queryKey: ["completions"],
+    queryFn: () => getCompletionRecords(),
   });
 
-  useEffect(() => {
-    localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
-  }, [tasks]);
+  // Map server responses to context types (they're already compatible, but ensure consistency)
+  const tasks: Task[] = tasksData;
+  const completions: CompletionRecord[] = completionsData;
 
-  useEffect(() => {
-    localStorage.setItem(COMPLETIONS_STORAGE_KEY, JSON.stringify(completions));
-  }, [completions]);
+  // Create mutation
+  const createMutation = useMutation({
+    mutationFn: createTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+  });
 
-  const addTask = (task: Omit<Task, "id" | "completed">) => {
-    const newTask: Task = {
-      ...task,
-      id: Date.now().toString(),
-      completed: false,
-    };
-    setTasks([...tasks, newTask]);
-  };
+  // Update mutation
+  const updateMutation = useMutation({
+    mutationFn: updateTaskServer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+  });
 
-  const updateTask = (id: string, updates: Partial<Task>) => {
-    setTasks(tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)));
-  };
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: deleteTaskServer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["completions"] });
+    },
+  });
 
-  const deleteTask = (id: string) => {
-    setTasks(tasks.filter((t) => t.id !== id));
-    setCompletions(completions.filter((c) => c.taskId !== id));
-  };
+  // Complete mutation
+  const completeMutation = useMutation({
+    mutationFn: completeTaskServer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["completions"] });
+    },
+  });
 
-  const completeTask = (taskId: string, completedBy: string) => {
-    const task = tasks.find((t) => t.id === taskId);
-    if (!task) return;
+  // Uncomplete mutation
+  const uncompleteMutation = useMutation({
+    mutationFn: uncompleteTaskServer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["completions"] });
+    },
+  });
 
-    if (task.recurrence) {
-      // For recurring tasks, add a completion record
-      const newCompletion: CompletionRecord = {
-        id: Date.now().toString(),
-        taskId,
-        completedAt: new Date().toISOString(),
-        completedBy,
+  const addTask = useCallback(
+    (task: Omit<Task, "id" | "completed">) => {
+      const input: CreateTaskInput = {
+        title: task.title,
+        description: task.description,
+        assignedTo: task.assignedTo,
+        dueDate: task.dueDate,
+        priority: task.priority,
+        recurrence: task.recurrence,
       };
-      setCompletions([...completions, newCompletion]);
-    } else {
-      // For one-time tasks, just mark as completed
-      updateTask(taskId, { completed: true });
-    }
-  };
+      createMutation.mutate({ data: input });
+    },
+    [createMutation]
+  );
 
-  const uncompleteTask = (taskId: string) => {
-    const task = tasks.find((t) => t.id === taskId);
-    if (!task) return;
+  const updateTask = useCallback(
+    (id: string, updates: Partial<Task>) => {
+      const input: UpdateTaskInput = {
+        id,
+        ...(updates.title !== undefined && { title: updates.title }),
+        ...(updates.description !== undefined && {
+          description: updates.description,
+        }),
+        ...(updates.assignedTo !== undefined && {
+          assignedTo: updates.assignedTo || null,
+        }),
+        ...(updates.dueDate !== undefined && {
+          dueDate: updates.dueDate || null,
+        }),
+        ...(updates.priority !== undefined && { priority: updates.priority }),
+        ...(updates.recurrence !== undefined && {
+          recurrence: updates.recurrence || null,
+        }),
+        ...(updates.completed !== undefined && {
+          completed: updates.completed,
+        }),
+      };
+      updateMutation.mutate({ data: input });
+    },
+    [updateMutation]
+  );
 
-    if (task.recurrence) {
-      // For recurring tasks, remove the most recent completion
-      const taskCompletions = completions
-        .filter((c) => c.taskId === taskId)
-        .sort((a, b) => b.completedAt.localeCompare(a.completedAt));
-      if (taskCompletions.length > 0) {
-        setCompletions(
-          completions.filter((c) => c.id !== taskCompletions[0].id)
-        );
+  const deleteTask = useCallback(
+    (id: string) => {
+      const input: DeleteTaskInput = { id };
+      deleteMutation.mutate({ data: input });
+    },
+    [deleteMutation]
+  );
+
+  const completeTask = useCallback(
+    (taskId: string, completedBy: string) => {
+      // Convert member name to ID if needed (for backward compatibility)
+      let memberId = completedBy;
+      const member = members.find((m) => m.name === completedBy);
+      if (member) {
+        memberId = member.id;
       }
-    } else {
-      // For one-time tasks, mark as incomplete
-      updateTask(taskId, { completed: false });
-    }
-  };
+
+      const input: CompleteTaskInput = {
+        taskId,
+        completedBy: memberId,
+      };
+      completeMutation.mutate({ data: input });
+    },
+    [completeMutation, members]
+  );
+
+  const uncompleteTask = useCallback(
+    (taskId: string) => {
+      const input: UncompleteTaskInput = { taskId };
+      uncompleteMutation.mutate({ data: input });
+    },
+    [uncompleteMutation]
+  );
 
   const isTaskDue = (task: Task): boolean => {
     if (!task.recurrence) {

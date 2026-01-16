@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Plus, Trash2, CheckCircle2, Circle, User, Repeat } from "lucide-react";
 import { useTasks, Task } from "@/contexts/TasksContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
 
 export const Route = createFileRoute("/_authed/tasks/")({
   component: TasksAndChores,
@@ -17,9 +18,16 @@ function TasksAndChores() {
     isTaskDue,
     getCompletionsThisPeriod,
   } = useTasks();
+  const { members } = useHousehold();
   const [filter, setFilter] = useState<
     "all" | "active" | "completed" | "recurring" | "one-time"
   >("all");
+
+  // Helper function to get member name by ID
+  const getMemberName = (memberId: string | undefined): string | undefined => {
+    if (!memberId) return undefined;
+    return members.find((m) => m.id === memberId)?.name;
+  };
 
   const handleToggleTask = (task: Task) => {
     if (task.recurrence) {
@@ -282,7 +290,10 @@ function TasksAndChores() {
                             {task.assignedTo && (
                               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                 <User size={16} />
-                                <span>{task.assignedTo}</span>
+                                <span>
+                                  {getMemberName(task.assignedTo) ||
+                                    task.assignedTo}
+                                </span>
                               </div>
                             )}
                             {!task.recurrence && task.dueDate && (

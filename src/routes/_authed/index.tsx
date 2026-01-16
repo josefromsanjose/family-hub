@@ -129,11 +129,11 @@ function QuickActionsCard() {
           <span className="text-foreground">Add new task</span>
         </Link>
         <Link
-          to="/my-chores"
+          to="/tasks"
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
         >
           <ListTodo size={20} className="text-primary" />
-          <span className="text-foreground">View my chores</span>
+          <span className="text-foreground">View my tasks</span>
         </Link>
         <Link
           to="/calendar"
@@ -180,7 +180,12 @@ function HouseholdMembersCard() {
       ) : (
         <div className="space-y-3">
           {members.map((member) => (
-            <div key={member.id} className="flex items-center gap-3">
+            <Link
+              key={member.id}
+              to="/members/$memberId"
+              params={{ memberId: member.id }}
+              className="flex items-center gap-3 rounded-lg p-2 hover:bg-accent transition-colors"
+            >
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${member.color || "bg-muted"}`}
               >
@@ -196,7 +201,7 @@ function HouseholdMembersCard() {
                   </p>
                 )}
               </div>
-            </div>
+            </Link>
           ))}
           <Link
             to="/settings"

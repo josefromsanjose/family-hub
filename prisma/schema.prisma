@@ -80,6 +80,7 @@ model HouseholdMember {
   ownedHouseholds    Household[]      @relation("HouseholdOwner")
   assignedTasks      Task[]
   completions        CompletionRecord[]
+  calendarEvents     CalendarEvent[]
   permissions        MemberPermission[]
 
   @@index([householdId])
@@ -279,15 +280,18 @@ model CalendarEvent {
   type        EventType
   recurrence  EventRecurrence?  // NULL = one-time event
   endDate     DateTime?         // For recurring: when recurrence ends (optional)
+  participantId String?         // Optional member the event is for
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
   // Relations
   household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  participant HouseholdMember? @relation(fields: [participantId], references: [id], onDelete: SetNull)
 
   @@index([householdId])
   @@index([date])
   @@index([type])
   @@index([recurrence])
+  @@index([participantId])
   @@map("calendar_events")
 }

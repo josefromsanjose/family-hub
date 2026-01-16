@@ -14,6 +14,7 @@ import AppClerkProvider from "@/integrations/clerk/provider";
 import Header from "@/components/Header";
 import { HouseholdProvider } from "@/contexts/HouseholdContext";
 import { TasksProvider } from "@/contexts/TasksContext";
+import { CalendarProvider } from "@/contexts/CalendarContext";
 import { registerServiceWorker } from "../utils/registerServiceWorker";
 
 import appCss from "../styles.css?url";
@@ -116,19 +117,21 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <HouseholdProvider>
           <TasksProvider>
-            <Header />
-            {children}
-            <TanStackDevtools
-              config={{
-                position: "bottom-right",
-              }}
-              plugins={[
-                {
-                  name: "Tanstack Router",
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-              ]}
-            />
+            <CalendarProvider>
+              <Header />
+              {children}
+              <TanStackDevtools
+                config={{
+                  position: "bottom-right",
+                }}
+                plugins={[
+                  {
+                    name: "Tanstack Router",
+                    render: <TanStackRouterDevtoolsPanel />,
+                  },
+                ]}
+              />
+            </CalendarProvider>
           </TasksProvider>
         </HouseholdProvider>
         <Scripts />

@@ -1,12 +1,13 @@
 import { CalendarDays, Repeat, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { TaskData } from "./TaskWizard.types";
+import type { TaskData, MemberList } from "./TaskWizard.types";
 
 interface ConfirmStepProps {
   data: TaskData;
   recurrenceLabel: string;
   priorityLabel: string;
   PriorityIcon: LucideIcon;
+  members: MemberList;
 }
 
 export function ConfirmStep({
@@ -14,7 +15,13 @@ export function ConfirmStep({
   recurrenceLabel,
   priorityLabel,
   PriorityIcon,
+  members,
 }: ConfirmStepProps) {
+  const assignedMember = data.assignedTo
+    ? members.find((m) => m.id === data.assignedTo)
+    : null;
+  const assignedToName = assignedMember?.name || "Anyone";
+
   return (
     <div className="bg-muted/50 rounded-xl p-4 space-y-3">
       <div className="flex items-center gap-3">
@@ -23,7 +30,7 @@ export function ConfirmStep({
       </div>
       <div className="flex items-center gap-3">
         <User className="w-5 h-5 text-muted-foreground" />
-        <span>{data.assignedTo || "Anyone"}</span>
+        <span>{assignedToName}</span>
       </div>
       <div className="flex items-center gap-3">
         <Repeat className="w-5 h-5 text-muted-foreground" />
