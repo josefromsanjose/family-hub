@@ -10,3 +10,12 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Gotchas encountered: Export the household helper instead of re-creating it in feature server modules.
   - Useful context: Meal responses use ISO date strings for frontend consumption.
 ---
+## 2026-01-16 12:00 - US-002
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Marked household helper reuse story complete; confirmed helper is defined in `src/server/household.ts` and used by meal server functions.
+- Files changed: `docs/prds/MEALS_PRD.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: `getCurrentUserHouseholdId` is the shared helper for household scoping across server modules.
+  - Gotchas encountered: Ensure PRD stories include a `passes:` line when marking completion.
+  - Useful context: Household membership lookup uses `clerkUserId` in `householdMember`.
+---

@@ -41,13 +41,15 @@ passes: true
 
 **Description:** As a developer, I need to reuse the existing household ID helper to avoid duplicate logic.
 
+passes: true
+
 **Acceptance Criteria:**
 
-- [ ] Reuse `getCurrentUserHouseholdId()` from `src/server/household.ts` (do not re-create it)
-- [ ] Function uses `auth()` from Clerk to get current user
-- [ ] Function queries `householdMember` table by `clerkUserId`
-- [ ] Function throws error if user not authenticated or no household found
-- [ ] Typecheck passes
+- [x] Reuse `getCurrentUserHouseholdId()` from `src/server/household.ts` (do not re-create it)
+- [x] Function uses `auth()` from Clerk to get current user
+- [x] Function queries `householdMember` table by `clerkUserId`
+- [x] Function throws error if user not authenticated or no household found
+- [x] Typecheck passes
 
 ### US-003: Replace local state with server API calls
 

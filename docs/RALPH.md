@@ -5,15 +5,16 @@ You are an autonomous coding agent working on a software project.
 ## Your Task
 
 1. Read the PRD at `prd-[feature].md` (feature will be provided) in the PRDs directory
-2. Read the progress log at `progress.txt` (check Codebase Patterns section first)
-3. Pick the **highest priority** user story where `passes: false`
-4. Implement that single user story only
-5. Write unit tests for any non-trivial UI or logic change, following project testing conventions.
-6. Run quality checks (e.g., typecheck, lint, test - use whatever your project requires)
-7. Update AGENTS.md files if you discover reusable patterns (see below)
-8. Update the PRD to set `passes: true` for the completed story and mark completed acceptance criteria with `[x]`
-9. Append your progress to `progress.txt`
-10. Stop immediately after completing one story (even if more remain)
+2. Read `docs/skills/frontend-engineer/SKILL.md` and follow those conventions for implementation and testing.
+3. Read the progress log at `progress.txt` (check Codebase Patterns section first)
+4. Pick the **highest priority** user story where `passes: false`
+5. Implement that single user story only
+6. Write unit tests for any non-trivial UI or logic change, following project testing conventions.
+7. Run quality checks (e.g., typecheck, lint, test - use whatever your project requires)
+8. Update AGENTS.md files if you discover reusable patterns (see below)
+9. Update the PRD to set `passes: true` for the completed story and mark completed acceptance criteria with `[x]`
+10. Append your progress to `progress.txt`
+11. Stop immediately after completing one story (even if more remain)
 
 ## Progress Report Format
 
@@ -82,6 +83,8 @@ Only update AGENTS.md if you have **genuinely reusable knowledge** that would he
 - Do NOT commit broken code
 - Keep changes focused and minimal
 - Follow existing code patterns
+- Tests should be isolated, fast, and deterministic; mock external services (DB/auth/network) when needed.
+- If behavior changes, update or add tests in the same story to prevent regressions.
 
 ## Browser Testing (Required for Frontend Stories)
 
