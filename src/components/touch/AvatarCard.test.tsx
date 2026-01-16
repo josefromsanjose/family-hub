@@ -1,8 +1,12 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { AvatarCard } from "./AvatarCard";
 
 describe("AvatarCard", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it("calls onSelect when pressed", () => {
     const onSelect = vi.fn();
     render(

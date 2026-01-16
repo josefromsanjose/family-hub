@@ -57,9 +57,7 @@ function Settings() {
       alert("Cannot delete the household owner");
       return;
     }
-    if (confirm("Are you sure you want to remove this household member?")) {
-      deleteMutation.mutate({ data: { id: member.id } });
-    }
+    deleteMutation.mutate({ data: { id: member.id } });
   };
 
   if (error) {

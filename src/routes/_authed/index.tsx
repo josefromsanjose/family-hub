@@ -17,16 +17,7 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Welcome Back! 👋
-          </h1>
-          <p className="text-muted-foreground">
-            Here's what's happening in your household today
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <DashboardCard
             title="Meals This Week"
             value="7 planned"
@@ -40,13 +31,6 @@ function Dashboard() {
             icon={ShoppingCart}
             href="/shopping"
             color="bg-chart-2"
-          />
-          <DashboardCard
-            title="Active Tasks"
-            value="5 tasks"
-            icon={CheckSquare}
-            href="/tasks"
-            color="bg-chart-3"
           />
           <DashboardCard
             title="Upcoming Events"

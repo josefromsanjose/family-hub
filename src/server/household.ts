@@ -126,7 +126,7 @@ export type HouseholdMemberResponse = {
 };
 
 // Helper to get current user's household ID
-async function getCurrentUserHouseholdId(): Promise<string> {
+export async function getCurrentUserHouseholdId(): Promise<string> {
   const { userId } = await auth();
 
   if (!userId) {

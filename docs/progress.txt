@@ -1,0 +1,12 @@
+## Codebase Patterns
+- Use `getCurrentUserHouseholdId` from `src/server/household.ts` for household-scoped server logic.
+
+## 2026-01-15 23:59 - US-001
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Added meal CRUD server functions with validation and household scoping.
+- Files changed: `src/server/meals.ts`, `src/server/household.ts`, `docs/prds/MEALS_PRD.md`
+- **Learnings for future iterations:**
+  - Patterns discovered: Meal server functions follow the Tasks pattern with input validators and response mapping.
+  - Gotchas encountered: Export the household helper instead of re-creating it in feature server modules.
+  - Useful context: Meal responses use ISO date strings for frontend consumption.
+---
