@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { MealType } from "@prisma/client";
-import { prisma } from "@/db";
+import type { MealType } from "@prisma/client";
+import { getPrisma } from "@/server/db";
 import { getCurrentUserHouseholdId } from "@/server/household";
 
 // ============================================================================
@@ -64,6 +64,7 @@ const toMealResponse = (meal: {
 export const getMeals = createServerFn({ method: "GET" }).handler(
   async (): Promise<MealResponse[]> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     const meals = await prisma.meal.findMany({
       where: { householdId },
@@ -97,6 +98,7 @@ export const createMeal = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<MealResponse> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     const meal = await prisma.meal.create({
       data: {
@@ -129,6 +131,7 @@ export const updateMeal = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<MealResponse> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     const existingMeal = await prisma.meal.findFirst({
       where: { id: data.id, householdId },
@@ -164,6 +167,7 @@ export const deleteMeal = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     const existingMeal = await prisma.meal.findFirst({
       where: { id: data.id, householdId },

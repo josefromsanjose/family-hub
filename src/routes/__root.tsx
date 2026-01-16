@@ -7,25 +7,16 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import { createServerFn } from "@tanstack/react-start";
-import { auth } from "@clerk/tanstack-react-start/server";
 
 import AppClerkProvider from "@/integrations/clerk/provider";
 import Header from "@/components/Header";
 import { HouseholdProvider } from "@/contexts/HouseholdContext";
 import { TasksProvider } from "@/contexts/TasksContext";
 import { CalendarProvider } from "@/contexts/CalendarContext";
+import { fetchClerkAuth } from "@/server/auth";
 import { registerServiceWorker } from "../utils/registerServiceWorker";
 
 import appCss from "../styles.css?url";
-
-const fetchClerkAuth = createServerFn({ method: "GET" }).handler(async () => {
-  const { userId } = await auth();
-
-  return {
-    userId,
-  };
-});
 
 export const Route = createRootRoute({
   beforeLoad: async () => {

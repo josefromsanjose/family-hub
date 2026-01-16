@@ -1,12 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
-import { auth, clerkClient } from "@clerk/tanstack-react-start/server";
-import {
-  Prisma,
+import type {
   HouseholdRelation,
   HouseholdRole,
   MemberLocale,
 } from "@prisma/client";
-import { prisma } from "@/db";
+import { getPrisma, getPrismaErrors } from "@/server/db";
 import {
   DEFAULT_MEMBER_LOCALE,
   DEFAULT_NEW_MEMBER_ROLE,
@@ -25,6 +23,9 @@ const DEFAULT_HOUSEHOLD_NAME = "My Household";
 export const ensureHouseholdForCurrentUser = createServerFn({
   method: "POST",
 }).handler(async (): Promise<EnsureHouseholdResult> => {
+  const { auth, clerkClient } =
+    await import("@clerk/tanstack-react-start/server");
+  const prisma = await getPrisma();
   const { userId } = await auth();
 
   if (!userId) {
@@ -84,6 +85,7 @@ export const ensureHouseholdForCurrentUser = createServerFn({
   } catch (error) {
     // Handle race condition: unique constraint violation on clerkUserId
     // This can happen if two requests try to create the same user simultaneously
+    const Prisma = await getPrismaErrors();
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
@@ -127,6 +129,8 @@ export type HouseholdMemberResponse = {
 
 // Helper to get current user's household ID
 export async function getCurrentUserHouseholdId(): Promise<string> {
+  const { auth } = await import("@clerk/tanstack-react-start/server");
+  const prisma = await getPrisma();
   const { userId } = await auth();
 
   if (!userId) {
@@ -149,6 +153,7 @@ export async function getCurrentUserHouseholdId(): Promise<string> {
 export const getHouseholdMembers = createServerFn({ method: "GET" }).handler(
   async (): Promise<HouseholdMemberResponse[]> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     const members = await prisma.householdMember.findMany({
       where: { householdId },
@@ -179,6 +184,7 @@ export const createHouseholdMember = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<HouseholdMemberResponse> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     // Generate a color if not provided
     const colors = [
@@ -233,6 +239,7 @@ export const updateHouseholdMember = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<HouseholdMemberResponse> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     // Verify the member belongs to the current user's household
     const existingMember = await prisma.householdMember.findFirst({
@@ -278,6 +285,7 @@ export const deleteHouseholdMember = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     // Verify the member belongs to the current user's household
     const existingMember = await prisma.householdMember.findFirst({

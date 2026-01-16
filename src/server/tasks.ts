@@ -1,7 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
-import { auth } from "@clerk/tanstack-react-start/server";
-import { TaskPriority, TaskRecurrence, TaskRotationMode } from "@prisma/client";
-import { prisma } from "@/db";
+import type {
+  TaskPriority,
+  TaskRecurrence,
+  TaskRotationMode,
+} from "@prisma/client";
+import { getPrisma } from "@/server/db";
 
 // ============================================================================
 // Helper Functions
@@ -9,7 +12,9 @@ import { prisma } from "@/db";
 
 // Helper to get current user's household ID
 async function getCurrentUserHouseholdId(): Promise<string> {
+  const { auth } = await import("@clerk/tanstack-react-start/server");
   const { userId } = await auth();
+  const prisma = await getPrisma();
 
   if (!userId) {
     throw new Error("Unauthorized");
@@ -29,7 +34,9 @@ async function getCurrentUserHouseholdId(): Promise<string> {
 
 // Helper to get current user's member ID
 async function getCurrentUserMemberId(): Promise<string> {
+  const { auth } = await import("@clerk/tanstack-react-start/server");
   const { userId } = await auth();
+  const prisma = await getPrisma();
 
   if (!userId) {
     throw new Error("Unauthorized");
@@ -126,6 +133,7 @@ export type UpdateTaskInput = {
 export const getTasks = createServerFn({ method: "GET" }).handler(
   async (): Promise<TaskResponse[]> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     const tasks = await prisma.task.findMany({
       where: { householdId },
@@ -168,6 +176,7 @@ export const getTasks = createServerFn({ method: "GET" }).handler(
 export const getCompletionRecords = createServerFn({ method: "GET" }).handler(
   async (): Promise<CompletionRecordResponse[]> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     const completions = await prisma.completionRecord.findMany({
       where: { householdId },
@@ -197,6 +206,7 @@ export const createTask = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<TaskResponse> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     // Verify assignedTo member belongs to household if provided
     if (data.assignedTo) {
@@ -293,6 +303,7 @@ export const updateTask = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<TaskResponse> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     // Verify the task belongs to the current user's household
     const existingTask = await prisma.task.findFirst({
@@ -429,6 +440,7 @@ export const deleteTask = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     // Verify the task belongs to the current user's household
     const existingTask = await prisma.task.findFirst({
@@ -469,6 +481,7 @@ export const completeTask = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const householdId = await getCurrentUserHouseholdId();
     const currentUserMemberId = await getCurrentUserMemberId();
+    const prisma = await getPrisma();
 
     // Verify the task belongs to the current user's household
     const task = await prisma.task.findFirst({
@@ -532,6 +545,7 @@ export const uncompleteTask = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     // Verify the task belongs to the current user's household
     const task = await prisma.task.findFirst({

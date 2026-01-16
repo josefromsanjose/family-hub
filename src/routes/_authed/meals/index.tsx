@@ -1,8 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { addDays, startOfWeek } from "date-fns";
+import { Loader2, Plus, RefreshCw, Trash2 } from "lucide-react";
+import {
+  createMeal,
+  deleteMeal,
+  getMeals,
+  type MealResponse,
+} from "@/server/meals";
 
-export const Route = createFileRoute("/_authed/meals")({ component: MealPlanning });
+export const Route = createFileRoute("/_authed/meals/")({
+  loader: async () => {
+    return { meals: await getMeals() };
+  },
+  component: MealPlanningRoute,
+});
 
 const daysOfWeek = [
   "Monday",
@@ -13,53 +26,145 @@ const daysOfWeek = [
   "Saturday",
   "Sunday",
 ];
-const mealTypes = ["Breakfast", "Lunch", "Dinner"];
-
-interface Meal {
-  id: string;
+const mealTypeOptions = [
+  { label: "Breakfast", value: "breakfast" },
+  { label: "Lunch", value: "lunch" },
+  { label: "Dinner", value: "dinner" },
+] as const;
+const weekdayNames = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+type MealTypeValue = (typeof mealTypeOptions)[number]["value"];
+type MealFormData = {
   day: string;
-  mealType: string;
+  mealType: MealTypeValue;
   name: string;
-  notes?: string;
+  notes: string;
+};
+
+const mealsQueryKey = ["meals"];
+
+const getDayNameFromDate = (dateValue: string) => {
+  const parsedDate = new Date(dateValue);
+  if (Number.isNaN(parsedDate.valueOf())) {
+    return "";
+  }
+  return weekdayNames[parsedDate.getDay()];
+};
+
+const getDateForDayName = (day: string) => {
+  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const dayIndex = daysOfWeek.indexOf(day);
+  if (dayIndex < 0) {
+    return weekStart.toISOString();
+  }
+  return addDays(weekStart, dayIndex).toISOString();
+};
+
+type MealPlanningProps = {
+  initialMeals?: MealResponse[];
+};
+
+function MealPlanningRoute() {
+  const { meals: initialMeals } = Route.useLoaderData();
+  return <MealPlanning initialMeals={initialMeals} />;
 }
 
-function MealPlanning() {
-  const [meals, setMeals] = useState<Meal[]>([]);
+export function MealPlanning({ initialMeals }: MealPlanningProps) {
+  const queryClient = useQueryClient();
   const [showAddForm, setShowAddForm] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<MealFormData>({
     day: daysOfWeek[0],
-    mealType: mealTypes[0],
+    mealType: mealTypeOptions[0].value,
     name: "",
     notes: "",
   });
 
+  const {
+    data: meals = [],
+    error,
+    isLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: mealsQueryKey,
+    queryFn: () => getMeals(),
+    initialData: initialMeals,
+  });
+
+  const createMutation = useMutation({
+    mutationFn: createMeal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mealsQueryKey });
+      setFormData({
+        day: daysOfWeek[0],
+        mealType: mealTypeOptions[0].value,
+        name: "",
+        notes: "",
+      });
+      setShowAddForm(false);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteMeal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mealsQueryKey });
+    },
+  });
+
   const addMeal = () => {
     if (!formData.name.trim()) return;
-
-    const newMeal: Meal = {
-      id: Date.now().toString(),
-      ...formData,
-    };
-
-    setMeals([...meals, newMeal]);
-    setFormData({
-      day: daysOfWeek[0],
-      mealType: mealTypes[0],
-      name: "",
-      notes: "",
+    createMutation.mutate({
+      data: {
+        name: formData.name,
+        date: getDateForDayName(formData.day),
+        mealType: formData.mealType,
+        notes: formData.notes,
+      },
     });
-    setShowAddForm(false);
   };
 
-  const deleteMeal = (id: string) => {
-    setMeals(meals.filter((meal) => meal.id !== id));
+  const handleDeleteMeal = (id: string) => {
+    deleteMutation.mutate({ data: { id } });
   };
 
-  const getMealsForDay = (day: string, mealType: string) => {
+  const getMealsForDay = (day: string, mealType: MealTypeValue) => {
     return meals.filter(
-      (meal) => meal.day === day && meal.mealType === mealType
+      (meal: MealResponse) =>
+        getDayNameFromDate(meal.date) === day && meal.mealType === mealType
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-7xl mx-auto flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Loading meals...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-destructive/10 border border-destructive rounded-lg p-6 text-center">
+            <p className="text-destructive">
+              Error loading meals. Please try again.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -81,6 +186,12 @@ function MealPlanning() {
             Add Meal
           </button>
         </div>
+        {isFetching && (
+          <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+            <RefreshCw className="h-4 w-4 animate-spin" />
+            Refreshing meals...
+          </div>
+        )}
 
         {showAddForm && (
           <div className="bg-card rounded-lg shadow-sm p-6 mb-6 border border-border">
@@ -89,10 +200,14 @@ function MealPlanning() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
+                <label
+                  htmlFor="meal-day"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
                   Day
                 </label>
                 <select
+                  id="meal-day"
                   value={formData.day}
                   onChange={(e) =>
                     setFormData({ ...formData, day: e.target.value })
@@ -107,28 +222,39 @@ function MealPlanning() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
+                <label
+                  htmlFor="meal-type"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
                   Meal Type
                 </label>
                 <select
+                  id="meal-type"
                   value={formData.mealType}
                   onChange={(e) =>
-                    setFormData({ ...formData, mealType: e.target.value })
+                    setFormData({
+                      ...formData,
+                      mealType: e.target.value as MealTypeValue,
+                    })
                   }
                   className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                 >
-                  {mealTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
+                  {mealTypeOptions.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
                     </option>
                   ))}
                 </select>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-1">
+                <label
+                  htmlFor="meal-name"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
                   Meal Name
                 </label>
                 <input
+                  id="meal-name"
                   type="text"
                   value={formData.name}
                   onChange={(e) =>
@@ -139,10 +265,14 @@ function MealPlanning() {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-1">
+                <label
+                  htmlFor="meal-notes"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
                   Notes (optional)
                 </label>
                 <textarea
+                  id="meal-notes"
                   value={formData.notes}
                   onChange={(e) =>
                     setFormData({ ...formData, notes: e.target.value })
@@ -156,9 +286,10 @@ function MealPlanning() {
             <div className="flex gap-3 mt-4">
               <button
                 onClick={addMeal}
+                disabled={createMutation.isPending}
                 className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
               >
-                Add Meal
+                {createMutation.isPending ? "Adding..." : "Add Meal"}
               </button>
               <button
                 onClick={() => setShowAddForm(false)}
@@ -178,12 +309,12 @@ function MealPlanning() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Day
                   </th>
-                  {mealTypes.map((type) => (
+                  {mealTypeOptions.map((type) => (
                     <th
-                      key={type}
+                      key={type.value}
                       className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
                     >
-                      {type}
+                      {type.label}
                     </th>
                   ))}
                 </tr>
@@ -194,10 +325,10 @@ function MealPlanning() {
                     <td className="px-6 py-4 whitespace-nowrap font-medium text-foreground">
                       {day}
                     </td>
-                    {mealTypes.map((mealType) => (
-                      <td key={mealType} className="px-6 py-4">
+                    {mealTypeOptions.map((mealType) => (
+                      <td key={mealType.value} className="px-6 py-4">
                         <div className="space-y-2">
-                          {getMealsForDay(day, mealType).map((meal) => (
+                          {getMealsForDay(day, mealType.value).map((meal) => (
                             <div
                               key={meal.id}
                               className="flex items-start justify-between gap-2 p-2 bg-primary/10 rounded border border-primary/30"
@@ -213,7 +344,8 @@ function MealPlanning() {
                                 )}
                               </div>
                               <button
-                                onClick={() => deleteMeal(meal.id)}
+                                onClick={() => handleDeleteMeal(meal.id)}
+                                disabled={deleteMutation.isPending}
                                 className="p-1 hover:bg-destructive/20 rounded text-destructive transition-colors"
                                 aria-label="Delete meal"
                               >

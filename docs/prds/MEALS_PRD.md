@@ -24,7 +24,7 @@ The Meal Planning feature allows families to plan meals for the week in advance,
 
 **Description:** As a developer, I need server functions to create, read, update, and delete meals so the UI can persist data to the database.
 
-passes: true
+passes: false
 
 **Acceptance Criteria:**
 
@@ -55,15 +55,17 @@ passes: true
 
 **Description:** As a user, I want my meal plans to persist across page refreshes so I don't lose my planning work.
 
+passes: true
+
 **Acceptance Criteria:**
 
-- [ ] Remove `useState` for meals in `src/routes/_authed/meals.tsx`
-- [ ] Use TanStack Query to fetch meals via `getMeals()` server function
-- [ ] Use mutations for create/update/delete operations
-- [ ] Invalidate queries after mutations to refresh data
-- [ ] Show loading state while fetching
-- [ ] Show error state if fetch fails
-- [ ] Typecheck passes
+- [x] Remove `useState` for meals in `src/routes/_authed/meals.tsx`
+- [x] Use TanStack Query to fetch meals via `getMeals()` server function
+- [x] Use mutations for create/update/delete operations
+- [x] Invalidate queries after mutations to refresh data
+- [x] Show loading state while fetching
+- [x] Show error state if fetch fails
+- [x] Typecheck passes
 - [ ] Verify in browser using dev-browser skill
 
 ### US-004: Convert day names to actual dates

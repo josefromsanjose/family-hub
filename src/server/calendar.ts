@@ -1,14 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
-import { auth } from "@clerk/tanstack-react-start/server";
-import { EventType, EventRecurrence } from "@prisma/client";
-import { prisma } from "@/db";
+import type { EventType, EventRecurrence } from "@prisma/client";
+import { getPrisma } from "@/server/db";
 
 // ============================================================================
 // Helper Functions
 // ============================================================================
 
 async function getCurrentUserHouseholdId(): Promise<string> {
+  const { auth } = await import("@clerk/tanstack-react-start/server");
   const { userId } = await auth();
+  const prisma = await getPrisma();
 
   if (!userId) {
     throw new Error("Unauthorized");
@@ -62,6 +63,7 @@ export type DeleteCalendarEventInput = {
 export const getCalendarEvents = createServerFn({ method: "GET" }).handler(
   async (): Promise<CalendarEventResponse[]> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     const events = await prisma.calendarEvent.findMany({
       where: { householdId },
@@ -98,6 +100,7 @@ export const createCalendarEvent = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<CalendarEventResponse> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     if (data.participantId) {
       const member = await prisma.householdMember.findFirst({
@@ -149,6 +152,7 @@ export const deleteCalendarEvent = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
 
     const existingEvent = await prisma.calendarEvent.findFirst({
       where: {

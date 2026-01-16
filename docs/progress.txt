@@ -19,3 +19,12 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Gotchas encountered: Ensure PRD stories include a `passes:` line when marking completion.
   - Useful context: Household membership lookup uses `clerkUserId` in `householdMember`.
 ---
+## 2026-01-16 00:34 - US-003
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Replaced local meal state with TanStack Query fetches/mutations, added loading/error UI, and wired add/delete to server functions.
+- Files changed: `src/routes/_authed/meals.tsx`, `src/routes/_authed/meals.test.tsx`, `docs/prds/MEALS_PRD.md`
+- **Learnings for future iterations:**
+  - Patterns discovered: For TanStack Query mutations, `createServerFn` receives an extra metadata argument in tests.
+  - Gotchas encountered: Meal form labels need `htmlFor`/`id` pairing for RTL queries.
+  - Useful context: Browser verification redirected to sign-in at `/sign-in?redirect=%2Fmeals`, so UI verification was blocked without credentials.
+---

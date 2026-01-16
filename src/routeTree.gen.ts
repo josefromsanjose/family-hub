@@ -14,10 +14,10 @@ import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as AuthedIndexRouteImport } from './routes/_authed/index'
 import { Route as AuthedShoppingRouteImport } from './routes/_authed/shopping'
-import { Route as AuthedMealsRouteImport } from './routes/_authed/meals'
 import { Route as AuthedCalendarRouteImport } from './routes/_authed/calendar'
 import { Route as AuthedTasksIndexRouteImport } from './routes/_authed/tasks/index'
 import { Route as AuthedSettingsIndexRouteImport } from './routes/_authed/settings/index'
+import { Route as AuthedMealsIndexRouteImport } from './routes/_authed/meals/index'
 import { Route as AuthedTasksNewRouteImport } from './routes/_authed/tasks/new'
 import { Route as AuthedMembersMemberIdIndexRouteImport } from './routes/_authed/members/$memberId.index'
 import { Route as AuthedTasksTaskIdEditRouteImport } from './routes/_authed/tasks/$taskId.edit'
@@ -49,11 +49,6 @@ const AuthedShoppingRoute = AuthedShoppingRouteImport.update({
   path: '/shopping',
   getParentRoute: () => AuthedRoute,
 } as any)
-const AuthedMealsRoute = AuthedMealsRouteImport.update({
-  id: '/meals',
-  path: '/meals',
-  getParentRoute: () => AuthedRoute,
-} as any)
 const AuthedCalendarRoute = AuthedCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
@@ -67,6 +62,11 @@ const AuthedTasksIndexRoute = AuthedTasksIndexRouteImport.update({
 const AuthedSettingsIndexRoute = AuthedSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedMealsIndexRoute = AuthedMealsIndexRouteImport.update({
+  id: '/meals/',
+  path: '/meals/',
   getParentRoute: () => AuthedRoute,
 } as any)
 const AuthedTasksNewRoute = AuthedTasksNewRouteImport.update({
@@ -108,10 +108,10 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/calendar': typeof AuthedCalendarRoute
-  '/meals': typeof AuthedMealsRoute
   '/shopping': typeof AuthedShoppingRoute
   '/': typeof AuthedIndexRoute
   '/tasks/new': typeof AuthedTasksNewRoute
+  '/meals': typeof AuthedMealsIndexRoute
   '/settings': typeof AuthedSettingsIndexRoute
   '/tasks': typeof AuthedTasksIndexRoute
   '/members/$memberId/chores': typeof AuthedMembersMemberIdChoresRoute
@@ -124,10 +124,10 @@ export interface FileRoutesByTo {
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/calendar': typeof AuthedCalendarRoute
-  '/meals': typeof AuthedMealsRoute
   '/shopping': typeof AuthedShoppingRoute
   '/': typeof AuthedIndexRoute
   '/tasks/new': typeof AuthedTasksNewRoute
+  '/meals': typeof AuthedMealsIndexRoute
   '/settings': typeof AuthedSettingsIndexRoute
   '/tasks': typeof AuthedTasksIndexRoute
   '/members/$memberId/chores': typeof AuthedMembersMemberIdChoresRoute
@@ -142,10 +142,10 @@ export interface FileRoutesById {
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/_authed/calendar': typeof AuthedCalendarRoute
-  '/_authed/meals': typeof AuthedMealsRoute
   '/_authed/shopping': typeof AuthedShoppingRoute
   '/_authed/': typeof AuthedIndexRoute
   '/_authed/tasks/new': typeof AuthedTasksNewRoute
+  '/_authed/meals/': typeof AuthedMealsIndexRoute
   '/_authed/settings/': typeof AuthedSettingsIndexRoute
   '/_authed/tasks/': typeof AuthedTasksIndexRoute
   '/_authed/members/$memberId/chores': typeof AuthedMembersMemberIdChoresRoute
@@ -160,10 +160,10 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/calendar'
-    | '/meals'
     | '/shopping'
     | '/'
     | '/tasks/new'
+    | '/meals'
     | '/settings'
     | '/tasks'
     | '/members/$memberId/chores'
@@ -176,10 +176,10 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/calendar'
-    | '/meals'
     | '/shopping'
     | '/'
     | '/tasks/new'
+    | '/meals'
     | '/settings'
     | '/tasks'
     | '/members/$memberId/chores'
@@ -193,10 +193,10 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/_authed/calendar'
-    | '/_authed/meals'
     | '/_authed/shopping'
     | '/_authed/'
     | '/_authed/tasks/new'
+    | '/_authed/meals/'
     | '/_authed/settings/'
     | '/_authed/tasks/'
     | '/_authed/members/$memberId/chores'
@@ -249,13 +249,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedShoppingRouteImport
       parentRoute: typeof AuthedRoute
     }
-    '/_authed/meals': {
-      id: '/_authed/meals'
-      path: '/meals'
-      fullPath: '/meals'
-      preLoaderRoute: typeof AuthedMealsRouteImport
-      parentRoute: typeof AuthedRoute
-    }
     '/_authed/calendar': {
       id: '/_authed/calendar'
       path: '/calendar'
@@ -275,6 +268,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthedSettingsIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/meals/': {
+      id: '/_authed/meals/'
+      path: '/meals'
+      fullPath: '/meals'
+      preLoaderRoute: typeof AuthedMealsIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
     '/_authed/tasks/new': {
@@ -324,10 +324,10 @@ declare module '@tanstack/react-router' {
 
 interface AuthedRouteChildren {
   AuthedCalendarRoute: typeof AuthedCalendarRoute
-  AuthedMealsRoute: typeof AuthedMealsRoute
   AuthedShoppingRoute: typeof AuthedShoppingRoute
   AuthedIndexRoute: typeof AuthedIndexRoute
   AuthedTasksNewRoute: typeof AuthedTasksNewRoute
+  AuthedMealsIndexRoute: typeof AuthedMealsIndexRoute
   AuthedSettingsIndexRoute: typeof AuthedSettingsIndexRoute
   AuthedTasksIndexRoute: typeof AuthedTasksIndexRoute
   AuthedMembersMemberIdChoresRoute: typeof AuthedMembersMemberIdChoresRoute
@@ -339,10 +339,10 @@ interface AuthedRouteChildren {
 
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedCalendarRoute: AuthedCalendarRoute,
-  AuthedMealsRoute: AuthedMealsRoute,
   AuthedShoppingRoute: AuthedShoppingRoute,
   AuthedIndexRoute: AuthedIndexRoute,
   AuthedTasksNewRoute: AuthedTasksNewRoute,
+  AuthedMealsIndexRoute: AuthedMealsIndexRoute,
   AuthedSettingsIndexRoute: AuthedSettingsIndexRoute,
   AuthedTasksIndexRoute: AuthedTasksIndexRoute,
   AuthedMembersMemberIdChoresRoute: AuthedMembersMemberIdChoresRoute,
