@@ -26,7 +26,7 @@ export function SelectionCard({
       className={cn(
         // Base styles - touch-optimized
         "w-full min-h-[80px] p-4 rounded-xl",
-        "flex items-center gap-4 text-left",
+        "flex items-center gap-4 text-left text-foreground",
         "transition-all duration-150 active:scale-[0.98]",
         // Border and background
         "border-2",

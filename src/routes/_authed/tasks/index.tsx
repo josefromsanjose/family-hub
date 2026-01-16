@@ -16,6 +16,8 @@ function TasksAndChores() {
     completeTask,
     uncompleteTask,
     isTaskDue,
+    isTaskScheduledForDate,
+    getTaskAssigneeForDate,
     getCompletionsThisPeriod,
   } = useTasks();
   const { members } = useHousehold();
@@ -30,10 +32,11 @@ function TasksAndChores() {
   };
 
   const handleToggleTask = (task: Task) => {
+    const resolvedAssignee = getTaskAssigneeForDate(task, new Date());
     if (task.recurrence) {
       // For recurring tasks, check if it's due
       if (isTaskDue(task)) {
-        completeTask(task.id, task.assignedTo || "Unknown");
+        completeTask(task.id, resolvedAssignee || task.assignedTo || "Unknown");
       } else {
         uncompleteTask(task.id);
       }
@@ -47,25 +50,38 @@ function TasksAndChores() {
     }
   };
 
+  const today = new Date();
+
+  const isRecurringScheduledToday = (task: Task): boolean => {
+    if (!task.recurrence) {
+      return true;
+    }
+    return isTaskScheduledForDate(task, today);
+  };
+
+  const isActiveTask = (task: Task): boolean => {
+    if (task.recurrence) {
+      return isRecurringScheduledToday(task) && isTaskDue(task);
+    }
+    return !task.completed;
+  };
+
+  const isCompletedTask = (task: Task): boolean => {
+    if (task.recurrence) {
+      return isRecurringScheduledToday(task) && !isTaskDue(task);
+    }
+    return task.completed;
+  };
+
   const getFilteredTasks = () => {
     let filtered = tasks;
 
     switch (filter) {
       case "active":
-        filtered = tasks.filter((task) => {
-          if (task.recurrence) {
-            return isTaskDue(task);
-          }
-          return !task.completed;
-        });
+        filtered = tasks.filter(isActiveTask);
         break;
       case "completed":
-        filtered = tasks.filter((task) => {
-          if (task.recurrence) {
-            return !isTaskDue(task);
-          }
-          return task.completed;
-        });
+        filtered = tasks.filter(isCompletedTask);
         break;
       case "recurring":
         filtered = tasks.filter((task) => !!task.recurrence);
@@ -104,19 +120,9 @@ function TasksAndChores() {
     }
   };
 
-  const activeTasks = tasks.filter((task) => {
-    if (task.recurrence) {
-      return isTaskDue(task);
-    }
-    return !task.completed;
-  }).length;
+  const activeTasks = tasks.filter(isActiveTask).length;
 
-  const completedTasks = tasks.filter((task) => {
-    if (task.recurrence) {
-      return !isTaskDue(task);
-    }
-    return task.completed;
-  }).length;
+  const completedTasks = tasks.filter(isCompletedTask).length;
 
   const recurringTasks = tasks.filter((task) => !!task.recurrence).length;
   const oneTimeTasks = tasks.filter((task) => !task.recurrence).length;
@@ -230,24 +236,36 @@ function TasksAndChores() {
         ) : (
           <div className="space-y-3">
             {getFilteredTasks().map((task) => {
-              const isDue = task.recurrence ? isTaskDue(task) : !task.completed;
+              const isScheduledToday = isRecurringScheduledToday(task);
+              const isDue = task.recurrence
+                ? isScheduledToday && isTaskDue(task)
+                : !task.completed;
+              const isCompleted = task.recurrence
+                ? isScheduledToday && !isTaskDue(task)
+                : task.completed;
               const periodCompletions = task.recurrence
                 ? getCompletionsThisPeriod(task)
                 : [];
+              const resolvedAssignee = getTaskAssigneeForDate(task, today);
 
               return (
                 <div
                   key={task.id}
                   className={`bg-card rounded-lg shadow-sm border p-6 transition-colors ${
-                    !isDue ? "bg-secondary border-border" : "border-border"
+                    isCompleted ? "bg-secondary border-border" : "border-border"
                   }`}
                 >
                   <div className="flex items-start gap-4">
                     <button
                       onClick={() => handleToggleTask(task)}
                       className="flex-shrink-0 mt-1"
+                      disabled={task.recurrence ? !isScheduledToday : false}
                       aria-label={
-                        isDue ? "Mark as complete" : "Mark as incomplete"
+                        task.recurrence && !isScheduledToday
+                          ? "Not scheduled today"
+                          : isDue
+                            ? "Mark as complete"
+                            : "Mark as incomplete"
                       }
                     >
                       {isDue ? (
@@ -262,7 +280,7 @@ function TasksAndChores() {
                           <div className="flex items-center gap-2 mb-1">
                             <h3
                               className={`text-lg font-semibold ${
-                                !isDue
+                                isCompleted
                                   ? "text-muted-foreground line-through"
                                   : "text-foreground"
                               }`}
@@ -280,6 +298,11 @@ function TasksAndChores() {
                                   task.recurrence.slice(1)}
                               </span>
                             )}
+                            {task.recurrence && !isScheduledToday && (
+                              <span className="px-2 py-1 text-xs font-medium rounded border bg-muted text-muted-foreground border-border">
+                                Not scheduled today
+                              </span>
+                            )}
                           </div>
                           {task.description && (
                             <p className="text-sm text-muted-foreground mb-3">
@@ -287,12 +310,12 @@ function TasksAndChores() {
                             </p>
                           )}
                           <div className="flex flex-wrap items-center gap-4">
-                            {task.assignedTo && (
+                            {resolvedAssignee && (
                               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                 <User size={16} />
                                 <span>
-                                  {getMemberName(task.assignedTo) ||
-                                    task.assignedTo}
+                                  {getMemberName(resolvedAssignee) ||
+                                    resolvedAssignee}
                                 </span>
                               </div>
                             )}

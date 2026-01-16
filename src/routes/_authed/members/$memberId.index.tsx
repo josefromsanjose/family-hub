@@ -25,6 +25,8 @@ function MemberLandingPage() {
     uncompleteTask,
     isTaskDue,
     getCompletionStreak,
+    getTaskAssigneeForDate,
+    isTaskScheduledForDate,
   } = useTasks();
   const { events } = useCalendar();
 
@@ -33,10 +35,17 @@ function MemberLandingPage() {
     [members, memberId]
   );
 
+  const today = useMemo(() => new Date(), []);
+
   const memberChores = useMemo(
     () =>
-      tasks.filter((task) => task.recurrence && task.assignedTo === memberId),
-    [tasks, memberId]
+      tasks.filter((task) => {
+        if (!task.recurrence) return false;
+        if (!isTaskScheduledForDate(task, today)) return false;
+        const assignee = getTaskAssigneeForDate(task, today);
+        return assignee === memberId;
+      }),
+    [tasks, memberId, getTaskAssigneeForDate, isTaskScheduledForDate, today]
   );
 
   const memberTasks = useMemo(
@@ -56,10 +65,10 @@ function MemberLandingPage() {
   );
 
   const todayEvents = useMemo(() => {
-    const today = new Date().toISOString().split("T")[0];
+    const todayKey = new Date().toISOString().split("T")[0];
     return events.filter((event) => {
       const eventDate = event.date.split("T")[0];
-      if (eventDate !== today) return false;
+      if (eventDate !== todayKey) return false;
       return event.participantId ? event.participantId === memberId : true;
     });
   }, [events, memberId]);
@@ -225,6 +234,12 @@ function MemberLandingPage() {
                             {chore.recurrence}
                           </span>
                         )}
+                        {chore.rotationMode === "odd_even_week" &&
+                          chore.rotationAssignees.length >= 2 && (
+                            <span className="text-xs text-muted-foreground">
+                              Assigned this week: {member.name}
+                            </span>
+                          )}
                         {getCompletionStreak(chore) > 0 && (
                           <span className="flex items-center gap-1 text-xs text-primary font-medium">
                             <Flame className="h-3 w-3" />

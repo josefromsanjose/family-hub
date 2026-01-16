@@ -81,6 +81,7 @@ model HouseholdMember {
   assignedTasks      Task[]
   completions        CompletionRecord[]
   calendarEvents     CalendarEvent[]
+  taskAssignmentOverrides TaskAssignmentOverride[]
   permissions        MemberPermission[]
 
   @@index([householdId])
@@ -102,6 +103,11 @@ enum TaskRecurrence {
   daily
   weekly
   monthly
+}
+
+enum TaskRotationMode {
+  none
+  odd_even_week
 }
 
 enum PermissionKey {
@@ -164,6 +170,13 @@ model Task {
   dueDate      DateTime?
   priority     TaskPriority    @default(medium)
   recurrence   TaskRecurrence? // If set, this is a recurring chore
+  recurrenceDays Int[]         @default([])
+  recurrenceDayOfMonth Int?
+  recurrenceWeekday Int?
+  recurrenceWeekOfMonth Int?
+  rotationMode TaskRotationMode @default(none)
+  rotationAssignees String[]   @default([])
+  rotationAnchorDate DateTime?
   completed    Boolean         @default(false) // For one-time tasks only
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
@@ -172,6 +185,7 @@ model Task {
   household   Household        @relation(fields: [householdId], references: [id], onDelete: Cascade)
   assignedTo  HouseholdMember? @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
   completions CompletionRecord[]
+  assignmentOverrides TaskAssignmentOverride[]
 
   @@index([householdId])
   @@index([assignedToId])
@@ -179,6 +193,25 @@ model Task {
   @@index([completed])
   @@index([priority])
   @@map("tasks")
+}
+
+model TaskAssignmentOverride {
+  id            String   @id @default(uuid())
+  taskId        String
+  date          DateTime
+  assignedToId  String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  task        Task            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  assignedTo  HouseholdMember @relation(fields: [assignedToId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, date])
+  @@index([taskId])
+  @@index([assignedToId])
+  @@index([date])
+  @@map("task_assignment_overrides")
 }
 
 model CompletionRecord {

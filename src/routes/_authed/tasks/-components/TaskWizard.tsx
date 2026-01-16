@@ -16,12 +16,16 @@ import { ConfirmStep } from "./ConfirmStep";
 import { DueDateStep } from "./DueDateStep";
 import { FrequencyStep } from "./FrequencyStep";
 import { PriorityStep } from "./PriorityStep";
+import { RotationStep } from "./RotationStep";
+import { ScheduleStep } from "./ScheduleStep";
 import { TitleStep } from "./TitleStep";
 
 const STEPS = [
   { id: "title", title: "What needs to be done?" },
   { id: "assignee", title: "Who should do this?", optional: true },
   { id: "frequency", title: "How often?", optional: true },
+  { id: "schedule", title: "When should it happen?", optional: true },
+  { id: "rotation", title: "Rotate who does this?", optional: true },
   { id: "priority", title: "How important is it?", optional: true },
   { id: "dueDate", title: "When is it due?", optional: true },
   { id: "confirm", title: "Ready to create?" },
@@ -67,6 +71,14 @@ export function TaskWizard() {
       recurrence: "once",
       priority: "medium",
       dueDate: null,
+      recurrenceDays: [],
+      recurrenceDayOfMonth: null,
+      recurrenceWeekday: null,
+      recurrenceWeekOfMonth: null,
+      monthlyPattern: null,
+      rotationMode: "none",
+      rotationAssignees: [],
+      rotationAnchorDate: null,
     },
     onComplete: (taskData) => {
       addTask({
@@ -79,6 +91,27 @@ export function TaskWizard() {
           taskData.recurrence === "once" && taskData.dueDate
             ? taskData.dueDate.toISOString()
             : undefined,
+        recurrenceDays: taskData.recurrenceDays,
+        recurrenceDayOfMonth:
+          taskData.recurrence === "monthly"
+            ? (taskData.recurrenceDayOfMonth ?? undefined)
+            : undefined,
+        recurrenceWeekday:
+          taskData.recurrence === "monthly"
+            ? (taskData.recurrenceWeekday ?? undefined)
+            : undefined,
+        recurrenceWeekOfMonth:
+          taskData.recurrence === "monthly"
+            ? (taskData.recurrenceWeekOfMonth ?? undefined)
+            : undefined,
+        rotationMode:
+          taskData.recurrence === "weekly" ? taskData.rotationMode : "none",
+        rotationAssignees:
+          taskData.recurrence === "weekly" ? taskData.rotationAssignees : [],
+        rotationAnchorDate: taskData.rotationAnchorDate
+          ? taskData.rotationAnchorDate.toISOString()
+          : undefined,
+        assignmentOverrides: [],
       });
       reset();
       navigate({ to: "/tasks" });
@@ -155,6 +188,12 @@ export function TaskWizard() {
               onChange={updateData}
               frequencies={FREQUENCIES}
             />
+          )}
+          {step.id === "schedule" && (
+            <ScheduleStep data={data} onChange={updateData} />
+          )}
+          {step.id === "rotation" && (
+            <RotationStep data={data} onChange={updateData} members={members} />
           )}
           {step.id === "priority" && (
             <PriorityStep

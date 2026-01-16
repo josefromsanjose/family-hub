@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { auth } from "@clerk/tanstack-react-start/server";
-import { TaskPriority, TaskRecurrence } from "@prisma/client";
+import { TaskPriority, TaskRecurrence, TaskRotationMode } from "@prisma/client";
 import { prisma } from "@/db";
 
 // ============================================================================
@@ -61,6 +61,17 @@ export type TaskResponse = {
   completed: boolean;
   priority: "low" | "medium" | "high";
   recurrence?: "daily" | "weekly" | "monthly";
+  recurrenceDays: number[];
+  recurrenceDayOfMonth?: number;
+  recurrenceWeekday?: number;
+  recurrenceWeekOfMonth?: number;
+  rotationMode: "none" | "odd_even_week";
+  rotationAssignees: string[];
+  rotationAnchorDate?: string;
+  assignmentOverrides: {
+    date: string;
+    assignedTo: string;
+  }[];
 };
 
 // Type for completion record returned from API
@@ -79,6 +90,13 @@ export type CreateTaskInput = {
   dueDate?: string; // ISO string
   priority?: "low" | "medium" | "high";
   recurrence?: "daily" | "weekly" | "monthly";
+  recurrenceDays?: number[];
+  recurrenceDayOfMonth?: number | null;
+  recurrenceWeekday?: number | null;
+  recurrenceWeekOfMonth?: number | null;
+  rotationMode?: "none" | "odd_even_week";
+  rotationAssignees?: string[];
+  rotationAnchorDate?: string | null;
 };
 
 // Type for updating a task
@@ -91,6 +109,13 @@ export type UpdateTaskInput = {
   priority?: "low" | "medium" | "high";
   recurrence?: "daily" | "weekly" | "monthly" | null;
   completed?: boolean;
+  recurrenceDays?: number[] | null;
+  recurrenceDayOfMonth?: number | null;
+  recurrenceWeekday?: number | null;
+  recurrenceWeekOfMonth?: number | null;
+  rotationMode?: "none" | "odd_even_week";
+  rotationAssignees?: string[] | null;
+  rotationAnchorDate?: string | null;
 };
 
 // ============================================================================
@@ -106,6 +131,7 @@ export const getTasks = createServerFn({ method: "GET" }).handler(
       where: { householdId },
       include: {
         assignedTo: true,
+        assignmentOverrides: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -120,6 +146,20 @@ export const getTasks = createServerFn({ method: "GET" }).handler(
       priority: task.priority as "low" | "medium" | "high",
       recurrence:
         (task.recurrence as "daily" | "weekly" | "monthly" | null) || undefined,
+      recurrenceDays: task.recurrenceDays ?? [],
+      recurrenceDayOfMonth: task.recurrenceDayOfMonth ?? undefined,
+      recurrenceWeekday: task.recurrenceWeekday ?? undefined,
+      recurrenceWeekOfMonth: task.recurrenceWeekOfMonth ?? undefined,
+      rotationMode:
+        (task.rotationMode as "none" | "odd_even_week" | null) || "none",
+      rotationAssignees: task.rotationAssignees ?? [],
+      rotationAnchorDate: task.rotationAnchorDate
+        ? task.rotationAnchorDate.toISOString()
+        : undefined,
+      assignmentOverrides: task.assignmentOverrides.map((override) => ({
+        date: override.date.toISOString(),
+        assignedTo: override.assignedToId,
+      })),
     }));
   }
 );
@@ -171,6 +211,20 @@ export const createTask = createServerFn({ method: "POST" })
         throw new Error("Assigned member not found or not authorized");
       }
     }
+    if (data.rotationAssignees && data.rotationAssignees.length > 0) {
+      const count = await prisma.householdMember.count({
+        where: {
+          id: { in: data.rotationAssignees },
+          householdId,
+        },
+      });
+      if (count !== data.rotationAssignees.length) {
+        throw new Error("Rotation assignees not found or not authorized");
+      }
+    }
+
+    const shouldAnchorRotation =
+      data.rotationMode === "odd_even_week" && !data.rotationAnchorDate;
 
     const task = await prisma.task.create({
       data: {
@@ -183,10 +237,22 @@ export const createTask = createServerFn({ method: "POST" })
         recurrence: data.recurrence
           ? (data.recurrence as TaskRecurrence)
           : null,
+        recurrenceDays: data.recurrenceDays || [],
+        recurrenceDayOfMonth: data.recurrenceDayOfMonth || null,
+        recurrenceWeekday: data.recurrenceWeekday || null,
+        recurrenceWeekOfMonth: data.recurrenceWeekOfMonth || null,
+        rotationMode: (data.rotationMode || "none") as TaskRotationMode,
+        rotationAssignees: data.rotationAssignees || [],
+        rotationAnchorDate: data.rotationAnchorDate
+          ? new Date(data.rotationAnchorDate)
+          : shouldAnchorRotation
+            ? new Date()
+            : null,
         completed: false,
       },
       include: {
         assignedTo: true,
+        assignmentOverrides: true,
       },
     });
 
@@ -200,6 +266,20 @@ export const createTask = createServerFn({ method: "POST" })
       priority: task.priority as "low" | "medium" | "high",
       recurrence:
         (task.recurrence as "daily" | "weekly" | "monthly" | null) || undefined,
+      recurrenceDays: task.recurrenceDays ?? [],
+      recurrenceDayOfMonth: task.recurrenceDayOfMonth ?? undefined,
+      recurrenceWeekday: task.recurrenceWeekday ?? undefined,
+      recurrenceWeekOfMonth: task.recurrenceWeekOfMonth ?? undefined,
+      rotationMode:
+        (task.rotationMode as "none" | "odd_even_week" | null) || "none",
+      rotationAssignees: task.rotationAssignees ?? [],
+      rotationAnchorDate: task.rotationAnchorDate
+        ? task.rotationAnchorDate.toISOString()
+        : undefined,
+      assignmentOverrides: task.assignmentOverrides.map((override) => ({
+        date: override.date.toISOString(),
+        assignedTo: override.assignedToId,
+      })),
     };
   });
 
@@ -239,6 +319,22 @@ export const updateTask = createServerFn({ method: "POST" })
         throw new Error("Assigned member not found or not authorized");
       }
     }
+    if (
+      data.rotationAssignees !== undefined &&
+      data.rotationAssignees !== null
+    ) {
+      if (data.rotationAssignees.length > 0) {
+        const count = await prisma.householdMember.count({
+          where: {
+            id: { in: data.rotationAssignees },
+            householdId,
+          },
+        });
+        if (count !== data.rotationAssignees.length) {
+          throw new Error("Rotation assignees not found or not authorized");
+        }
+      }
+    }
 
     const task = await prisma.task.update({
       where: { id: data.id },
@@ -261,10 +357,34 @@ export const updateTask = createServerFn({ method: "POST" })
             ? (data.recurrence as TaskRecurrence)
             : null,
         }),
+        ...(data.recurrenceDays !== undefined && {
+          recurrenceDays: data.recurrenceDays || [],
+        }),
+        ...(data.recurrenceDayOfMonth !== undefined && {
+          recurrenceDayOfMonth: data.recurrenceDayOfMonth,
+        }),
+        ...(data.recurrenceWeekday !== undefined && {
+          recurrenceWeekday: data.recurrenceWeekday,
+        }),
+        ...(data.recurrenceWeekOfMonth !== undefined && {
+          recurrenceWeekOfMonth: data.recurrenceWeekOfMonth,
+        }),
+        ...(data.rotationMode !== undefined && {
+          rotationMode: data.rotationMode as TaskRotationMode,
+        }),
+        ...(data.rotationAssignees !== undefined && {
+          rotationAssignees: data.rotationAssignees || [],
+        }),
+        ...(data.rotationAnchorDate !== undefined && {
+          rotationAnchorDate: data.rotationAnchorDate
+            ? new Date(data.rotationAnchorDate)
+            : null,
+        }),
         ...(data.completed !== undefined && { completed: data.completed }),
       },
       include: {
         assignedTo: true,
+        assignmentOverrides: true,
       },
     });
 
@@ -278,6 +398,20 @@ export const updateTask = createServerFn({ method: "POST" })
       priority: task.priority as "low" | "medium" | "high",
       recurrence:
         (task.recurrence as "daily" | "weekly" | "monthly" | null) || undefined,
+      recurrenceDays: task.recurrenceDays ?? [],
+      recurrenceDayOfMonth: task.recurrenceDayOfMonth ?? undefined,
+      recurrenceWeekday: task.recurrenceWeekday ?? undefined,
+      recurrenceWeekOfMonth: task.recurrenceWeekOfMonth ?? undefined,
+      rotationMode:
+        (task.rotationMode as "none" | "odd_even_week" | null) || "none",
+      rotationAssignees: task.rotationAssignees ?? [],
+      rotationAnchorDate: task.rotationAnchorDate
+        ? task.rotationAnchorDate.toISOString()
+        : undefined,
+      assignmentOverrides: task.assignmentOverrides.map((override) => ({
+        date: override.date.toISOString(),
+        assignedTo: override.assignedToId,
+      })),
     };
   });
 

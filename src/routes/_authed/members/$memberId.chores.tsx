@@ -16,6 +16,8 @@ function MyChores() {
     completeTask,
     uncompleteTask,
     isTaskDue,
+    isTaskScheduledForDate,
+    getTaskAssigneeForDate,
     getCompletionsThisPeriod,
     getCompletionStreak,
   } = useTasks();
@@ -31,9 +33,13 @@ function MyChores() {
   }, [memberId]);
 
   // Get recurring tasks assigned to selected member
-  const myChores = tasks.filter(
-    (task) => task.recurrence && task.assignedTo === selectedMemberId
-  );
+  const myChores = tasks.filter((task) => {
+    if (!task.recurrence) return false;
+    const today = new Date();
+    if (!isTaskScheduledForDate(task, today)) return false;
+    const assignee = getTaskAssigneeForDate(task, today);
+    return assignee === selectedMemberId;
+  });
 
   const handleToggleChore = (task: Task) => {
     if (isTaskDue(task)) {
@@ -212,6 +218,12 @@ function MyChores() {
                                       : "Monthly"}
                                 </span>
                               </div>
+                              {chore.rotationMode === "odd_even_week" &&
+                                chore.rotationAssignees.length >= 2 && (
+                                  <span className="text-xs text-muted-foreground">
+                                    Assigned this week: {selectedMemberName}
+                                  </span>
+                                )}
                               {!isDue && status.completions > 0 && (
                                 <div className="flex items-center gap-1 text-sm font-medium text-primary">
                                   <CheckCircle2 size={16} />

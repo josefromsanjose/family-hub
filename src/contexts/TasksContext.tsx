@@ -25,6 +25,17 @@ export interface Task {
   completed: boolean;
   priority: "low" | "medium" | "high";
   recurrence?: "daily" | "weekly" | "monthly";
+  recurrenceDays: number[];
+  recurrenceDayOfMonth?: number;
+  recurrenceWeekday?: number;
+  recurrenceWeekOfMonth?: number;
+  rotationMode: "none" | "odd_even_week";
+  rotationAssignees: string[];
+  rotationAnchorDate?: string;
+  assignmentOverrides: {
+    date: string;
+    assignedTo: string;
+  }[];
 }
 
 export interface CompletionRecord {
@@ -43,6 +54,8 @@ interface TasksContextType {
   completeTask: (taskId: string, completedBy: string) => void;
   uncompleteTask: (taskId: string) => void;
   isTaskDue: (task: Task) => boolean;
+  isTaskScheduledForDate: (task: Task, date: Date) => boolean;
+  getTaskAssigneeForDate: (task: Task, date: Date) => string | undefined;
   getCompletionsForTask: (taskId: string) => CompletionRecord[];
   getCompletionsThisPeriod: (task: Task) => CompletionRecord[];
   getCompletionStreak: (task: Task) => number;
@@ -71,6 +84,23 @@ function isSameMonth(date1: Date, date2: Date): boolean {
     date1.getFullYear() === date2.getFullYear() &&
     date1.getMonth() === date2.getMonth()
   );
+}
+
+function getIsoWeekNumber(date: Date): number {
+  const target = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+  );
+  const dayNumber = (target.getUTCDay() + 6) % 7;
+  target.setUTCDate(target.getUTCDate() - dayNumber + 3);
+  const firstThursday = new Date(Date.UTC(target.getUTCFullYear(), 0, 4));
+  const firstDayNumber = (firstThursday.getUTCDay() + 6) % 7;
+  firstThursday.setUTCDate(firstThursday.getUTCDate() - firstDayNumber + 3);
+  const diff = target.getTime() - firstThursday.getTime();
+  return 1 + Math.round(diff / (7 * 24 * 60 * 60 * 1000));
+}
+
+function getWeekOfMonth(date: Date): number {
+  return Math.floor((date.getDate() - 1) / 7) + 1;
 }
 
 export function TasksProvider({ children }: { children: ReactNode }) {
@@ -145,6 +175,13 @@ export function TasksProvider({ children }: { children: ReactNode }) {
         dueDate: task.dueDate,
         priority: task.priority,
         recurrence: task.recurrence,
+        recurrenceDays: task.recurrenceDays,
+        recurrenceDayOfMonth: task.recurrenceDayOfMonth ?? null,
+        recurrenceWeekday: task.recurrenceWeekday ?? null,
+        recurrenceWeekOfMonth: task.recurrenceWeekOfMonth ?? null,
+        rotationMode: task.rotationMode,
+        rotationAssignees: task.rotationAssignees,
+        rotationAnchorDate: task.rotationAnchorDate ?? null,
       };
       createMutation.mutate({ data: input });
     },
@@ -168,6 +205,27 @@ export function TasksProvider({ children }: { children: ReactNode }) {
         ...(updates.priority !== undefined && { priority: updates.priority }),
         ...(updates.recurrence !== undefined && {
           recurrence: updates.recurrence || null,
+        }),
+        ...(updates.recurrenceDays !== undefined && {
+          recurrenceDays: updates.recurrenceDays || [],
+        }),
+        ...(updates.recurrenceDayOfMonth !== undefined && {
+          recurrenceDayOfMonth: updates.recurrenceDayOfMonth ?? null,
+        }),
+        ...(updates.recurrenceWeekday !== undefined && {
+          recurrenceWeekday: updates.recurrenceWeekday ?? null,
+        }),
+        ...(updates.recurrenceWeekOfMonth !== undefined && {
+          recurrenceWeekOfMonth: updates.recurrenceWeekOfMonth ?? null,
+        }),
+        ...(updates.rotationMode !== undefined && {
+          rotationMode: updates.rotationMode,
+        }),
+        ...(updates.rotationAssignees !== undefined && {
+          rotationAssignees: updates.rotationAssignees || [],
+        }),
+        ...(updates.rotationAnchorDate !== undefined && {
+          rotationAnchorDate: updates.rotationAnchorDate || null,
         }),
         ...(updates.completed !== undefined && {
           completed: updates.completed,
@@ -212,13 +270,77 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     [uncompleteMutation]
   );
 
+  const isTaskScheduledForDate = useCallback((task: Task, date: Date) => {
+    if (!task.recurrence) {
+      return true;
+    }
+
+    if (task.recurrence === "daily") {
+      return true;
+    }
+
+    if (task.recurrence === "weekly") {
+      if (task.recurrenceDays.length > 0) {
+        return task.recurrenceDays.includes(date.getDay());
+      }
+      return true;
+    }
+
+    if (task.recurrence === "monthly") {
+      if (task.recurrenceDayOfMonth) {
+        return date.getDate() === task.recurrenceDayOfMonth;
+      }
+      if (
+        task.recurrenceWeekday !== undefined &&
+        task.recurrenceWeekOfMonth !== undefined
+      ) {
+        return (
+          date.getDay() === task.recurrenceWeekday &&
+          getWeekOfMonth(date) === task.recurrenceWeekOfMonth
+        );
+      }
+      return true;
+    }
+
+    return true;
+  }, []);
+
+  const getTaskAssigneeForDate = useCallback((task: Task, date: Date) => {
+    const override = task.assignmentOverrides.find((item) =>
+      isSameDay(new Date(item.date), date)
+    );
+    if (override) {
+      return override.assignedTo;
+    }
+
+    if (
+      task.rotationMode === "odd_even_week" &&
+      task.rotationAssignees.length >= 2
+    ) {
+      const anchorDate = task.rotationAnchorDate
+        ? new Date(task.rotationAnchorDate)
+        : date;
+      const currentWeek = getIsoWeekNumber(date);
+      const anchorWeek = getIsoWeekNumber(anchorDate);
+      const isSameParity = currentWeek % 2 === anchorWeek % 2;
+      return isSameParity
+        ? task.rotationAssignees[0]
+        : task.rotationAssignees[1];
+    }
+
+    return task.assignedTo;
+  }, []);
+
   const isTaskDue = (task: Task): boolean => {
     if (!task.recurrence) {
-      // One-time task is due if not completed
       return !task.completed;
     }
 
-    // Recurring task: check if it's been completed in the current period
+    const now = new Date();
+    if (!isTaskScheduledForDate(task, now)) {
+      return false;
+    }
+
     const taskCompletions = completions
       .filter((c) => c.taskId === task.id)
       .sort((a, b) => b.completedAt.localeCompare(a.completedAt));
@@ -226,11 +348,18 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     if (taskCompletions.length === 0) return true;
 
     const lastCompletion = new Date(taskCompletions[0].completedAt);
-    const now = new Date();
+    const usesDayGranularity =
+      task.recurrence === "daily" ||
+      task.recurrence === "monthly" ||
+      (task.recurrence === "weekly" && task.recurrenceDays.length > 1) ||
+      task.recurrenceDayOfMonth !== undefined ||
+      task.recurrenceWeekday !== undefined;
+
+    if (usesDayGranularity) {
+      return !isSameDay(lastCompletion, now);
+    }
 
     switch (task.recurrence) {
-      case "daily":
-        return !isSameDay(lastCompletion, now);
       case "weekly":
         return !isSameWeek(lastCompletion, now);
       case "monthly":
@@ -254,6 +383,16 @@ export function TasksProvider({ children }: { children: ReactNode }) {
 
     return taskCompletions.filter((c) => {
       const completionDate = new Date(c.completedAt);
+      const usesDayGranularity =
+        task.recurrence === "daily" ||
+        task.recurrence === "monthly" ||
+        (task.recurrence === "weekly" && task.recurrenceDays.length > 1) ||
+        task.recurrenceDayOfMonth !== undefined ||
+        task.recurrenceWeekday !== undefined;
+
+      if (usesDayGranularity) {
+        return isSameDay(completionDate, now);
+      }
       switch (task.recurrence) {
         case "daily":
           return isSameDay(completionDate, now);
@@ -331,6 +470,8 @@ export function TasksProvider({ children }: { children: ReactNode }) {
         completeTask,
         uncompleteTask,
         isTaskDue,
+        isTaskScheduledForDate,
+        getTaskAssigneeForDate,
         getCompletionsForTask,
         getCompletionsThisPeriod,
         getCompletionStreak,
