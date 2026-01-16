@@ -1,6 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Plus, Trash2, CheckCircle2, Circle, User, Repeat } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  CheckCircle2,
+  Circle,
+  User,
+  Repeat,
+  Pencil,
+} from "lucide-react";
 import { useTasks, Task } from "@/contexts/TasksContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 
@@ -349,13 +357,23 @@ function TasksAndChores() {
                             </span>
                           </div>
                         </div>
-                        <button
-                          onClick={() => deleteTask(task.id)}
-                          className="p-2 hover:bg-destructive/20 rounded text-destructive transition-colors flex-shrink-0"
-                          aria-label="Delete task"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Link
+                            to="/tasks/$taskId/edit"
+                            params={{ taskId: task.id }}
+                            className="p-2 hover:bg-accent rounded text-muted-foreground transition-colors"
+                            aria-label="Edit task"
+                          >
+                            <Pencil size={18} />
+                          </Link>
+                          <button
+                            onClick={() => deleteTask(task.id)}
+                            className="p-2 hover:bg-destructive/20 rounded text-destructive transition-colors"
+                            aria-label="Delete task"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

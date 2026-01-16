@@ -38,6 +38,27 @@ export interface Task {
   }[];
 }
 
+export type TaskUpdate = Partial<
+  Omit<
+    Task,
+    | "assignedTo"
+    | "dueDate"
+    | "recurrence"
+    | "recurrenceDayOfMonth"
+    | "recurrenceWeekday"
+    | "recurrenceWeekOfMonth"
+    | "rotationAnchorDate"
+  >
+> & {
+  assignedTo?: string | null;
+  dueDate?: string | null;
+  recurrence?: Task["recurrence"] | null;
+  recurrenceDayOfMonth?: number | null;
+  recurrenceWeekday?: number | null;
+  recurrenceWeekOfMonth?: number | null;
+  rotationAnchorDate?: string | null;
+};
+
 export interface CompletionRecord {
   id: string;
   taskId: string;
@@ -49,7 +70,7 @@ interface TasksContextType {
   tasks: Task[];
   completions: CompletionRecord[];
   addTask: (task: Omit<Task, "id" | "completed">) => void;
-  updateTask: (id: string, updates: Partial<Task>) => void;
+  updateTask: (id: string, updates: TaskUpdate) => void;
   deleteTask: (id: string) => void;
   completeTask: (taskId: string, completedBy: string) => void;
   uncompleteTask: (taskId: string) => void;
@@ -189,7 +210,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   );
 
   const updateTask = useCallback(
-    (id: string, updates: Partial<Task>) => {
+    (id: string, updates: TaskUpdate) => {
       const input: UpdateTaskInput = {
         id,
         ...(updates.title !== undefined && { title: updates.title }),

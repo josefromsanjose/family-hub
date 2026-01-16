@@ -20,6 +20,7 @@ import { Route as AuthedTasksIndexRouteImport } from './routes/_authed/tasks/ind
 import { Route as AuthedSettingsIndexRouteImport } from './routes/_authed/settings/index'
 import { Route as AuthedTasksNewRouteImport } from './routes/_authed/tasks/new'
 import { Route as AuthedMembersMemberIdIndexRouteImport } from './routes/_authed/members/$memberId.index'
+import { Route as AuthedTasksTaskIdEditRouteImport } from './routes/_authed/tasks/$taskId.edit'
 import { Route as AuthedSettingsMembersNewRouteImport } from './routes/_authed/settings/members.new'
 import { Route as AuthedMembersMemberIdChoresRouteImport } from './routes/_authed/members/$memberId.chores'
 import { Route as AuthedSettingsMembersMemberIdEditRouteImport } from './routes/_authed/settings/members.$memberId.edit'
@@ -79,6 +80,11 @@ const AuthedMembersMemberIdIndexRoute =
     path: '/members/$memberId/',
     getParentRoute: () => AuthedRoute,
   } as any)
+const AuthedTasksTaskIdEditRoute = AuthedTasksTaskIdEditRouteImport.update({
+  id: '/tasks/$taskId/edit',
+  path: '/tasks/$taskId/edit',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedSettingsMembersNewRoute =
   AuthedSettingsMembersNewRouteImport.update({
     id: '/settings/members/new',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/tasks': typeof AuthedTasksIndexRoute
   '/members/$memberId/chores': typeof AuthedMembersMemberIdChoresRoute
   '/settings/members/new': typeof AuthedSettingsMembersNewRoute
+  '/tasks/$taskId/edit': typeof AuthedTasksTaskIdEditRoute
   '/members/$memberId': typeof AuthedMembersMemberIdIndexRoute
   '/settings/members/$memberId/edit': typeof AuthedSettingsMembersMemberIdEditRoute
 }
@@ -125,6 +132,7 @@ export interface FileRoutesByTo {
   '/tasks': typeof AuthedTasksIndexRoute
   '/members/$memberId/chores': typeof AuthedMembersMemberIdChoresRoute
   '/settings/members/new': typeof AuthedSettingsMembersNewRoute
+  '/tasks/$taskId/edit': typeof AuthedTasksTaskIdEditRoute
   '/members/$memberId': typeof AuthedMembersMemberIdIndexRoute
   '/settings/members/$memberId/edit': typeof AuthedSettingsMembersMemberIdEditRoute
 }
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/_authed/tasks/': typeof AuthedTasksIndexRoute
   '/_authed/members/$memberId/chores': typeof AuthedMembersMemberIdChoresRoute
   '/_authed/settings/members/new': typeof AuthedSettingsMembersNewRoute
+  '/_authed/tasks/$taskId/edit': typeof AuthedTasksTaskIdEditRoute
   '/_authed/members/$memberId/': typeof AuthedMembersMemberIdIndexRoute
   '/_authed/settings/members/$memberId/edit': typeof AuthedSettingsMembersMemberIdEditRoute
 }
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/members/$memberId/chores'
     | '/settings/members/new'
+    | '/tasks/$taskId/edit'
     | '/members/$memberId'
     | '/settings/members/$memberId/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -174,6 +184,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/members/$memberId/chores'
     | '/settings/members/new'
+    | '/tasks/$taskId/edit'
     | '/members/$memberId'
     | '/settings/members/$memberId/edit'
   id:
@@ -190,6 +201,7 @@ export interface FileRouteTypes {
     | '/_authed/tasks/'
     | '/_authed/members/$memberId/chores'
     | '/_authed/settings/members/new'
+    | '/_authed/tasks/$taskId/edit'
     | '/_authed/members/$memberId/'
     | '/_authed/settings/members/$memberId/edit'
   fileRoutesById: FileRoutesById
@@ -279,6 +291,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedMembersMemberIdIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/tasks/$taskId/edit': {
+      id: '/_authed/tasks/$taskId/edit'
+      path: '/tasks/$taskId/edit'
+      fullPath: '/tasks/$taskId/edit'
+      preLoaderRoute: typeof AuthedTasksTaskIdEditRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/settings/members/new': {
       id: '/_authed/settings/members/new'
       path: '/settings/members/new'
@@ -313,6 +332,7 @@ interface AuthedRouteChildren {
   AuthedTasksIndexRoute: typeof AuthedTasksIndexRoute
   AuthedMembersMemberIdChoresRoute: typeof AuthedMembersMemberIdChoresRoute
   AuthedSettingsMembersNewRoute: typeof AuthedSettingsMembersNewRoute
+  AuthedTasksTaskIdEditRoute: typeof AuthedTasksTaskIdEditRoute
   AuthedMembersMemberIdIndexRoute: typeof AuthedMembersMemberIdIndexRoute
   AuthedSettingsMembersMemberIdEditRoute: typeof AuthedSettingsMembersMemberIdEditRoute
 }
@@ -327,6 +347,7 @@ const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedTasksIndexRoute: AuthedTasksIndexRoute,
   AuthedMembersMemberIdChoresRoute: AuthedMembersMemberIdChoresRoute,
   AuthedSettingsMembersNewRoute: AuthedSettingsMembersNewRoute,
+  AuthedTasksTaskIdEditRoute: AuthedTasksTaskIdEditRoute,
   AuthedMembersMemberIdIndexRoute: AuthedMembersMemberIdIndexRoute,
   AuthedSettingsMembersMemberIdEditRoute:
     AuthedSettingsMembersMemberIdEditRoute,

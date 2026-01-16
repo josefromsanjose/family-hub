@@ -11,6 +11,10 @@ import {
   type PriorityOption,
   type TaskData,
 } from "./TaskWizard.types";
+import {
+  createEmptyTaskData,
+  wizardDataToTaskCreateInput,
+} from "./taskWizardData";
 import { AssigneeStep } from "./AssigneeStep";
 import { ConfirmStep } from "./ConfirmStep";
 import { DueDateStep } from "./DueDateStep";
@@ -65,54 +69,9 @@ export function TaskWizard() {
     reset,
   } = useWizard<TaskData>({
     steps: STEPS,
-    initialData: {
-      title: "",
-      assignedTo: null,
-      recurrence: "once",
-      priority: "medium",
-      dueDate: null,
-      recurrenceDays: [],
-      recurrenceDayOfMonth: null,
-      recurrenceWeekday: null,
-      recurrenceWeekOfMonth: null,
-      monthlyPattern: null,
-      rotationMode: "none",
-      rotationAssignees: [],
-      rotationAnchorDate: null,
-    },
+    initialData: createEmptyTaskData(),
     onComplete: (taskData) => {
-      addTask({
-        title: taskData.title.trim(),
-        assignedTo: taskData.assignedTo || undefined,
-        recurrence:
-          taskData.recurrence === "once" ? undefined : taskData.recurrence,
-        priority: taskData.priority,
-        dueDate:
-          taskData.recurrence === "once" && taskData.dueDate
-            ? taskData.dueDate.toISOString()
-            : undefined,
-        recurrenceDays: taskData.recurrenceDays,
-        recurrenceDayOfMonth:
-          taskData.recurrence === "monthly"
-            ? (taskData.recurrenceDayOfMonth ?? undefined)
-            : undefined,
-        recurrenceWeekday:
-          taskData.recurrence === "monthly"
-            ? (taskData.recurrenceWeekday ?? undefined)
-            : undefined,
-        recurrenceWeekOfMonth:
-          taskData.recurrence === "monthly"
-            ? (taskData.recurrenceWeekOfMonth ?? undefined)
-            : undefined,
-        rotationMode:
-          taskData.recurrence === "weekly" ? taskData.rotationMode : "none",
-        rotationAssignees:
-          taskData.recurrence === "weekly" ? taskData.rotationAssignees : [],
-        rotationAnchorDate: taskData.rotationAnchorDate
-          ? taskData.rotationAnchorDate.toISOString()
-          : undefined,
-        assignmentOverrides: [],
-      });
+      addTask(wizardDataToTaskCreateInput(taskData));
       reset();
       navigate({ to: "/tasks" });
     },
