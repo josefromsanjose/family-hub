@@ -34,6 +34,13 @@ Use file-based routing. Keep route files thin: compose UI from components, keep 
 - Use route-level `pending` and `error` components for loading/error UX.
 - Use layout routes for shared context, validation, and error handling.
 
+### Zod Validation (TanStack Guidance)
+
+- Define Zod schemas for route `validateSearch` and route params to keep types and parsing together.
+- Prefer `@tanstack/zod-adapter`'s `zodValidator` when using `.default()` so links don't require `search`.
+- Use `.catch()` for non-blocking fallbacks; use `.default()` if you want invalid input to surface an error route.
+- Reuse Zod schemas for server function inputs via `.validator()` to keep client/server rules aligned.
+
 ### Server Functions
 
 - Use `createServerFn` for server-only logic and side effects.
@@ -95,6 +102,7 @@ Use file-based routing. Keep route files thin: compose UI from components, keep 
 - [ ] Tests cover critical flows and error states
 - [ ] Tailwind classes used for all styling (no inline styles)
 - [ ] Accessibility checks: labels, focus, aria, keyboard navigation
+- [ ] Zod schemas power route validation and server inputs
 
 ## Example Patterns
 

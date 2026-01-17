@@ -1,11 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { format, startOfDay } from "date-fns";
 import { z } from "zod";
 import { getWeekDates } from "@/utils/date";
-import { getMeals, updateMeal, type MealResponse } from "@/server/meals";
+import { getMealById, updateMeal, type MealResponse } from "@/server/meals";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SelectionCard } from "@/components/touch/SelectionCard";
@@ -23,9 +23,9 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/_authed/meals/$mealId/edit")({
   validateSearch: searchSchema,
-  loader: async () => {
+  loader: async ({ params }) => {
     return {
-      meals: await getMeals({ data: {} }),
+      meal: await getMealById({ data: { id: params.mealId } }),
     };
   },
   component: MealEditRoute,
@@ -33,7 +33,7 @@ export const Route = createFileRoute("/_authed/meals/$mealId/edit")({
 
 type MealEditProps = {
   mealId: string;
-  initialMeals: MealResponse[];
+  initialMeal: MealResponse | null;
   fallbackWeekStart?: Date;
   onCancel?: () => void;
   onComplete?: () => void;
@@ -42,14 +42,14 @@ type MealEditProps = {
 function MealEditRoute() {
   const { mealId } = Route.useParams();
   const search = Route.useSearch();
-  const { meals: initialMeals } = Route.useLoaderData();
+  const { meal: initialMeal } = Route.useLoaderData();
   const navigate = useNavigate();
   const fallbackWeekStart = parseWeekStart(search.weekStart);
 
   return (
     <MealEditPage
       mealId={mealId}
-      initialMeals={initialMeals}
+      initialMeal={initialMeal}
       fallbackWeekStart={fallbackWeekStart}
       onCancel={() =>
         navigate({
@@ -69,21 +69,15 @@ function MealEditRoute() {
 
 export function MealEditPage({
   mealId,
-  initialMeals,
+  initialMeal,
   fallbackWeekStart,
   onCancel,
   onComplete,
 }: MealEditProps) {
   const queryClient = useQueryClient();
-  const { data: meals = initialMeals, error } = useQuery({
-    queryKey: ["meals"],
-    queryFn: () => getMeals({ data: {} }),
-    initialData: initialMeals,
-  });
-
   const meal = useMemo(
-    () => meals.find((candidate) => candidate.id === mealId),
-    [meals, mealId]
+    () => (initialMeal?.id === mealId ? initialMeal : null),
+    [initialMeal, mealId]
   );
 
   const [data, setData] = useState<MealFormData>({
@@ -132,20 +126,6 @@ export function MealEditPage({
       },
     });
   };
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-2xl mx-auto">
-          <Card className="border border-destructive bg-destructive/10 p-6 text-center">
-            <p className="text-destructive">
-              Error loading meals. Please try again.
-            </p>
-          </Card>
-        </div>
-      </div>
-    );
-  }
 
   if (!meal) {
     return (

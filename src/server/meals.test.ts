@@ -41,7 +41,7 @@ vi.mock("@tanstack/react-start", () => ({
   },
 }));
 
-import { createMeal, getMeals, updateMeal } from "./meals";
+import { createMeal, getMealById, getMeals, updateMeal } from "./meals";
 
 describe("meals server functions", () => {
   const baseDate = new Date("2026-01-15T00:00:00.000Z");
@@ -82,6 +82,34 @@ describe("meals server functions", () => {
         updatedAt: baseDate.toISOString(),
       },
     ]);
+  });
+
+  it("returns a meal by id when it exists", async () => {
+    mockPrisma.meal.findFirst.mockResolvedValue({
+      id: "meal-1",
+      householdId: "household-1",
+      name: "Pasta",
+      date: baseDate,
+      mealType: "dinner",
+      notes: null,
+      createdAt: baseDate,
+      updatedAt: baseDate,
+    });
+
+    const result = await getMealById({ data: { id: "meal-1" } });
+
+    expect(mockPrisma.meal.findFirst).toHaveBeenCalledWith({
+      where: { id: "meal-1", householdId: "household-1" },
+    });
+    expect(result).toEqual({
+      id: "meal-1",
+      householdId: "household-1",
+      name: "Pasta",
+      date: baseDate.toISOString(),
+      mealType: "dinner",
+      createdAt: baseDate.toISOString(),
+      updatedAt: baseDate.toISOString(),
+    });
   });
 
   it("rejects createMeal when name is empty", async () => {

@@ -112,3 +112,12 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Gotchas encountered: None.
   - Useful context: Meal wizard day cards show the week-start range from the `weekStart` search param.
 ---
+## 2026-01-16 20:30 - US-009
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Removed redundant query fetching from the meal edit page to keep meal data managed in the meals feature flow.
+- Files changed: `src/routes/_authed/meals/$mealId.edit.tsx`, `docs/prds/MEALS_PRD.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: Loader-provided meal data is sufficient for the edit page; avoid double fetching with a second query.
+  - Gotchas encountered: None.
+  - Useful context: Meal edit mutations still invalidate the shared `["meals"]` query key for list refresh.
+---

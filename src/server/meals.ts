@@ -42,6 +42,10 @@ export type GetMealsInput = {
   endDate?: string;
 };
 
+export type GetMealByIdInput = {
+  id: string;
+};
+
 const toMealResponse = (meal: {
   id: string;
   householdId: string;
@@ -105,6 +109,24 @@ export const getMeals = createServerFn({ method: "GET" })
     });
 
     return meals.map(toMealResponse);
+  });
+
+export const getMealById = createServerFn({ method: "GET" })
+  .inputValidator((input: GetMealByIdInput) => {
+    if (!input.id) {
+      throw new Error("Meal ID is required");
+    }
+    return input;
+  })
+  .handler(async ({ data }): Promise<MealResponse | null> => {
+    const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
+
+    const meal = await prisma.meal.findFirst({
+      where: { id: data.id, householdId },
+    });
+
+    return meal ? toMealResponse(meal) : null;
   });
 
 // ============================================================================

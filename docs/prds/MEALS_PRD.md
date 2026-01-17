@@ -160,13 +160,15 @@ passes: true
 
 **Description:** As a developer, I want meal data managed within the Meal Planning feature without adding a global provider.
 
+passes: true
+
 **Acceptance Criteria:**
 
-- [ ] Manage meal queries and mutations inside `src/routes/_authed/meals/index.tsx`
-- [ ] Use TanStack Query for data fetching and mutations
-- [ ] Keep state local to the Meal Planning page (no new global provider)
-- [ ] If reuse is needed later, extract to a feature-scoped hook (not app-wide context)
-- [ ] Typecheck passes
+- [x] Manage meal queries and mutations inside `src/routes/_authed/meals/index.tsx`
+- [x] Use TanStack Query for data fetching and mutations
+- [x] Keep state local to the Meal Planning page (no new global provider)
+- [x] If reuse is needed later, extract to a feature-scoped hook (not app-wide context)
+- [x] Typecheck passes
 
 ### US-010: Reuse previously created meals with autocomplete
 

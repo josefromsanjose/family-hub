@@ -5,11 +5,10 @@ import { describe, it, expect, vi } from "vitest";
 import type { ReactElement } from "react";
 import { MealCreateWizard } from "./new";
 import { MealEditPage } from "./$mealId.edit";
-import { createMeal, getMeals, updateMeal } from "@/server/meals";
+import { createMeal, updateMeal } from "@/server/meals";
 
 vi.mock("@/server/meals", () => ({
   createMeal: vi.fn(),
-  getMeals: vi.fn(),
   updateMeal: vi.fn(),
   deleteMeal: vi.fn(),
 }));
@@ -91,7 +90,6 @@ describe("Meal creation and edit flows", () => {
       updatedAt: new Date("2026-01-10T12:00:00.000Z").toISOString(),
     };
 
-    vi.mocked(getMeals).mockResolvedValue([initialMeal]);
     vi.mocked(updateMeal).mockResolvedValueOnce({
       ...initialMeal,
       name: "Updated Pasta",
@@ -101,7 +99,7 @@ describe("Meal creation and edit flows", () => {
     renderWithQuery(
       <MealEditPage
         mealId="meal-2"
-        initialMeals={[initialMeal]}
+        initialMeal={initialMeal}
         fallbackWeekStart={weekStart}
         onComplete={onComplete}
       />
