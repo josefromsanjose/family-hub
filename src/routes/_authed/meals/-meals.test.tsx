@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { addDays, startOfWeek } from "date-fns";
+import { addDays, addWeeks, format, startOfWeek } from "date-fns";
 import { describe, it, expect, vi } from "vitest";
 import { MealPlanning } from "./index";
 import { getMeals, createMeal, type MealResponse } from "@/server/meals";
@@ -27,6 +27,16 @@ const renderMealPlanning = () => {
 };
 
 describe("MealPlanning", () => {
+  const formatWeekRange = (startDate: Date, endDate: Date) => {
+    const sameMonth =
+      startDate.getFullYear() === endDate.getFullYear() &&
+      startDate.getMonth() === endDate.getMonth();
+    if (sameMonth) {
+      return `${format(startDate, "MMMM d")}-${format(endDate, "d, yyyy")}`;
+    }
+    return `${format(startDate, "MMMM d")}-${format(endDate, "MMMM d, yyyy")}`;
+  };
+
   it("shows loading state while meals are fetching", () => {
     vi.mocked(getMeals).mockReturnValue(
       new Promise<MealResponse[]>(() => {}) as Promise<MealResponse[]>
@@ -67,6 +77,25 @@ describe("MealPlanning", () => {
     expect(screen.getByText("Add cornbread")).toBeTruthy();
   });
 
+  it("shows week navigation and updates range when navigating", async () => {
+    vi.mocked(getMeals).mockResolvedValue([]);
+
+    renderMealPlanning();
+
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const weekEnd = addDays(weekStart, 6);
+    expect(
+      await screen.findByText(formatWeekRange(weekStart, weekEnd))
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: /next week/i }));
+    const nextWeekStart = addWeeks(weekStart, 1);
+    const nextWeekEnd = addDays(nextWeekStart, 6);
+    expect(
+      await screen.findByText(formatWeekRange(nextWeekStart, nextWeekEnd))
+    ).toBeTruthy();
+  });
+
   it("submits new meals through the create mutation", async () => {
     vi.mocked(getMeals).mockResolvedValueOnce([]);
     vi.mocked(createMeal).mockResolvedValueOnce({
@@ -81,7 +110,10 @@ describe("MealPlanning", () => {
 
     renderMealPlanning();
 
-    fireEvent.click(await screen.findByRole("button", { name: /add meal/i }));
+    const [addMealToggle] = await screen.findAllByRole("button", {
+      name: /add meal/i,
+    });
+    fireEvent.click(addMealToggle);
     fireEvent.change(screen.getByLabelText(/meal name/i), {
       target: { value: "Tacos" },
     });

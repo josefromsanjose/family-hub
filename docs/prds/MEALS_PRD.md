@@ -88,17 +88,19 @@ passes: true
 
 **Description:** As a user, I want to navigate between weeks to plan meals for different weeks and view past meal plans.
 
+passes: true
+
 **Acceptance Criteria:**
 
-- [ ] Add "Previous Week" and "Next Week" buttons to meal planning page
-- [ ] Display current week range (e.g., "January 15-21, 2024") between navigation buttons
-- [ ] Default to current week on page load
-- [ ] Update week state when navigating
-- [ ] Fetch meals for the selected week from database
-- [ ] Filter meals to show only those in the selected week
-- [ ] Disable "Previous Week" if at earliest reasonable date (optional, can be unlimited)
-- [ ] Typecheck passes
-- [ ] Verify in browser using dev-browser skill
+- [x] Add "Previous Week" and "Next Week" buttons to meal planning page
+- [x] Display current week range (e.g., "January 15-21, 2024") between navigation buttons
+- [x] Default to current week on page load
+- [x] Update week state when navigating
+- [x] Fetch meals for the selected week from database
+- [x] Filter meals to show only those in the selected week
+- [x] Disable "Previous Week" if at earliest reasonable date (optional, can be unlimited)
+- [x] Typecheck passes
+- [x] Verify in browser using dev-browser skill
 
 ### US-006: Add edit functionality to meal cards
 

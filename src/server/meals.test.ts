@@ -65,7 +65,7 @@ describe("meals server functions", () => {
       },
     ]);
 
-    const result = await getMeals();
+    const result = await getMeals({ data: {} });
 
     expect(mockPrisma.meal.findMany).toHaveBeenCalledWith({
       where: { householdId: "household-1" },

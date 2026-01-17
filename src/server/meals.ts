@@ -37,6 +37,11 @@ export type DeleteMealInput = {
   id: string;
 };
 
+export type GetMealsInput = {
+  startDate?: string;
+  endDate?: string;
+};
+
 const toMealResponse = (meal: {
   id: string;
   householdId: string;
@@ -61,19 +66,46 @@ const toMealResponse = (meal: {
 // GET Operations
 // ============================================================================
 
-export const getMeals = createServerFn({ method: "GET" }).handler(
-  async (): Promise<MealResponse[]> => {
+export const getMeals = createServerFn({ method: "GET" })
+  .inputValidator((input: GetMealsInput) => {
+    const startDate = input.startDate ? new Date(input.startDate) : null;
+    const endDate = input.endDate ? new Date(input.endDate) : null;
+
+    if (startDate && Number.isNaN(startDate.valueOf())) {
+      throw new Error("Start date is invalid");
+    }
+    if (endDate && Number.isNaN(endDate.valueOf())) {
+      throw new Error("End date is invalid");
+    }
+    if (startDate && endDate && startDate > endDate) {
+      throw new Error("Start date must be before end date");
+    }
+
+    return input;
+  })
+  .handler(async ({ data }): Promise<MealResponse[]> => {
     const householdId = await getCurrentUserHouseholdId();
     const prisma = await getPrisma();
+    const startDate = data.startDate ? new Date(data.startDate) : null;
+    const endDate = data.endDate ? new Date(data.endDate) : null;
 
     const meals = await prisma.meal.findMany({
-      where: { householdId },
+      where: {
+        householdId,
+        ...(startDate || endDate
+          ? {
+              date: {
+                ...(startDate ? { gte: startDate } : {}),
+                ...(endDate ? { lte: endDate } : {}),
+              },
+            }
+          : {}),
+      },
       orderBy: [{ date: "asc" }, { mealType: "asc" }, { createdAt: "asc" }],
     });
 
     return meals.map(toMealResponse);
-  }
-);
+  });
 
 // ============================================================================
 // POST Operations

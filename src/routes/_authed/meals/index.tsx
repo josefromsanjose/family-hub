@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { format, startOfDay } from "date-fns";
+import { useEffect, useMemo, useState } from "react";
+import { addWeeks, endOfDay, format, startOfDay, startOfWeek } from "date-fns";
 import { Loader2, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { getDayKey, getWeekDates } from "@/utils/date";
 import {
@@ -10,10 +10,21 @@ import {
   getMeals,
   type MealResponse,
 } from "@/server/meals";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authed/meals/")({
   loader: async () => {
-    return { meals: await getMeals() };
+    const weekDates = getWeekDates(new Date());
+    const weekStart = weekDates[0];
+    const weekEnd = weekDates[weekDates.length - 1];
+    return {
+      meals: await getMeals({
+        data: {
+          startDate: startOfDay(weekStart).toISOString(),
+          endDate: endOfDay(weekEnd).toISOString(),
+        },
+      }),
+    };
   },
   component: MealPlanningRoute,
 });
@@ -31,7 +42,17 @@ type MealFormData = {
   notes: string;
 };
 
-const mealsQueryKey = ["meals"];
+const getMealsQueryKey = (weekStartKey: string) => ["meals", weekStartKey];
+
+const formatWeekRange = (startDate: Date, endDate: Date) => {
+  const sameMonth =
+    startDate.getFullYear() === endDate.getFullYear() &&
+    startDate.getMonth() === endDate.getMonth();
+  if (sameMonth) {
+    return `${format(startDate, "MMMM d")}-${format(endDate, "d, yyyy")}`;
+  }
+  return `${format(startDate, "MMMM d")}-${format(endDate, "MMMM d, yyyy")}`;
+};
 
 type MealPlanningProps = {
   initialMeals?: MealResponse[];
@@ -44,7 +65,19 @@ function MealPlanningRoute() {
 
 export function MealPlanning({ initialMeals }: MealPlanningProps) {
   const queryClient = useQueryClient();
-  const weekDates = useMemo(() => getWeekDates(new Date()), []);
+  const [weekReferenceDate, setWeekReferenceDate] = useState(() =>
+    startOfWeek(new Date(), { weekStartsOn: 1 })
+  );
+  const weekDates = useMemo(
+    () => getWeekDates(weekReferenceDate),
+    [weekReferenceDate]
+  );
+  const weekStart = weekDates[0];
+  const weekEnd = weekDates[weekDates.length - 1];
+  const weekRangeLabel = useMemo(
+    () => formatWeekRange(weekStart, weekEnd),
+    [weekStart, weekEnd]
+  );
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState<MealFormData>(() => ({
     day: weekDates[0],
@@ -53,21 +86,39 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
     notes: "",
   }));
 
+  useEffect(() => {
+    setFormData((current) => {
+      const isInWeek = weekDates.some(
+        (day) => getDayKey(day) === getDayKey(current.day)
+      );
+      if (isInWeek) {
+        return current;
+      }
+      return { ...current, day: weekDates[0] };
+    });
+  }, [weekDates]);
+
   const {
     data: meals = [],
     error,
     isLoading,
     isFetching,
   } = useQuery({
-    queryKey: mealsQueryKey,
-    queryFn: () => getMeals(),
+    queryKey: getMealsQueryKey(getDayKey(weekStart)),
+    queryFn: () =>
+      getMeals({
+        data: {
+          startDate: startOfDay(weekStart).toISOString(),
+          endDate: endOfDay(weekEnd).toISOString(),
+        },
+      }),
     initialData: initialMeals,
   });
 
   const createMutation = useMutation({
     mutationFn: createMeal,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: mealsQueryKey });
+      queryClient.invalidateQueries({ queryKey: ["meals"] });
       setFormData({
         day: weekDates[0],
         mealType: mealTypeOptions[0].value,
@@ -81,7 +132,7 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
   const deleteMutation = useMutation({
     mutationFn: deleteMeal,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: mealsQueryKey });
+      queryClient.invalidateQueries({ queryKey: ["meals"] });
     },
   });
 
@@ -146,13 +197,12 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
               Plan your family's meals for the week
             </p>
           </div>
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-          >
-            <Plus size={20} />
-            Add Meal
-          </button>
+          <div className="flex items-center gap-3">
+            <Button onClick={() => setShowAddForm(!showAddForm)}>
+              <Plus size={20} />
+              Add Meal
+            </Button>
+          </div>
         </div>
         {isFetching && (
           <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
@@ -274,7 +324,29 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
             </div>
           </div>
         )}
-
+        <div className="flex items-center gap-4 w-full justify-end mb-4">
+          <Button
+            onClick={() =>
+              setWeekReferenceDate((current) => addWeeks(current, -1))
+            }
+            size="sm"
+            variant="outline"
+          >
+            Previous Week
+          </Button>
+          <span className="text-sm font-medium text-foreground">
+            {weekRangeLabel}
+          </span>
+          <Button
+            onClick={() =>
+              setWeekReferenceDate((current) => addWeeks(current, 1))
+            }
+            size="sm"
+            variant="outline"
+          >
+            Next Week
+          </Button>
+        </div>
         <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">

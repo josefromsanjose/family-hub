@@ -1,5 +1,6 @@
 ## Codebase Patterns
 - Use `getCurrentUserHouseholdId` from `src/server/household.ts` for household-scoped server logic.
+- For filtered read server functions, use `inputValidator` and pass `{ data: {} }` when no filters are needed.
 
 ## 2026-01-15 23:59 - US-001
 Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
@@ -45,4 +46,13 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Patterns discovered: Meal Planning UI renders add form inline below the header and uses accessible labels for Day/Meal Type/Meal Name.
   - Gotchas encountered: None.
   - Useful context: Browser verification passed at `/meals` with the current session.
+---
+## 2026-01-16 18:00 - US-005
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Added week navigation with range label, scoped meal queries to the selected week, and kept add form day selection aligned to the active week.
+- Files changed: `src/routes/_authed/meals/index.tsx`, `src/server/meals.ts`, `src/routes/_authed/meals/-meals.test.tsx`, `src/server/meals.test.ts`, `docs/prds/MEALS_PRD.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: `getMeals` accepts optional week filters via `inputValidator` and expects `{ data: {} }` when no filters are passed.
+  - Gotchas encountered: RTL queries for the add flow should use `findAllByRole` once multiple "Add Meal" buttons exist.
+  - Useful context: Browser check confirmed week navigation controls render on `/meals`.
 ---
