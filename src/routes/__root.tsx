@@ -10,6 +10,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 
 import AppClerkProvider from "@/integrations/clerk/provider";
 import Header from "@/components/Header";
+import { Toaster } from "@/components/ui/sonner";
 import { HouseholdProvider } from "@/contexts/HouseholdContext";
 import { TasksProvider } from "@/contexts/TasksContext";
 import { CalendarProvider } from "@/contexts/CalendarContext";
@@ -111,6 +112,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             <CalendarProvider>
               <Header />
               {children}
+              <Toaster />
               <TanStackDevtools
                 config={{
                   position: "bottom-right",

@@ -1,6 +1,7 @@
 ## Codebase Patterns
 - Use `getCurrentUserHouseholdId` from `src/server/household.ts` for household-scoped server logic.
 - For filtered read server functions, use `inputValidator` and pass `{ data: {} }` when no filters are needed.
+- `createServerFn` uses `.inputValidator`, not `.validator`, for input checks.
 - `react-resizable-panels` exports `Group`/`Separator` (not `PanelGroup`/`PanelResizeHandle`) in this codebase.
 - Reuse `getWeekDates`/`getDayKey` from `src/utils/date.ts` for week/day calculations.
 
@@ -129,4 +130,22 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Patterns discovered: Use the `Sheet` component for bottom-sheet flows on mobile.
   - Gotchas encountered: Meal list tests need `cleanup()` between renders to avoid duplicated buttons.
   - Useful context: Meal search uses `getMealNameSuggestions` with recent-first behavior.
+---
+## 2026-01-16 21:03 - US-011
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Added shopping list generation dialog on the meals week view, created server logic to parse meal notes into shopping items, and added UI tests for the flow.
+- Files changed: `src/routes/_authed/meals/index.tsx`, `src/routes/_authed/meals/-meals.test.tsx`, `src/server/shopping.ts`, `docs/prds/MEALS_PRD.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: Shopping list generation expects meal IDs and parses notes into items server-side.
+  - Gotchas encountered: Default shopping category should align with the shopping UI options (currently "Other").
+  - Useful context: The dialog preselects all meals in the active week so users can deselect quickly.
+---
+## 2026-01-16 21:22 - Meals Shopping Updates
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Moved the shopping list dialog into a dedicated component, added toast + navigation on generate, and wired the shopping page to server-backed CRUD with tests.
+- Files changed: `src/routes/_authed/meals/index.tsx`, `src/routes/_authed/meals/-shopping-list-dialog.tsx`, `src/routes/_authed/shopping.tsx`, `src/routes/_authed/shopping.test.tsx`, `src/server/shopping.ts`, `src/routes/_authed/meals/-meals.test.tsx`, `src/routes/__root.tsx`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: `getShoppingItems()` is a no-arg server query suitable for TanStack Query.
+  - Gotchas encountered: Use `inputValidator` (not `.validator`) with `createServerFn` in this codebase.
+  - Useful context: Shopping list success feedback now uses sonner toasts and navigates to `/shopping`.
 ---

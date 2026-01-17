@@ -17,12 +17,22 @@ import {
   getMeals,
   type MealResponse,
 } from "@/server/meals";
+import { createShoppingItemsFromMeals } from "@/server/shopping";
 
 vi.mock("@/server/meals", () => ({
   createMeal: vi.fn(),
   getMeals: vi.fn(),
   deleteMeal: vi.fn(),
   getMealLibraryItems: vi.fn(),
+}));
+vi.mock("@/server/shopping", () => ({
+  createShoppingItemsFromMeals: vi.fn(),
+}));
+vi.mock("sonner", () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
 }));
 
 afterEach(() => {
@@ -206,6 +216,60 @@ describe("MealPlanning", () => {
         },
         expect.anything()
       );
+    });
+  });
+
+  it("generates a shopping list from selected meals", async () => {
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const monday = weekStart;
+    const tuesday = addDays(weekStart, 1);
+    vi.mocked(getMeals).mockResolvedValueOnce([
+      {
+        id: "meal-1",
+        householdId: "house-1",
+        name: "Family Chili",
+        date: monday.toISOString(),
+        mealType: "dinner",
+        notes: "Beans, tomatoes",
+        createdAt: new Date("2026-01-10T12:00:00.000Z").toISOString(),
+        updatedAt: new Date("2026-01-10T12:00:00.000Z").toISOString(),
+      },
+      {
+        id: "meal-2",
+        householdId: "house-1",
+        name: "Veggie Wraps",
+        date: tuesday.toISOString(),
+        mealType: "lunch",
+        notes: "Hummus, spinach",
+        createdAt: new Date("2026-01-11T12:00:00.000Z").toISOString(),
+        updatedAt: new Date("2026-01-11T12:00:00.000Z").toISOString(),
+      },
+    ]);
+    vi.mocked(createShoppingItemsFromMeals).mockResolvedValueOnce({ count: 3 });
+
+    const onNavigateToShopping = vi.fn();
+
+    renderMealPlanning({ onNavigateToShopping });
+
+    fireEvent.click(
+      await screen.findByRole("button", { name: /generate shopping list/i })
+    );
+
+    const dialog = await screen.findByRole("dialog", {
+      name: /generate shopping list/i,
+    });
+    const dialogScope = within(dialog);
+    fireEvent.click(dialogScope.getByLabelText(/select veggie wraps/i));
+    fireEvent.click(dialogScope.getByRole("button", { name: /generate list/i }));
+
+    await waitFor(() => {
+      expect(createShoppingItemsFromMeals).toHaveBeenCalledWith(
+        { data: { mealIds: ["meal-1"] } },
+        expect.anything()
+      );
+    });
+    await waitFor(() => {
+      expect(onNavigateToShopping).toHaveBeenCalled();
     });
   });
 

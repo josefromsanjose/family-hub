@@ -192,17 +192,19 @@ passes: true
 
 **Description:** As a user, I want to generate shopping list items from my meal plan to streamline grocery shopping.
 
+passes: true
+
 **Acceptance Criteria:**
 
-- [ ] Add "Generate Shopping List" button to meal planning page
-- [ ] Button opens dialog/modal with list of meals for selected week
-- [ ] User can select which meals to include in shopping list
-- [ ] System extracts ingredients/notes from selected meals
-- [ ] Creates shopping list items via existing shopping list API (check `src/server/` for shopping functions)
-- [ ] Items are categorized appropriately (may need manual categorization or default category)
-- [ ] Shows success message after generation
-- [ ] Typecheck passes
-- [ ] Verify in browser using dev-browser skill
+- [x] Add "Generate Shopping List" button to meal planning page
+- [x] Button opens dialog/modal with list of meals for selected week
+- [x] User can select which meals to include in shopping list
+- [x] System extracts ingredients/notes from selected meals
+- [x] Creates shopping list items via existing shopping list API (check `src/server/` for shopping functions)
+- [x] Items are categorized appropriately (may need manual categorization or default category)
+- [x] Shows success message after generation
+- [x] Typecheck passes
+- [x] Verify in browser using dev-browser skill
 
 ### US-012: Update dashboard to show actual meal count
 

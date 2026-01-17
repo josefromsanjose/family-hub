@@ -35,6 +35,7 @@ import {
   type MealTypeValue,
   parseWeekStart,
 } from "@/routes/_authed/meals/-meal-form";
+import { ShoppingListDialog } from "@/routes/_authed/meals/-shopping-list-dialog";
 
 export const Route = createFileRoute("/_authed/meals/")({
   validateSearch: z.object({
@@ -77,6 +78,7 @@ type MealPlanningProps = {
   initialWeekStart?: Date;
   onCreateNewMeal?: (weekStart: Date) => void;
   onEditMeal?: (meal: MealResponse, weekStart: Date) => void;
+  onNavigateToShopping?: () => void;
 };
 
 function MealPlanningRoute() {
@@ -102,6 +104,7 @@ function MealPlanningRoute() {
           search: { weekStart: weekStart.toISOString() },
         })
       }
+      onNavigateToShopping={() => navigate({ to: "/shopping" })}
     />
   );
 }
@@ -111,6 +114,7 @@ export function MealPlanning({
   initialWeekStart,
   onCreateNewMeal,
   onEditMeal,
+  onNavigateToShopping,
 }: MealPlanningProps) {
   const queryClient = useQueryClient();
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
@@ -119,6 +123,7 @@ export function MealPlanning({
   const [selectedMeal, setSelectedMeal] = useState<MealLibraryItemResponse | null>(
     null
   );
+  const [isShoppingDialogOpen, setIsShoppingDialogOpen] = useState(false);
   const [weekReferenceDate, setWeekReferenceDate] = useState(
     () => parseWeekStart(initialWeekStart)
   );
@@ -236,6 +241,7 @@ export function MealPlanning({
   const mealResults = searchValue.length > 0 ? searchMeals : recentMeals;
   const isMealListLoading =
     searchValue.length > 0 ? isSearchMealsLoading : isRecentMealsLoading;
+  const hasWeeklyMeals = meals.length > 0;
 
   if (isLoading) {
     return (
@@ -275,6 +281,13 @@ export function MealPlanning({
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setIsShoppingDialogOpen(true)}
+              disabled={!hasWeeklyMeals}
+            >
+              Generate Shopping List
+            </Button>
             <Button
               variant="outline"
               onClick={() => onCreateNewMeal?.(weekStart)}
@@ -588,6 +601,13 @@ export function MealPlanning({
           )}
         </SheetContent>
       </Sheet>
+      <ShoppingListDialog
+        open={isShoppingDialogOpen}
+        onOpenChange={setIsShoppingDialogOpen}
+        meals={meals}
+        weekRangeLabel={weekRangeLabel}
+        onNavigateToShopping={onNavigateToShopping}
+      />
     </div>
   );
 }
