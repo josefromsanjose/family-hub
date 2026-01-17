@@ -2,6 +2,7 @@
 - Use `getCurrentUserHouseholdId` from `src/server/household.ts` for household-scoped server logic.
 - For filtered read server functions, use `inputValidator` and pass `{ data: {} }` when no filters are needed.
 - `react-resizable-panels` exports `Group`/`Separator` (not `PanelGroup`/`PanelResizeHandle`) in this codebase.
+- Reuse `getWeekDates`/`getDayKey` from `src/utils/date.ts` for week/day calculations.
 
 ## 2026-01-15 23:59 - US-001
 Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
@@ -101,4 +102,13 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Patterns discovered: Wizard-style creation flows follow the members new layout with step headers + progress.
   - Gotchas encountered: Loader access to search params requires `loaderDeps` in TanStack Start routes.
   - Useful context: Meal edit routes reuse selection card components for day/type choices.
+---
+## 2026-01-16 19:16 - US-008
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Ensured add-meal day selection normalizes to the active week, updated tests to assert the stored date, and verified the wizard in the browser.
+- Files changed: `src/routes/_authed/meals/new.tsx`, `src/routes/_authed/meals/-meal-form.ts`, `src/routes/_authed/meals/-meal-create-edit.test.tsx`, `docs/prds/MEALS_PRD.md`, `docs/AGENTS.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: Use `getWeekDates`/`getDayKey` from `src/utils/date.ts` for week/date mapping logic.
+  - Gotchas encountered: None.
+  - Useful context: Meal wizard day cards show the week-start range from the `weekStart` search param.
 ---

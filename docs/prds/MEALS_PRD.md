@@ -143,16 +143,18 @@ passes: true
 
 **Description:** As a developer, I need the add meal form to work with actual dates instead of day names.
 
+passes: true
+
 **Acceptance Criteria:**
 
-- [ ] Update form to accept Date object for selected day
-- [ ] Convert selected day to proper date within current week
-- [ ] Store meal with correct date in database
-- [ ] Form still displays day names in dropdown for user convenience
-- [ ] Date calculation handles week boundaries correctly
-- [ ] Add flow is touch-friendly and not overwhelming (progressive disclosure allowed)
-- [ ] Typecheck passes
-- [ ] Verify in browser using dev-browser skill
+- [x] Update form to accept Date object for selected day
+- [x] Convert selected day to proper date within current week
+- [x] Store meal with correct date in database
+- [x] Form still displays day names in dropdown for user convenience
+- [x] Date calculation handles week boundaries correctly
+- [x] Add flow is touch-friendly and not overwhelming (progressive disclosure allowed)
+- [x] Typecheck passes
+- [x] Verify in browser using dev-browser skill
 
 ### US-009: Meal data managed locally in feature
 
