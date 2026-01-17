@@ -1,6 +1,7 @@
 ## Codebase Patterns
 - Use `getCurrentUserHouseholdId` from `src/server/household.ts` for household-scoped server logic.
 - For filtered read server functions, use `inputValidator` and pass `{ data: {} }` when no filters are needed.
+- `react-resizable-panels` exports `Group`/`Separator` (not `PanelGroup`/`PanelResizeHandle`) in this codebase.
 
 ## 2026-01-15 23:59 - US-001
 Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
@@ -55,4 +56,40 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Patterns discovered: `getMeals` accepts optional week filters via `inputValidator` and expects `{ data: {} }` when no filters are passed.
   - Gotchas encountered: RTL queries for the add flow should use `findAllByRole` once multiple "Add Meal" buttons exist.
   - Useful context: Browser check confirmed week navigation controls render on `/meals`.
+---
+## 2026-01-16 18:20 - US-006
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Added edit mode for meal cards with a shared add/edit form, update mutation wiring, and edit coverage in UI tests.
+- Files changed: `src/routes/_authed/meals/index.tsx`, `src/routes/_authed/meals/-meals.test.tsx`, `docs/prds/MEALS_PRD.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: None.
+  - Gotchas encountered: `npx tsc --noEmit` currently fails due to unrelated type errors in `src/components/Header.tsx` and `src/components/ui/resizable.tsx`.
+  - Useful context: Edit form reuses the add form layout and swaps labels/actions based on `formMode`.
+---
+## 2026-01-16 18:35 - US-006
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Fixed unrelated typecheck errors in the header icon imports and resizable panel wrappers to unblock `tsc --noEmit`.
+- Files changed: `src/components/Header.tsx`, `src/components/ui/resizable.tsx`, `docs/prds/MEALS_PRD.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: `react-resizable-panels` exports `Group` and `Separator` components (not `PanelGroup`/`PanelResizeHandle`).
+  - Gotchas encountered: None.
+  - Useful context: Typecheck now passes with the updated resizable exports.
+---
+## 2026-01-16 18:50 - US-006
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Marked browser verification complete in the PRD per user request.
+- Files changed: `docs/prds/MEALS_PRD.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: None.
+  - Gotchas encountered: Browser automation can be flaky due to overlayed navigation; consider manual verification when it blocks automation.
+  - Useful context: Dev server was running at `http://localhost:3000/meals` during attempted verification.
+---
+## 2026-01-16 18:55 - US-006
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Marked US-006 `passes: true` after confirming all acceptance criteria are checked.
+- Files changed: `docs/prds/MEALS_PRD.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: None.
+  - Gotchas encountered: None.
+  - Useful context: US-006 status in PRD now reflects completion.
 ---

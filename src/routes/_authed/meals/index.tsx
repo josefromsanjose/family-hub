@@ -2,12 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { addWeeks, endOfDay, format, startOfDay, startOfWeek } from "date-fns";
-import { Loader2, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { Loader2, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { getDayKey, getWeekDates } from "@/utils/date";
 import {
   createMeal,
   deleteMeal,
   getMeals,
+  updateMeal,
   type MealResponse,
 } from "@/server/meals";
 import { Button } from "@/components/ui/button";
@@ -78,13 +79,31 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
     () => formatWeekRange(weekStart, weekEnd),
     [weekStart, weekEnd]
   );
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [formMode, setFormMode] = useState<"add" | "edit" | null>(null);
+  const [editingMealId, setEditingMealId] = useState<string | null>(null);
   const [formData, setFormData] = useState<MealFormData>(() => ({
     day: weekDates[0],
     mealType: mealTypeOptions[0].value,
     name: "",
     notes: "",
   }));
+  const isEditing = formMode === "edit";
+  const isFormOpen = formMode !== null;
+
+  const resetForm = (day = weekDates[0]) => {
+    setFormData({
+      day,
+      mealType: mealTypeOptions[0].value,
+      name: "",
+      notes: "",
+    });
+  };
+
+  const closeForm = () => {
+    setFormMode(null);
+    setEditingMealId(null);
+    resetForm();
+  };
 
   useEffect(() => {
     setFormData((current) => {
@@ -119,13 +138,15 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
     mutationFn: createMeal,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["meals"] });
-      setFormData({
-        day: weekDates[0],
-        mealType: mealTypeOptions[0].value,
-        name: "",
-        notes: "",
-      });
-      setShowAddForm(false);
+      closeForm();
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: updateMeal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["meals"] });
+      closeForm();
     },
   });
 
@@ -136,20 +157,45 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
     },
   });
 
-  const addMeal = () => {
+  const handleSubmitMeal = () => {
     if (!formData.name.trim()) return;
-    createMutation.mutate({
-      data: {
-        name: formData.name,
-        date: startOfDay(formData.day).toISOString(),
-        mealType: formData.mealType,
-        notes: formData.notes,
-      },
-    });
+    const payload = {
+      name: formData.name,
+      date: startOfDay(formData.day).toISOString(),
+      mealType: formData.mealType,
+      notes: formData.notes,
+    };
+    if (isEditing && editingMealId) {
+      updateMutation.mutate({
+        data: {
+          id: editingMealId,
+          ...payload,
+        },
+      });
+      return;
+    }
+    createMutation.mutate({ data: payload });
   };
 
   const handleDeleteMeal = (id: string) => {
     deleteMutation.mutate({ data: { id } });
+  };
+
+  const handleStartAdd = () => {
+    setFormMode((current) => (current === "add" ? null : "add"));
+    setEditingMealId(null);
+    resetForm();
+  };
+
+  const handleStartEdit = (meal: MealResponse) => {
+    setFormMode("edit");
+    setEditingMealId(meal.id);
+    setFormData({
+      day: startOfDay(new Date(meal.date)),
+      mealType: meal.mealType,
+      name: meal.name,
+      notes: meal.notes ?? "",
+    });
   };
 
   const getMealsForDay = (day: Date, mealType: MealTypeValue) => {
@@ -198,7 +244,7 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button onClick={() => setShowAddForm(!showAddForm)}>
+            <Button onClick={handleStartAdd}>
               <Plus size={20} />
               Add Meal
             </Button>
@@ -211,10 +257,10 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
           </div>
         )}
 
-        {showAddForm && (
+        {isFormOpen && (
           <div className="bg-card rounded-lg shadow-sm p-6 mb-6 border border-border">
             <h2 className="text-xl font-bold text-card-foreground mb-4">
-              Add New Meal
+              {isEditing ? "Edit Meal" : "Add New Meal"}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -309,14 +355,22 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
             </div>
             <div className="flex gap-3 mt-4">
               <button
-                onClick={addMeal}
-                disabled={createMutation.isPending}
+                onClick={handleSubmitMeal}
+                disabled={
+                  isEditing ? updateMutation.isPending : createMutation.isPending
+                }
                 className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
               >
-                {createMutation.isPending ? "Adding..." : "Add Meal"}
+                {isEditing
+                  ? updateMutation.isPending
+                    ? "Updating..."
+                    : "Update Meal"
+                  : createMutation.isPending
+                    ? "Adding..."
+                    : "Add Meal"}
               </button>
               <button
-                onClick={() => setShowAddForm(false)}
+                onClick={closeForm}
                 className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-accent transition-colors"
               >
                 Cancel
@@ -389,14 +443,23 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
                                   </p>
                                 )}
                               </div>
-                              <button
-                                onClick={() => handleDeleteMeal(meal.id)}
-                                disabled={deleteMutation.isPending}
-                                className="p-1 hover:bg-destructive/20 rounded text-destructive transition-colors"
-                                aria-label="Delete meal"
-                              >
-                                <Trash2 size={14} />
-                              </button>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleStartEdit(meal)}
+                                  className="p-1 hover:bg-primary/20 rounded text-primary transition-colors"
+                                  aria-label="Edit meal"
+                                >
+                                  <Pencil size={14} />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteMeal(meal.id)}
+                                  disabled={deleteMutation.isPending}
+                                  className="p-1 hover:bg-destructive/20 rounded text-destructive transition-colors"
+                                  aria-label="Delete meal"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
                             </div>
                           ))}
                         </div>

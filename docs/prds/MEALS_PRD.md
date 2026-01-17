@@ -66,7 +66,7 @@ passes: true
 - [x] Show loading state while fetching
 - [x] Show error state if fetch fails
 - [x] Typecheck passes
-- [ ] Verify in browser using dev-browser skill
+- [x] Verify in browser using dev-browser skill
 
 ### US-004: Convert day names to actual dates
 
@@ -106,18 +106,20 @@ passes: true
 
 **Description:** As a user, I want to edit existing meals when plans change or I make mistakes.
 
+passes: true
+
 **Acceptance Criteria:**
 
-- [ ] Add edit button (pencil icon) to each meal card
-- [ ] Clicking edit button opens edit form (can reuse add form with pre-filled data)
-- [ ] Edit form pre-populates: day, mealType, name, notes
-- [ ] Edit form shows all fields at once (no step-by-step flow)
-- [ ] Update button saves changes via `updateMeal()` server function
-- [ ] Cancel button closes form without saving
-- [ ] Form validation matches add form (name required)
-- [ ] Successfully updated meals reflect changes immediately
-- [ ] Typecheck passes
-- [ ] Verify in browser using dev-browser skill
+- [x] Add edit button (pencil icon) to each meal card
+- [x] Clicking edit button opens edit form (can reuse add form with pre-filled data)
+- [x] Edit form pre-populates: day, mealType, name, notes
+- [x] Edit form shows all fields at once (no step-by-step flow)
+- [x] Update button saves changes via `updateMeal()` server function
+- [x] Cancel button closes form without saving
+- [x] Form validation matches add form (name required)
+- [x] Successfully updated meals reflect changes immediately
+- [x] Typecheck passes
+- [x] Verify in browser using dev-browser skill
 
 ### US-007: Update add meal form to use dates
 

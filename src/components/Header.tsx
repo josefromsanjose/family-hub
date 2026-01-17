@@ -9,7 +9,6 @@ import {
   CheckSquare,
   UtensilsCrossed,
   Settings,
-  ListTodo,
 } from "lucide-react";
 import HeaderUser from "../integrations/clerk/header-user";
 import { useAuthState } from "@/utils/auth";
