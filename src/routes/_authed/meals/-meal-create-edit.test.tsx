@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { startOfWeek, addDays } from "date-fns";
+import { startOfWeek, addDays, format, startOfDay } from "date-fns";
 import { describe, it, expect, vi } from "vitest";
 import type { ReactElement } from "react";
 import { MealCreateWizard } from "./new";
@@ -40,11 +40,17 @@ describe("Meal creation and edit flows", () => {
     });
     const onComplete = vi.fn();
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const selectedDay = addDays(weekStart, 2);
+    const selectedDayLabel = format(selectedDay, "EEEE");
+    const expectedDate = startOfDay(selectedDay).toISOString();
 
     renderWithQuery(
       <MealCreateWizard initialWeekStart={weekStart} onComplete={onComplete} />
     );
 
+    fireEvent.click(
+      screen.getByRole("button", { name: new RegExp(selectedDayLabel, "i") })
+    );
     fireEvent.click(screen.getByRole("button", { name: /next/i }));
     fireEvent.click(screen.getByRole("button", { name: /next/i }));
 
@@ -61,7 +67,7 @@ describe("Meal creation and edit flows", () => {
         {
           data: expect.objectContaining({
             name: "Tacos",
-            date: expect.any(String),
+            date: expectedDate,
             mealType: expect.any(String),
           }),
         },

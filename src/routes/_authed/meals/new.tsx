@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { format, startOfDay } from "date-fns";
@@ -13,6 +13,7 @@ import {
   MEAL_TYPE_OPTIONS,
   type MealFormData,
   type MealTypeValue,
+  getWeekDateForDay,
   isMealNameValid,
   parseWeekStart,
 } from "@/routes/_authed/meals/-meal-form";
@@ -103,6 +104,12 @@ export function MealCreateWizard({
     name: "",
     notes: "",
   }));
+
+  useEffect(() => {
+    const normalizedDay = getWeekDateForDay(weekDates, data.day);
+    if (normalizedDay.toDateString() === data.day.toDateString()) return;
+    setData((prev) => ({ ...prev, day: normalizedDay }));
+  }, [weekDates, data.day]);
 
   const step = ADD_STEPS[currentStep];
   const isFirstStep = currentStep === 0;

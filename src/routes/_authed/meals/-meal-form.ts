@@ -17,6 +17,14 @@ export type MealFormData = {
 
 export const isMealNameValid = (name: string) => name.trim().length > 0;
 
+export const getWeekDateForDay = (weekDates: Date[], selectedDay: Date) => {
+  if (weekDates.length === 0) return selectedDay;
+  const matchingDay = weekDates.find(
+    (day) => day.getDay() === selectedDay.getDay()
+  );
+  return matchingDay ?? weekDates[0];
+};
+
 export const parseWeekStart = (value?: string | Date) => {
   const baseDate = value ? new Date(value) : new Date();
   const safeDate = Number.isNaN(baseDate.valueOf()) ? new Date() : baseDate;
