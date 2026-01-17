@@ -5,7 +5,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { format, startOfDay } from "date-fns";
 import { z } from "zod";
 import { getWeekDates } from "@/utils/date";
-import { createMeal } from "@/server/meals";
+import { createMeal, createMealLibraryItem } from "@/server/meals";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { SelectionCard } from "@/components/touch/SelectionCard";
@@ -118,8 +118,23 @@ export function MealCreateWizard({
   const nameIsValid = isMealNameValid(data.name);
 
   const mutation = useMutation({
-    mutationFn: createMeal,
+    mutationFn: async (payload: MealFormData) => {
+      const libraryItem = await createMealLibraryItem({
+        data: {
+          name: payload.name.trim(),
+          notes: payload.notes.trim() || undefined,
+        },
+      });
+      return createMeal({
+        data: {
+          mealLibraryItemId: libraryItem.id,
+          date: startOfDay(payload.day).toISOString(),
+          mealType: payload.mealType,
+        },
+      });
+    },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["meal-library-items"] });
       queryClient.invalidateQueries({ queryKey: ["meals"] });
       onComplete?.();
     },
@@ -149,14 +164,7 @@ export function MealCreateWizard({
   const handleNext = () => {
     if (!canProceed) return;
     if (isLastStep) {
-      mutation.mutate({
-        data: {
-          name: data.name.trim(),
-          date: startOfDay(data.day).toISOString(),
-          mealType: data.mealType,
-          notes: data.notes.trim() || undefined,
-        },
-      });
+      mutation.mutate(data);
       return;
     }
     setCurrentStep((prev) => Math.min(ADD_STEPS.length - 1, prev + 1));

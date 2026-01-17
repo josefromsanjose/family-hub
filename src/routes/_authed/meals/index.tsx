@@ -1,16 +1,35 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { addWeeks, endOfDay, format, startOfDay } from "date-fns";
-import { Loader2, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Trash2,
+} from "lucide-react";
 import { z } from "zod";
 import { getDayKey, getWeekDates } from "@/utils/date";
 import {
+  createMeal,
   deleteMeal,
+  getMealLibraryItems,
   getMeals,
+  type MealLibraryItemResponse,
   type MealResponse,
 } from "@/server/meals";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { SelectionCard } from "@/components/touch/SelectionCard";
 import {
   MEAL_TYPE_OPTIONS,
   type MealTypeValue,
@@ -56,7 +75,7 @@ const formatWeekRange = (startDate: Date, endDate: Date) => {
 type MealPlanningProps = {
   initialMeals?: MealResponse[];
   initialWeekStart?: Date;
-  onAddMeal?: (weekStart: Date) => void;
+  onCreateNewMeal?: (weekStart: Date) => void;
   onEditMeal?: (meal: MealResponse, weekStart: Date) => void;
 };
 
@@ -70,7 +89,7 @@ function MealPlanningRoute() {
     <MealPlanning
       initialMeals={initialMeals}
       initialWeekStart={initialWeekStart}
-      onAddMeal={(weekStart) =>
+      onCreateNewMeal={(weekStart) =>
         navigate({
           to: "/meals/new",
           search: { weekStart: weekStart.toISOString() },
@@ -90,12 +109,22 @@ function MealPlanningRoute() {
 export function MealPlanning({
   initialMeals,
   initialWeekStart,
-  onAddMeal,
+  onCreateNewMeal,
   onEditMeal,
 }: MealPlanningProps) {
   const queryClient = useQueryClient();
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+  const [addStepIndex, setAddStepIndex] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedMeal, setSelectedMeal] = useState<MealLibraryItemResponse | null>(
+    null
+  );
   const [weekReferenceDate, setWeekReferenceDate] = useState(
     () => parseWeekStart(initialWeekStart)
+  );
+  const [selectedDay, setSelectedDay] = useState(weekReferenceDate);
+  const [selectedMealType, setSelectedMealType] = useState<MealTypeValue>(
+    MEAL_TYPE_OPTIONS[0].value
   );
   const weekDates = useMemo(
     () => getWeekDates(weekReferenceDate),
@@ -107,6 +136,23 @@ export function MealPlanning({
     () => formatWeekRange(weekStart, weekEnd),
     [weekStart, weekEnd]
   );
+  const addSteps = [
+    { id: "meal", title: "Pick a meal", helper: "Start with something familiar." },
+    {
+      id: "day",
+      title: "Pick the day",
+      helper: "Choose which day this meal belongs to.",
+    },
+    {
+      id: "mealType",
+      title: "Pick a meal type",
+      helper: "Is this breakfast, lunch, or dinner?",
+    },
+  ] as const;
+  const currentAddStep = addSteps[addStepIndex];
+  const addProgress = ((addStepIndex + 1) / addSteps.length) * 100;
+  const isLastAddStep = addStepIndex === addSteps.length - 1;
+  const searchValue = searchTerm.trim();
   const {
     data: meals = [],
     error,
@@ -122,6 +168,26 @@ export function MealPlanning({
         },
       }),
     initialData: initialMeals,
+  });
+
+  const { data: recentMeals = [], isLoading: isRecentMealsLoading } = useQuery({
+    queryKey: ["meal-library-items", "recent"],
+    queryFn: () => getMealLibraryItems({ data: {} }),
+    enabled: isAddSheetOpen,
+  });
+
+  const { data: searchMeals = [], isLoading: isSearchMealsLoading } = useQuery({
+    queryKey: ["meal-library-items", "search", searchValue],
+    queryFn: () => getMealLibraryItems({ data: { query: searchValue } }),
+    enabled: isAddSheetOpen && searchValue.length > 0,
+  });
+
+  const createMealMutation = useMutation({
+    mutationFn: createMeal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["meals"] });
+      setIsAddSheetOpen(false);
+    },
   });
 
   const deleteMutation = useMutation({
@@ -142,6 +208,34 @@ export function MealPlanning({
         getDayKey(new Date(meal.date)) === dayKey && meal.mealType === mealType
     );
   };
+
+  useEffect(() => {
+    setSelectedDay(weekStart);
+  }, [weekStart]);
+
+  useEffect(() => {
+    if (!isAddSheetOpen) return;
+    setAddStepIndex(0);
+    setSearchTerm("");
+    setSelectedMeal(null);
+    setSelectedDay(weekStart);
+    setSelectedMealType(MEAL_TYPE_OPTIONS[0].value);
+  }, [isAddSheetOpen, weekStart]);
+
+  const handleAddExistingMeal = () => {
+    if (!selectedMeal) return;
+    createMealMutation.mutate({
+      data: {
+        date: startOfDay(selectedDay).toISOString(),
+        mealType: selectedMealType,
+        mealLibraryItemId: selectedMeal.id,
+      },
+    });
+  };
+
+  const mealResults = searchValue.length > 0 ? searchMeals : recentMeals;
+  const isMealListLoading =
+    searchValue.length > 0 ? isSearchMealsLoading : isRecentMealsLoading;
 
   if (isLoading) {
     return (
@@ -182,8 +276,14 @@ export function MealPlanning({
           </div>
           <div className="flex items-center gap-3">
             <Button
+              variant="outline"
+              onClick={() => onCreateNewMeal?.(weekStart)}
+            >
+              Create Meal
+            </Button>
+            <Button
               onClick={() => {
-                onAddMeal?.(weekStart);
+                setIsAddSheetOpen(true);
               }}
             >
               <Plus size={20} />
@@ -292,6 +392,202 @@ export function MealPlanning({
           </div>
         </div>
       </div>
+      <Sheet open={isAddSheetOpen} onOpenChange={setIsAddSheetOpen}>
+        <SheetContent
+          side="bottom"
+          className="h-[80vh] rounded-t-3xl sm:left-1/2 sm:-translate-x-1/2 sm:max-w-2xl sm:w-full"
+        >
+          <SheetHeader className="space-y-3">
+            <div className="mx-auto h-1.5 w-12 rounded-full bg-muted" />
+            <div className="flex items-center justify-between">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  if (addStepIndex === 0) {
+                    setIsAddSheetOpen(false);
+                    return;
+                  }
+                  setAddStepIndex((prev) => Math.max(0, prev - 1));
+                }}
+                aria-label={addStepIndex === 0 ? "Close add meal" : "Go back"}
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Step {addStepIndex + 1} of {addSteps.length}
+              </span>
+            </div>
+            <Progress value={addProgress} className="h-1" />
+            <div className="space-y-1 text-center">
+              <SheetTitle className="text-xl">{currentAddStep.title}</SheetTitle>
+              <SheetDescription>{currentAddStep.helper}</SheetDescription>
+            </div>
+          </SheetHeader>
+
+          <div className="flex-1 overflow-y-auto px-6 pb-6">
+            {currentAddStep.id === "meal" && (
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <label
+                    htmlFor="meal-search"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    Search meals
+                  </label>
+                  <input
+                    id="meal-search"
+                    type="text"
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    placeholder="Search by meal name..."
+                    className="w-full rounded-xl border border-input bg-background px-4 py-4 text-lg focus:ring-2 focus:ring-ring focus:border-transparent"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      {searchValue.length > 0 ? "Search results" : "Recent meals"}
+                    </h3>
+                    {selectedMeal && (
+                      <span className="text-xs text-muted-foreground">
+                        Selected: {selectedMeal.name}
+                      </span>
+                    )}
+                  </div>
+                  {isMealListLoading && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Loading meals...
+                    </div>
+                  )}
+                  {!isMealListLoading && mealResults.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      {searchValue.length > 0
+                        ? "No meals match that search."
+                        : "No meals in your library yet. Create one to get started."}
+                    </p>
+                  )}
+                  <div className="space-y-3">
+                    {mealResults.map((meal) => {
+                      const isSelected = selectedMeal?.id === meal.id;
+                      return (
+                        <button
+                          key={meal.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedMeal(meal);
+                            setAddStepIndex(1);
+                          }}
+                          className={`w-full min-h-[80px] rounded-xl border px-4 py-3 text-left transition-all ${
+                            isSelected
+                              ? "border-primary bg-primary/5"
+                              : "border-border bg-background hover:border-primary/50"
+                          }`}
+                          aria-label={`Select ${meal.name}`}
+                        >
+                          <p className="text-base font-semibold text-foreground">
+                            {meal.name}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {meal.notes?.trim() || "No notes"}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {currentAddStep.id === "day" && (
+              <div className="space-y-6">
+                {selectedMeal && (
+                  <div className="rounded-xl border border-border bg-secondary/30 p-4">
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-semibold text-foreground">Meal:</span>{" "}
+                      {selectedMeal.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-semibold text-foreground">Notes:</span>{" "}
+                      {selectedMeal.notes?.trim() || "No notes"}
+                    </p>
+                  </div>
+                )}
+                <section className="space-y-3">
+                  <h3 className="text-sm font-semibold text-foreground">Day</h3>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {weekDates.map((day) => (
+                      <SelectionCard
+                        key={day.toISOString()}
+                        label={format(day, "EEEE")}
+                        description={format(day, "MMM d")}
+                        selected={day.toDateString() === selectedDay.toDateString()}
+                        onSelect={() => {
+                          setSelectedDay(day);
+                          setAddStepIndex(2);
+                        }}
+                      />
+                    ))}
+                  </div>
+                </section>
+              </div>
+            )}
+
+            {currentAddStep.id === "mealType" && (
+              <div className="space-y-6">
+                {selectedMeal && (
+                  <div className="rounded-xl border border-border bg-secondary/30 p-4">
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-semibold text-foreground">Meal:</span>{" "}
+                      {selectedMeal.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-semibold text-foreground">Day:</span>{" "}
+                      {format(selectedDay, "EEEE")}
+                    </p>
+                  </div>
+                )}
+                <section className="space-y-3">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Meal Type
+                  </h3>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    {MEAL_TYPE_OPTIONS.map((option) => (
+                      <SelectionCard
+                        key={option.value}
+                        label={option.label}
+                        description={option.description}
+                        selected={selectedMealType === option.value}
+                        onSelect={() => setSelectedMealType(option.value)}
+                      />
+                    ))}
+                  </div>
+                </section>
+              </div>
+            )}
+          </div>
+
+          {isLastAddStep && (
+            <div className="border-t border-border px-6 py-4 space-y-3">
+              <Button
+                className="w-full h-14 text-lg"
+                disabled={createMealMutation.isPending || !selectedMeal}
+                onClick={handleAddExistingMeal}
+              >
+                {createMealMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Adding...
+                  </>
+                ) : (
+                  "Add to week"
+                )}
+              </Button>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

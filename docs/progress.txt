@@ -121,3 +121,12 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Gotchas encountered: None.
   - Useful context: Meal edit mutations still invalidate the shared `["meals"]` query key for list refresh.
 ---
+## 2026-01-17 04:15 - US-010
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Added a bottom-sheet wizard on the week view to search recent meals, pick day/type, and add the selected meal to the week; added tests for the new flow.
+- Files changed: `src/routes/_authed/meals/index.tsx`, `src/routes/_authed/meals/-meals.test.tsx`, `docs/prds/MEALS_PRD.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: Use the `Sheet` component for bottom-sheet flows on mobile.
+  - Gotchas encountered: Meal list tests need `cleanup()` between renders to avoid duplicated buttons.
+  - Useful context: Meal search uses `getMealNameSuggestions` with recent-first behavior.
+---

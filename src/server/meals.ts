@@ -14,15 +14,17 @@ export type MealResponse = {
   date: string; // ISO string
   mealType: "breakfast" | "lunch" | "dinner";
   notes?: string;
+  mealLibraryItemId?: string;
   createdAt: string;
   updatedAt: string;
 };
 
 export type CreateMealInput = {
-  name: string;
+  name?: string;
   date: string; // ISO string
   mealType: "breakfast" | "lunch" | "dinner";
   notes?: string;
+  mealLibraryItemId?: string;
 };
 
 export type UpdateMealInput = {
@@ -46,6 +48,24 @@ export type GetMealByIdInput = {
   id: string;
 };
 
+export type MealLibraryItemResponse = {
+  id: string;
+  householdId: string;
+  name: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateMealLibraryItemInput = {
+  name: string;
+  notes?: string;
+};
+
+export type GetMealLibraryItemsInput = {
+  query?: string;
+};
+
 const toMealResponse = (meal: {
   id: string;
   householdId: string;
@@ -53,6 +73,7 @@ const toMealResponse = (meal: {
   date: Date;
   mealType: MealType;
   notes: string | null;
+  mealLibraryItemId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }): MealResponse => ({
@@ -62,8 +83,25 @@ const toMealResponse = (meal: {
   date: meal.date.toISOString(),
   mealType: meal.mealType as MealResponse["mealType"],
   notes: meal.notes || undefined,
+  mealLibraryItemId: meal.mealLibraryItemId || undefined,
   createdAt: meal.createdAt.toISOString(),
   updatedAt: meal.updatedAt.toISOString(),
+});
+
+const toMealLibraryItemResponse = (item: {
+  id: string;
+  householdId: string;
+  name: string;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}): MealLibraryItemResponse => ({
+  id: item.id,
+  householdId: item.householdId,
+  name: item.name,
+  notes: item.notes || undefined,
+  createdAt: item.createdAt.toISOString(),
+  updatedAt: item.updatedAt.toISOString(),
 });
 
 // ============================================================================
@@ -129,13 +167,35 @@ export const getMealById = createServerFn({ method: "GET" })
     return meal ? toMealResponse(meal) : null;
   });
 
+export const getMealLibraryItems = createServerFn({ method: "GET" })
+  .inputValidator((input: GetMealLibraryItemsInput) => {
+    const query = input.query?.trim();
+    return { query: query && query.length > 0 ? query : undefined };
+  })
+  .handler(async ({ data }): Promise<MealLibraryItemResponse[]> => {
+    const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
+
+    const items = await prisma.mealLibraryItem.findMany({
+      where: {
+        householdId,
+        ...(data.query
+          ? { name: { contains: data.query, mode: "insensitive" } }
+          : {}),
+      },
+      orderBy: [{ updatedAt: "desc" }, { name: "asc" }],
+    });
+
+    return items.map(toMealLibraryItemResponse);
+  });
+
 // ============================================================================
 // POST Operations
 // ============================================================================
 
 export const createMeal = createServerFn({ method: "POST" })
   .inputValidator((input: CreateMealInput) => {
-    if (!input.name || input.name.trim().length === 0) {
+    if (!input.mealLibraryItemId && (!input.name || input.name.trim().length === 0)) {
       throw new Error("Meal name is required");
     }
     if (!input.date) {
@@ -153,18 +213,54 @@ export const createMeal = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<MealResponse> => {
     const householdId = await getCurrentUserHouseholdId();
     const prisma = await getPrisma();
+    let name = data.name?.trim() ?? "";
+    let notes = data.notes?.trim() || null;
+
+    if (data.mealLibraryItemId) {
+      const libraryItem = await prisma.mealLibraryItem.findFirst({
+        where: { id: data.mealLibraryItemId, householdId },
+      });
+      if (!libraryItem) {
+        throw new Error("Meal library item not found or not authorized");
+      }
+      name = libraryItem.name.trim();
+      notes = libraryItem.notes?.trim() || null;
+    }
 
     const meal = await prisma.meal.create({
       data: {
         householdId,
-        name: data.name.trim(),
+        name,
         date: new Date(data.date),
         mealType: data.mealType as MealType,
-        notes: data.notes?.trim() || null,
+        notes,
+        mealLibraryItemId: data.mealLibraryItemId ?? null,
       },
     });
 
     return toMealResponse(meal);
+  });
+
+export const createMealLibraryItem = createServerFn({ method: "POST" })
+  .inputValidator((input: CreateMealLibraryItemInput) => {
+    if (!input.name || input.name.trim().length === 0) {
+      throw new Error("Meal name is required");
+    }
+    return input;
+  })
+  .handler(async ({ data }): Promise<MealLibraryItemResponse> => {
+    const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
+
+    const item = await prisma.mealLibraryItem.create({
+      data: {
+        householdId,
+        name: data.name.trim(),
+        notes: data.notes?.trim() || null,
+      },
+    });
+
+    return toMealLibraryItemResponse(item);
   });
 
 export const updateMeal = createServerFn({ method: "POST" })

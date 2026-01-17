@@ -26,6 +26,7 @@ model Household {
   tasks          Task[]
   completions    CompletionRecord[]
   meals          Meal[]
+  mealLibraryItems MealLibraryItem[]
   shoppingItems  ShoppingItem[]
   calendarEvents CalendarEvent[]
 
@@ -250,16 +251,36 @@ model Meal {
   date        DateTime // Specific date for this meal
   mealType    MealType
   notes       String?
+  mealLibraryItemId String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
   household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  mealLibraryItem MealLibraryItem? @relation(fields: [mealLibraryItemId], references: [id], onDelete: SetNull)
 
   @@index([householdId])
   @@index([date])
   @@index([mealType])
+  @@index([mealLibraryItemId])
   @@map("meals")
+}
+
+model MealLibraryItem {
+  id          String   @id @default(uuid())
+  householdId String
+  name        String
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  meals     Meal[]
+
+  @@index([householdId])
+  @@index([name])
+  @@map("meal_library_items")
 }
 
 // ============================================================================

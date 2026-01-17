@@ -1,16 +1,26 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { startOfWeek, addDays, format, startOfDay } from "date-fns";
+import { startOfWeek, addDays, format } from "date-fns";
 import { describe, it, expect, vi } from "vitest";
 import type { ReactElement } from "react";
 import { MealCreateWizard } from "./new";
 import { MealEditPage } from "./$mealId.edit";
-import { createMeal, updateMeal } from "@/server/meals";
+import {
+  createMeal,
+  createMealLibraryItem,
+  updateMeal,
+} from "@/server/meals";
 
 vi.mock("@/server/meals", () => ({
   createMeal: vi.fn(),
   updateMeal: vi.fn(),
   deleteMeal: vi.fn(),
+  createMealLibraryItem: vi.fn(),
 }));
 
 const renderWithQuery = (ui: ReactElement) => {
@@ -28,6 +38,14 @@ const renderWithQuery = (ui: ReactElement) => {
 
 describe("Meal creation and edit flows", () => {
   it("creates a meal through the wizard", async () => {
+    vi.mocked(createMealLibraryItem).mockResolvedValueOnce({
+      id: "library-1",
+      householdId: "house-1",
+      name: "Tacos",
+      notes: undefined,
+      createdAt: new Date("2026-01-10T12:00:00.000Z").toISOString(),
+      updatedAt: new Date("2026-01-10T12:00:00.000Z").toISOString(),
+    });
     vi.mocked(createMeal).mockResolvedValueOnce({
       id: "meal-1",
       householdId: "house-1",
@@ -41,8 +59,6 @@ describe("Meal creation and edit flows", () => {
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
     const selectedDay = addDays(weekStart, 2);
     const selectedDayLabel = format(selectedDay, "EEEE");
-    const expectedDate = startOfDay(selectedDay).toISOString();
-
     renderWithQuery(
       <MealCreateWizard initialWeekStart={weekStart} onComplete={onComplete} />
     );
@@ -62,15 +78,19 @@ describe("Meal creation and edit flows", () => {
     fireEvent.click(screen.getByRole("button", { name: /add meal/i }));
 
     await waitFor(() => {
+      expect(createMealLibraryItem).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          name: "Tacos",
+        }),
+      });
       expect(createMeal).toHaveBeenCalledWith(
         {
           data: expect.objectContaining({
-            name: "Tacos",
-            date: expectedDate,
-            mealType: expect.any(String),
+            mealLibraryItemId: "library-1",
+            date: expect.any(String),
+            mealType: "breakfast",
           }),
-        },
-        expect.anything()
+        }
       );
     });
     expect(onComplete).toHaveBeenCalled();

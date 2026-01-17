@@ -8,6 +8,11 @@ const mockPrisma = vi.hoisted(() => ({
     update: vi.fn(),
     delete: vi.fn(),
   },
+  mealLibraryItem: {
+    findMany: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+  },
 }));
 
 const mockGetCurrentUserHouseholdId = vi.hoisted(() => vi.fn());
@@ -41,7 +46,13 @@ vi.mock("@tanstack/react-start", () => ({
   },
 }));
 
-import { createMeal, getMealById, getMeals, updateMeal } from "./meals";
+import {
+  createMeal,
+  getMealById,
+  getMealLibraryItems,
+  getMeals,
+  updateMeal,
+} from "./meals";
 
 describe("meals server functions", () => {
   const baseDate = new Date("2026-01-15T00:00:00.000Z");
@@ -60,6 +71,7 @@ describe("meals server functions", () => {
         date: baseDate,
         mealType: "dinner",
         notes: null,
+        mealLibraryItemId: null,
         createdAt: baseDate,
         updatedAt: baseDate,
       },
@@ -78,6 +90,7 @@ describe("meals server functions", () => {
         name: "Pasta",
         date: baseDate.toISOString(),
         mealType: "dinner",
+        mealLibraryItemId: undefined,
         createdAt: baseDate.toISOString(),
         updatedAt: baseDate.toISOString(),
       },
@@ -92,6 +105,7 @@ describe("meals server functions", () => {
       date: baseDate,
       mealType: "dinner",
       notes: null,
+      mealLibraryItemId: null,
       createdAt: baseDate,
       updatedAt: baseDate,
     });
@@ -107,9 +121,40 @@ describe("meals server functions", () => {
       name: "Pasta",
       date: baseDate.toISOString(),
       mealType: "dinner",
+      mealLibraryItemId: undefined,
       createdAt: baseDate.toISOString(),
       updatedAt: baseDate.toISOString(),
     });
+  });
+
+  it("returns library items for getMealLibraryItems", async () => {
+    mockPrisma.mealLibraryItem.findMany.mockResolvedValue([
+      {
+        id: "library-1",
+        householdId: "household-1",
+        name: "Tacos",
+        notes: "Use salsa",
+        createdAt: baseDate,
+        updatedAt: baseDate,
+      },
+    ]);
+
+    const result = await getMealLibraryItems({ data: {} });
+
+    expect(mockPrisma.mealLibraryItem.findMany).toHaveBeenCalledWith({
+      where: { householdId: "household-1" },
+      orderBy: [{ updatedAt: "desc" }, { name: "asc" }],
+    });
+    expect(result).toEqual([
+      {
+        id: "library-1",
+        householdId: "household-1",
+        name: "Tacos",
+        notes: "Use salsa",
+        createdAt: baseDate.toISOString(),
+        updatedAt: baseDate.toISOString(),
+      },
+    ]);
   });
 
   it("rejects createMeal when name is empty", async () => {

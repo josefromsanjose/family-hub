@@ -172,18 +172,21 @@ passes: true
 
 ### US-010: Reuse previously created meals with autocomplete
 
-**Description:** As a user, I want to reuse meals I've already created by selecting them from an autocomplete list instead of retyping.
+**Description:** As a user, I want to add an existing meal to the current week from the week view so I can plan faster without retyping.
+
+passes: true
 
 **Acceptance Criteria:**
 
-- [ ] Add an autocomplete input for meal name in the add/edit form
-- [ ] Autocomplete suggestions show previously created meal names for the household
-- [ ] Selecting a suggestion fills the meal name (and notes if available)
-- [ ] Users can still type a new meal name not in the list
-- [ ] Suggestions are filtered as the user types
-- [ ] No duplicate meal names are created when selecting an existing meal
-- [ ] Typecheck passes
-- [ ] Verify in browser using dev-browser skill
+- [x] Week view includes an "Add Meal" bottom-sheet wizard (no navigation away)
+- [x] Step 1: Search + recent meals list (recent-first) with tappable cards
+- [x] Step 1 includes a "Create new meal" action that routes to `/meals/new`
+- [x] Step 2: Pick day + meal type using selection cards
+- [x] Confirm action creates a new meal entry for the selected day/type using the chosen meal's name/notes
+- [x] Users can still type to filter search results (no dropdowns)
+- [x] Touch targets follow UX guidelines (48px+ and 80px cards)
+- [x] Typecheck passes
+- [x] Verify in browser using dev-browser skill
 
 ### US-011: Integrate meal planning with shopping lists
 

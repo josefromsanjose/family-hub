@@ -1,18 +1,33 @@
-import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
+import {
+  cleanup,
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { addDays, addWeeks, format, startOfWeek } from "date-fns";
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import type { ComponentProps } from "react";
 import { MealPlanning } from "./index";
 import {
+  createMeal,
+  getMealLibraryItems,
   getMeals,
   type MealResponse,
 } from "@/server/meals";
 
 vi.mock("@/server/meals", () => ({
+  createMeal: vi.fn(),
   getMeals: vi.fn(),
   deleteMeal: vi.fn(),
+  getMealLibraryItems: vi.fn(),
 }));
+
+afterEach(() => {
+  cleanup();
+});
 
 const renderMealPlanning = (props?: ComponentProps<typeof MealPlanning>) => {
   const queryClient = new QueryClient({
@@ -99,24 +114,98 @@ describe("MealPlanning", () => {
     ).toBeTruthy();
   });
 
-  it("calls onAddMeal when the add button is pressed", async () => {
+  it("routes to create new meal from the header button", async () => {
     vi.mocked(getMeals).mockResolvedValueOnce([]);
-    const onAddMeal = vi.fn();
+    vi.mocked(getMealLibraryItems).mockResolvedValueOnce([]);
+    const onCreateNewMeal = vi.fn();
 
-    const { container } = renderMealPlanning({ onAddMeal });
+    const { container } = renderMealPlanning({ onCreateNewMeal });
 
     await waitFor(() => {
       expect(
-        within(container).queryByRole("button", { name: /add meal/i })
+        within(container).queryByRole("button", { name: /create meal/i })
       ).toBeTruthy();
     });
-    const addMealButton = within(container).getByRole("button", {
+    const createMealButton = within(container).getByRole("button", {
+      name: /create meal/i,
+    });
+    fireEvent.click(createMealButton);
+    expect(onCreateNewMeal).toHaveBeenCalledWith(expect.any(Date));
+  });
+
+  it("opens the add meal sheet from the header button", async () => {
+    vi.mocked(getMeals).mockResolvedValueOnce([]);
+    vi.mocked(getMealLibraryItems).mockResolvedValueOnce([]);
+
+    const { container } = renderMealPlanning();
+
+    const addMealButton = await within(container).findByRole("button", {
       name: /add meal/i,
     });
     fireEvent.click(addMealButton);
 
     await waitFor(() => {
-      expect(onAddMeal).toHaveBeenCalledWith(expect.any(Date));
+      expect(screen.getByText(/pick a meal/i)).toBeTruthy();
+    });
+  });
+
+  it("adds an existing meal from the wizard", async () => {
+    vi.mocked(getMeals).mockResolvedValueOnce([]);
+    vi.mocked(getMealLibraryItems).mockImplementation(({ data }) =>
+      Promise.resolve(
+        data.query
+          ? [
+              {
+                id: "library-1",
+                householdId: "house-1",
+                name: "Taco Night",
+                notes: "Add lime",
+                createdAt: new Date("2026-01-10T12:00:00.000Z").toISOString(),
+                updatedAt: new Date("2026-01-10T12:00:00.000Z").toISOString(),
+              },
+            ]
+          : []
+      )
+    );
+    vi.mocked(createMeal).mockResolvedValueOnce({
+      id: "meal-1",
+      householdId: "house-1",
+      name: "Taco Night",
+      date: new Date("2026-01-15T12:00:00.000Z").toISOString(),
+      mealType: "dinner",
+      notes: "Add lime",
+      createdAt: new Date("2026-01-10T12:00:00.000Z").toISOString(),
+      updatedAt: new Date("2026-01-10T12:00:00.000Z").toISOString(),
+    });
+
+    renderMealPlanning();
+
+    fireEvent.click(await screen.findByRole("button", { name: /add meal/i }));
+    const dialog = await screen.findByRole("dialog", { name: /pick a meal/i });
+    const dialogScope = within(dialog);
+    fireEvent.change(dialogScope.getByLabelText(/search meals/i), {
+      target: { value: "taco" },
+    });
+    fireEvent.click(
+      await dialogScope.findByRole("button", { name: /select taco night/i })
+    );
+    fireEvent.click(await dialogScope.findByRole("button", { name: /monday/i }));
+    fireEvent.click(
+      await dialogScope.findByRole("button", { name: /dinner/i })
+    );
+    fireEvent.click(await screen.findByRole("button", { name: /add to week/i }));
+
+    await waitFor(() => {
+      expect(createMeal).toHaveBeenCalledWith(
+        {
+          data: expect.objectContaining({
+            mealLibraryItemId: "library-1",
+            mealType: expect.any(String),
+            date: expect.any(String),
+          }),
+        },
+        expect.anything()
+      );
     });
   });
 
