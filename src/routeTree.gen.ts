@@ -19,10 +19,12 @@ import { Route as AuthedTasksIndexRouteImport } from './routes/_authed/tasks/ind
 import { Route as AuthedSettingsIndexRouteImport } from './routes/_authed/settings/index'
 import { Route as AuthedMealsIndexRouteImport } from './routes/_authed/meals/index'
 import { Route as AuthedTasksNewRouteImport } from './routes/_authed/tasks/new'
+import { Route as AuthedMealsNewRouteImport } from './routes/_authed/meals/new'
 import { Route as AuthedMembersMemberIdIndexRouteImport } from './routes/_authed/members/$memberId.index'
 import { Route as AuthedTasksTaskIdEditRouteImport } from './routes/_authed/tasks/$taskId.edit'
 import { Route as AuthedSettingsMembersNewRouteImport } from './routes/_authed/settings/members.new'
 import { Route as AuthedMembersMemberIdChoresRouteImport } from './routes/_authed/members/$memberId.chores'
+import { Route as AuthedMealsMealIdEditRouteImport } from './routes/_authed/meals/$mealId.edit'
 import { Route as AuthedSettingsMembersMemberIdEditRouteImport } from './routes/_authed/settings/members.$memberId.edit'
 
 const SignUpRoute = SignUpRouteImport.update({
@@ -74,6 +76,11 @@ const AuthedTasksNewRoute = AuthedTasksNewRouteImport.update({
   path: '/tasks/new',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedMealsNewRoute = AuthedMealsNewRouteImport.update({
+  id: '/meals/new',
+  path: '/meals/new',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedMembersMemberIdIndexRoute =
   AuthedMembersMemberIdIndexRouteImport.update({
     id: '/members/$memberId/',
@@ -97,6 +104,11 @@ const AuthedMembersMemberIdChoresRoute =
     path: '/members/$memberId/chores',
     getParentRoute: () => AuthedRoute,
   } as any)
+const AuthedMealsMealIdEditRoute = AuthedMealsMealIdEditRouteImport.update({
+  id: '/meals/$mealId/edit',
+  path: '/meals/$mealId/edit',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedSettingsMembersMemberIdEditRoute =
   AuthedSettingsMembersMemberIdEditRouteImport.update({
     id: '/settings/members/$memberId/edit',
@@ -110,10 +122,12 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof AuthedCalendarRoute
   '/shopping': typeof AuthedShoppingRoute
   '/': typeof AuthedIndexRoute
+  '/meals/new': typeof AuthedMealsNewRoute
   '/tasks/new': typeof AuthedTasksNewRoute
   '/meals': typeof AuthedMealsIndexRoute
   '/settings': typeof AuthedSettingsIndexRoute
   '/tasks': typeof AuthedTasksIndexRoute
+  '/meals/$mealId/edit': typeof AuthedMealsMealIdEditRoute
   '/members/$memberId/chores': typeof AuthedMembersMemberIdChoresRoute
   '/settings/members/new': typeof AuthedSettingsMembersNewRoute
   '/tasks/$taskId/edit': typeof AuthedTasksTaskIdEditRoute
@@ -126,10 +140,12 @@ export interface FileRoutesByTo {
   '/calendar': typeof AuthedCalendarRoute
   '/shopping': typeof AuthedShoppingRoute
   '/': typeof AuthedIndexRoute
+  '/meals/new': typeof AuthedMealsNewRoute
   '/tasks/new': typeof AuthedTasksNewRoute
   '/meals': typeof AuthedMealsIndexRoute
   '/settings': typeof AuthedSettingsIndexRoute
   '/tasks': typeof AuthedTasksIndexRoute
+  '/meals/$mealId/edit': typeof AuthedMealsMealIdEditRoute
   '/members/$memberId/chores': typeof AuthedMembersMemberIdChoresRoute
   '/settings/members/new': typeof AuthedSettingsMembersNewRoute
   '/tasks/$taskId/edit': typeof AuthedTasksTaskIdEditRoute
@@ -144,10 +160,12 @@ export interface FileRoutesById {
   '/_authed/calendar': typeof AuthedCalendarRoute
   '/_authed/shopping': typeof AuthedShoppingRoute
   '/_authed/': typeof AuthedIndexRoute
+  '/_authed/meals/new': typeof AuthedMealsNewRoute
   '/_authed/tasks/new': typeof AuthedTasksNewRoute
   '/_authed/meals/': typeof AuthedMealsIndexRoute
   '/_authed/settings/': typeof AuthedSettingsIndexRoute
   '/_authed/tasks/': typeof AuthedTasksIndexRoute
+  '/_authed/meals/$mealId/edit': typeof AuthedMealsMealIdEditRoute
   '/_authed/members/$memberId/chores': typeof AuthedMembersMemberIdChoresRoute
   '/_authed/settings/members/new': typeof AuthedSettingsMembersNewRoute
   '/_authed/tasks/$taskId/edit': typeof AuthedTasksTaskIdEditRoute
@@ -162,10 +180,12 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/shopping'
     | '/'
+    | '/meals/new'
     | '/tasks/new'
     | '/meals'
     | '/settings'
     | '/tasks'
+    | '/meals/$mealId/edit'
     | '/members/$memberId/chores'
     | '/settings/members/new'
     | '/tasks/$taskId/edit'
@@ -178,10 +198,12 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/shopping'
     | '/'
+    | '/meals/new'
     | '/tasks/new'
     | '/meals'
     | '/settings'
     | '/tasks'
+    | '/meals/$mealId/edit'
     | '/members/$memberId/chores'
     | '/settings/members/new'
     | '/tasks/$taskId/edit'
@@ -195,10 +217,12 @@ export interface FileRouteTypes {
     | '/_authed/calendar'
     | '/_authed/shopping'
     | '/_authed/'
+    | '/_authed/meals/new'
     | '/_authed/tasks/new'
     | '/_authed/meals/'
     | '/_authed/settings/'
     | '/_authed/tasks/'
+    | '/_authed/meals/$mealId/edit'
     | '/_authed/members/$memberId/chores'
     | '/_authed/settings/members/new'
     | '/_authed/tasks/$taskId/edit'
@@ -284,6 +308,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedTasksNewRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/meals/new': {
+      id: '/_authed/meals/new'
+      path: '/meals/new'
+      fullPath: '/meals/new'
+      preLoaderRoute: typeof AuthedMealsNewRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/members/$memberId/': {
       id: '/_authed/members/$memberId/'
       path: '/members/$memberId'
@@ -312,6 +343,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedMembersMemberIdChoresRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/meals/$mealId/edit': {
+      id: '/_authed/meals/$mealId/edit'
+      path: '/meals/$mealId/edit'
+      fullPath: '/meals/$mealId/edit'
+      preLoaderRoute: typeof AuthedMealsMealIdEditRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/settings/members/$memberId/edit': {
       id: '/_authed/settings/members/$memberId/edit'
       path: '/settings/members/$memberId/edit'
@@ -326,10 +364,12 @@ interface AuthedRouteChildren {
   AuthedCalendarRoute: typeof AuthedCalendarRoute
   AuthedShoppingRoute: typeof AuthedShoppingRoute
   AuthedIndexRoute: typeof AuthedIndexRoute
+  AuthedMealsNewRoute: typeof AuthedMealsNewRoute
   AuthedTasksNewRoute: typeof AuthedTasksNewRoute
   AuthedMealsIndexRoute: typeof AuthedMealsIndexRoute
   AuthedSettingsIndexRoute: typeof AuthedSettingsIndexRoute
   AuthedTasksIndexRoute: typeof AuthedTasksIndexRoute
+  AuthedMealsMealIdEditRoute: typeof AuthedMealsMealIdEditRoute
   AuthedMembersMemberIdChoresRoute: typeof AuthedMembersMemberIdChoresRoute
   AuthedSettingsMembersNewRoute: typeof AuthedSettingsMembersNewRoute
   AuthedTasksTaskIdEditRoute: typeof AuthedTasksTaskIdEditRoute
@@ -341,10 +381,12 @@ const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedCalendarRoute: AuthedCalendarRoute,
   AuthedShoppingRoute: AuthedShoppingRoute,
   AuthedIndexRoute: AuthedIndexRoute,
+  AuthedMealsNewRoute: AuthedMealsNewRoute,
   AuthedTasksNewRoute: AuthedTasksNewRoute,
   AuthedMealsIndexRoute: AuthedMealsIndexRoute,
   AuthedSettingsIndexRoute: AuthedSettingsIndexRoute,
   AuthedTasksIndexRoute: AuthedTasksIndexRoute,
+  AuthedMealsMealIdEditRoute: AuthedMealsMealIdEditRoute,
   AuthedMembersMemberIdChoresRoute: AuthedMembersMemberIdChoresRoute,
   AuthedSettingsMembersNewRoute: AuthedSettingsMembersNewRoute,
   AuthedTasksTaskIdEditRoute: AuthedTasksTaskIdEditRoute,

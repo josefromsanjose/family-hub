@@ -1,21 +1,32 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
-import { addWeeks, endOfDay, format, startOfDay, startOfWeek } from "date-fns";
+import { useMemo, useState } from "react";
+import { addWeeks, endOfDay, format, startOfDay } from "date-fns";
 import { Loader2, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { z } from "zod";
 import { getDayKey, getWeekDates } from "@/utils/date";
 import {
-  createMeal,
   deleteMeal,
   getMeals,
-  updateMeal,
   type MealResponse,
 } from "@/server/meals";
 import { Button } from "@/components/ui/button";
+import {
+  MEAL_TYPE_OPTIONS,
+  type MealTypeValue,
+  parseWeekStart,
+} from "@/routes/_authed/meals/-meal-form";
 
 export const Route = createFileRoute("/_authed/meals/")({
-  loader: async () => {
-    const weekDates = getWeekDates(new Date());
+  validateSearch: z.object({
+    weekStart: z.string().optional(),
+  }),
+  loaderDeps: ({ search }) => ({
+    weekStart: search.weekStart,
+  }),
+  loader: async ({ deps }) => {
+    const weekStartDate = parseWeekStart(deps.weekStart);
+    const weekDates = getWeekDates(weekStartDate);
     const weekStart = weekDates[0];
     const weekEnd = weekDates[weekDates.length - 1];
     return {
@@ -29,19 +40,6 @@ export const Route = createFileRoute("/_authed/meals/")({
   },
   component: MealPlanningRoute,
 });
-
-const mealTypeOptions = [
-  { label: "Breakfast", value: "breakfast" },
-  { label: "Lunch", value: "lunch" },
-  { label: "Dinner", value: "dinner" },
-] as const;
-type MealTypeValue = (typeof mealTypeOptions)[number]["value"];
-type MealFormData = {
-  day: Date;
-  mealType: MealTypeValue;
-  name: string;
-  notes: string;
-};
 
 const getMealsQueryKey = (weekStartKey: string) => ["meals", weekStartKey];
 
@@ -57,17 +55,47 @@ const formatWeekRange = (startDate: Date, endDate: Date) => {
 
 type MealPlanningProps = {
   initialMeals?: MealResponse[];
+  initialWeekStart?: Date;
+  onAddMeal?: (weekStart: Date) => void;
+  onEditMeal?: (meal: MealResponse, weekStart: Date) => void;
 };
 
 function MealPlanningRoute() {
   const { meals: initialMeals } = Route.useLoaderData();
-  return <MealPlanning initialMeals={initialMeals} />;
+  const search = Route.useSearch();
+  const navigate = useNavigate();
+  const initialWeekStart = parseWeekStart(search.weekStart);
+
+  return (
+    <MealPlanning
+      initialMeals={initialMeals}
+      initialWeekStart={initialWeekStart}
+      onAddMeal={(weekStart) =>
+        navigate({
+          to: "/meals/new",
+          search: { weekStart: weekStart.toISOString() },
+        })
+      }
+      onEditMeal={(meal, weekStart) =>
+        navigate({
+          to: "/meals/$mealId/edit",
+          params: { mealId: meal.id },
+          search: { weekStart: weekStart.toISOString() },
+        })
+      }
+    />
+  );
 }
 
-export function MealPlanning({ initialMeals }: MealPlanningProps) {
+export function MealPlanning({
+  initialMeals,
+  initialWeekStart,
+  onAddMeal,
+  onEditMeal,
+}: MealPlanningProps) {
   const queryClient = useQueryClient();
-  const [weekReferenceDate, setWeekReferenceDate] = useState(() =>
-    startOfWeek(new Date(), { weekStartsOn: 1 })
+  const [weekReferenceDate, setWeekReferenceDate] = useState(
+    () => parseWeekStart(initialWeekStart)
   );
   const weekDates = useMemo(
     () => getWeekDates(weekReferenceDate),
@@ -79,44 +107,6 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
     () => formatWeekRange(weekStart, weekEnd),
     [weekStart, weekEnd]
   );
-  const [formMode, setFormMode] = useState<"add" | "edit" | null>(null);
-  const [editingMealId, setEditingMealId] = useState<string | null>(null);
-  const [formData, setFormData] = useState<MealFormData>(() => ({
-    day: weekDates[0],
-    mealType: mealTypeOptions[0].value,
-    name: "",
-    notes: "",
-  }));
-  const isEditing = formMode === "edit";
-  const isFormOpen = formMode !== null;
-
-  const resetForm = (day = weekDates[0]) => {
-    setFormData({
-      day,
-      mealType: mealTypeOptions[0].value,
-      name: "",
-      notes: "",
-    });
-  };
-
-  const closeForm = () => {
-    setFormMode(null);
-    setEditingMealId(null);
-    resetForm();
-  };
-
-  useEffect(() => {
-    setFormData((current) => {
-      const isInWeek = weekDates.some(
-        (day) => getDayKey(day) === getDayKey(current.day)
-      );
-      if (isInWeek) {
-        return current;
-      }
-      return { ...current, day: weekDates[0] };
-    });
-  }, [weekDates]);
-
   const {
     data: meals = [],
     error,
@@ -134,22 +124,6 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
     initialData: initialMeals,
   });
 
-  const createMutation = useMutation({
-    mutationFn: createMeal,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["meals"] });
-      closeForm();
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: updateMeal,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["meals"] });
-      closeForm();
-    },
-  });
-
   const deleteMutation = useMutation({
     mutationFn: deleteMeal,
     onSuccess: () => {
@@ -157,45 +131,8 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
     },
   });
 
-  const handleSubmitMeal = () => {
-    if (!formData.name.trim()) return;
-    const payload = {
-      name: formData.name,
-      date: startOfDay(formData.day).toISOString(),
-      mealType: formData.mealType,
-      notes: formData.notes,
-    };
-    if (isEditing && editingMealId) {
-      updateMutation.mutate({
-        data: {
-          id: editingMealId,
-          ...payload,
-        },
-      });
-      return;
-    }
-    createMutation.mutate({ data: payload });
-  };
-
   const handleDeleteMeal = (id: string) => {
     deleteMutation.mutate({ data: { id } });
-  };
-
-  const handleStartAdd = () => {
-    setFormMode((current) => (current === "add" ? null : "add"));
-    setEditingMealId(null);
-    resetForm();
-  };
-
-  const handleStartEdit = (meal: MealResponse) => {
-    setFormMode("edit");
-    setEditingMealId(meal.id);
-    setFormData({
-      day: startOfDay(new Date(meal.date)),
-      mealType: meal.mealType,
-      name: meal.name,
-      notes: meal.notes ?? "",
-    });
   };
 
   const getMealsForDay = (day: Date, mealType: MealTypeValue) => {
@@ -244,7 +181,11 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button onClick={handleStartAdd}>
+            <Button
+              onClick={() => {
+                onAddMeal?.(weekStart);
+              }}
+            >
               <Plus size={20} />
               Add Meal
             </Button>
@@ -257,127 +198,6 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
           </div>
         )}
 
-        {isFormOpen && (
-          <div className="bg-card rounded-lg shadow-sm p-6 mb-6 border border-border">
-            <h2 className="text-xl font-bold text-card-foreground mb-4">
-              {isEditing ? "Edit Meal" : "Add New Meal"}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="meal-day"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Day
-                </label>
-                <select
-                  id="meal-day"
-                  value={formData.day.toISOString()}
-                  onChange={(e) => {
-                    const selectedDate = new Date(e.target.value);
-                    setFormData({
-                      ...formData,
-                      day: Number.isNaN(selectedDate.valueOf())
-                        ? weekDates[0]
-                        : selectedDate,
-                    });
-                  }}
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
-                >
-                  {weekDates.map((day) => (
-                    <option key={day.toISOString()} value={day.toISOString()}>
-                      {format(day, "EEEE")}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label
-                  htmlFor="meal-type"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Meal Type
-                </label>
-                <select
-                  id="meal-type"
-                  value={formData.mealType}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      mealType: e.target.value as MealTypeValue,
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
-                >
-                  {mealTypeOptions.map((type) => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="md:col-span-2">
-                <label
-                  htmlFor="meal-name"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Meal Name
-                </label>
-                <input
-                  id="meal-name"
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  placeholder="e.g., Spaghetti and Meatballs"
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label
-                  htmlFor="meal-notes"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Notes (optional)
-                </label>
-                <textarea
-                  id="meal-notes"
-                  value={formData.notes}
-                  onChange={(e) =>
-                    setFormData({ ...formData, notes: e.target.value })
-                  }
-                  placeholder="Any special instructions or ingredients..."
-                  rows={3}
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
-                />
-              </div>
-            </div>
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={handleSubmitMeal}
-                disabled={
-                  isEditing ? updateMutation.isPending : createMutation.isPending
-                }
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                {isEditing
-                  ? updateMutation.isPending
-                    ? "Updating..."
-                    : "Update Meal"
-                  : createMutation.isPending
-                    ? "Adding..."
-                    : "Add Meal"}
-              </button>
-              <button
-                onClick={closeForm}
-                className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-accent transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
         <div className="flex items-center gap-4 w-full justify-end mb-4">
           <Button
             onClick={() =>
@@ -409,7 +229,7 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Day
                   </th>
-                  {mealTypeOptions.map((type) => (
+                  {MEAL_TYPE_OPTIONS.map((type) => (
                     <th
                       key={type.value}
                       className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
@@ -425,7 +245,7 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
                     <td className="px-6 py-4 whitespace-nowrap font-medium text-foreground">
                       {format(day, "EEEE")}
                     </td>
-                    {mealTypeOptions.map((mealType) => (
+                    {MEAL_TYPE_OPTIONS.map((mealType) => (
                       <td key={mealType.value} className="px-6 py-4">
                         <div className="space-y-2">
                           {getMealsForDay(day, mealType.value).map((meal) => (
@@ -445,7 +265,7 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
                               </div>
                               <div className="flex items-center gap-1">
                                 <button
-                                  onClick={() => handleStartEdit(meal)}
+                                  onClick={() => onEditMeal?.(meal, weekStart)}
                                   className="p-1 hover:bg-primary/20 rounded text-primary transition-colors"
                                   aria-label="Edit meal"
                                 >

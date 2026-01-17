@@ -1,23 +1,20 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { addDays, addWeeks, format, startOfWeek } from "date-fns";
 import { describe, it, expect, vi } from "vitest";
+import type { ComponentProps } from "react";
 import { MealPlanning } from "./index";
 import {
   getMeals,
-  createMeal,
-  updateMeal,
   type MealResponse,
 } from "@/server/meals";
 
 vi.mock("@/server/meals", () => ({
   getMeals: vi.fn(),
-  createMeal: vi.fn(),
   deleteMeal: vi.fn(),
-  updateMeal: vi.fn(),
 }));
 
-const renderMealPlanning = () => {
+const renderMealPlanning = (props?: ComponentProps<typeof MealPlanning>) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -27,7 +24,7 @@ const renderMealPlanning = () => {
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <MealPlanning />
+      <MealPlanning {...props} />
     </QueryClientProvider>
   );
 };
@@ -102,100 +99,49 @@ describe("MealPlanning", () => {
     ).toBeTruthy();
   });
 
-  it("submits new meals through the create mutation", async () => {
+  it("calls onAddMeal when the add button is pressed", async () => {
     vi.mocked(getMeals).mockResolvedValueOnce([]);
-    vi.mocked(createMeal).mockResolvedValueOnce({
-      id: "meal-2",
-      householdId: "house-1",
-      name: "Tacos",
-      date: new Date("2026-01-15T12:00:00.000Z").toISOString(),
-      mealType: "breakfast",
-      createdAt: new Date("2026-01-10T12:00:00.000Z").toISOString(),
-      updatedAt: new Date("2026-01-10T12:00:00.000Z").toISOString(),
-    });
+    const onAddMeal = vi.fn();
 
-    renderMealPlanning();
-
-    const [addMealToggle] = await screen.findAllByRole("button", {
-      name: /add meal/i,
-    });
-    fireEvent.click(addMealToggle);
-    fireEvent.change(screen.getByLabelText(/meal name/i), {
-      target: { value: "Tacos" },
-    });
-    await screen.findByDisplayValue("Tacos");
-    const addButtons = screen.getAllByRole("button", { name: /^add meal$/i });
-    fireEvent.click(addButtons[1]);
+    const { container } = renderMealPlanning({ onAddMeal });
 
     await waitFor(() => {
-      expect(createMeal).toHaveBeenCalledWith(
-        {
-          data: expect.objectContaining({
-            name: "Tacos",
-            mealType: "breakfast",
-            date: expect.any(String),
-          }),
-        },
-        expect.anything()
-      );
+      expect(
+        within(container).queryByRole("button", { name: /add meal/i })
+      ).toBeTruthy();
+    });
+    const addMealButton = within(container).getByRole("button", {
+      name: /add meal/i,
+    });
+    fireEvent.click(addMealButton);
+
+    await waitFor(() => {
+      expect(onAddMeal).toHaveBeenCalledWith(expect.any(Date));
     });
   });
 
-  it("pre-fills and submits edits for existing meals", async () => {
+  it("calls onEditMeal when edit is pressed", async () => {
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
     const thursday = addDays(weekStart, 3);
-    vi.mocked(getMeals).mockResolvedValueOnce([
-      {
-        id: "meal-3",
-        householdId: "house-1",
-        name: "Pasta Night",
-        date: thursday.toISOString(),
-        mealType: "dinner",
-        notes: "Use gluten-free noodles",
-        createdAt: new Date("2026-01-10T12:00:00.000Z").toISOString(),
-        updatedAt: new Date("2026-01-10T12:00:00.000Z").toISOString(),
-      },
-    ]);
-    vi.mocked(updateMeal).mockResolvedValueOnce({
+    const meal = {
       id: "meal-3",
       householdId: "house-1",
-      name: "Updated Pasta",
+      name: "Pasta Night",
       date: thursday.toISOString(),
       mealType: "dinner",
       notes: "Use gluten-free noodles",
       createdAt: new Date("2026-01-10T12:00:00.000Z").toISOString(),
       updatedAt: new Date("2026-01-10T12:00:00.000Z").toISOString(),
-    });
+    };
+    vi.mocked(getMeals).mockResolvedValueOnce([meal as MealResponse]);
+    const onEditMeal = vi.fn();
 
-    renderMealPlanning();
+    renderMealPlanning({ onEditMeal });
 
-    const editButton = await screen.findByRole("button", {
-      name: /edit meal/i,
-    });
-    fireEvent.click(editButton);
-
-    expect(await screen.findByDisplayValue("Pasta Night")).toBeTruthy();
-    expect(screen.getByDisplayValue("Use gluten-free noodles")).toBeTruthy();
-
-    fireEvent.change(screen.getByLabelText(/meal name/i), {
-      target: { value: "Updated Pasta" },
-    });
-    await screen.findByDisplayValue("Updated Pasta");
-
-    fireEvent.click(screen.getByRole("button", { name: /update meal/i }));
-
-    await waitFor(() => {
-      expect(updateMeal).toHaveBeenCalledWith(
-        {
-          data: expect.objectContaining({
-            id: "meal-3",
-            name: "Updated Pasta",
-            mealType: "dinner",
-            date: expect.any(String),
-          }),
-        },
-        expect.anything()
-      );
-    });
+    fireEvent.click(await screen.findByRole("button", { name: /edit meal/i }));
+    expect(onEditMeal).toHaveBeenCalledWith(
+      expect.objectContaining(meal),
+      expect.any(Date)
+    );
   });
 });

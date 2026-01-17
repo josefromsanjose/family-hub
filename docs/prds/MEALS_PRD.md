@@ -121,7 +121,25 @@ passes: true
 - [x] Typecheck passes
 - [x] Verify in browser using dev-browser skill
 
-### US-007: Update add meal form to use dates
+### US-007: Redesign meal add/edit experience to match member flows
+
+**Description:** As a user, I want a guided, step-focused add flow and a fast, all-fields edit flow so meal planning feels simple and consistent with member management.
+
+passes: true
+
+**Acceptance Criteria:**
+
+- [x] Add meal uses a step-based wizard with progress (Day -> Meal Type -> Name -> Notes -> Confirm)
+- [x] Each step has clear headings and uses focused inputs (one primary task per step)
+- [x] Confirmation step summarizes day, meal type, name, and notes before submit
+- [x] Edit meal presents all fields at once (Day, Meal Type, Name, Notes) on a single screen
+- [x] Edit screen supports Save and Cancel, with disabled Save until valid
+- [x] Add/edit flows reuse existing UI components and align styling with member add/edit pages
+- [x] Validation: name is required, notes optional; errors are displayed inline
+- [x] Typecheck passes
+- [x] Verify in browser using dev-browser skill
+
+### US-008: Update add meal form to use dates
 
 **Description:** As a developer, I need the add meal form to work with actual dates instead of day names.
 
@@ -136,7 +154,7 @@ passes: true
 - [ ] Typecheck passes
 - [ ] Verify in browser using dev-browser skill
 
-### US-008: Meal data managed locally in feature
+### US-009: Meal data managed locally in feature
 
 **Description:** As a developer, I want meal data managed within the Meal Planning feature without adding a global provider.
 
@@ -148,7 +166,7 @@ passes: true
 - [ ] If reuse is needed later, extract to a feature-scoped hook (not app-wide context)
 - [ ] Typecheck passes
 
-### US-009: Reuse previously created meals with autocomplete
+### US-010: Reuse previously created meals with autocomplete
 
 **Description:** As a user, I want to reuse meals I've already created by selecting them from an autocomplete list instead of retyping.
 
@@ -163,7 +181,7 @@ passes: true
 - [ ] Typecheck passes
 - [ ] Verify in browser using dev-browser skill
 
-### US-010: Integrate meal planning with shopping lists
+### US-011: Integrate meal planning with shopping lists
 
 **Description:** As a user, I want to generate shopping list items from my meal plan to streamline grocery shopping.
 
@@ -179,7 +197,7 @@ passes: true
 - [ ] Typecheck passes
 - [ ] Verify in browser using dev-browser skill
 
-### US-011: Update dashboard to show actual meal count
+### US-012: Update dashboard to show actual meal count
 
 **Description:** As a user, I want the dashboard to show accurate meal planning statistics.
 
