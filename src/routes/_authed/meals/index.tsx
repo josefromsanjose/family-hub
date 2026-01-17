@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { addDays, startOfWeek } from "date-fns";
+import { useMemo, useState } from "react";
+import { format, startOfDay } from "date-fns";
 import { Loader2, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { getDayKey, getWeekDates } from "@/utils/date";
 import {
   createMeal,
   deleteMeal,
@@ -17,55 +18,20 @@ export const Route = createFileRoute("/_authed/meals/")({
   component: MealPlanningRoute,
 });
 
-const daysOfWeek = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-];
 const mealTypeOptions = [
   { label: "Breakfast", value: "breakfast" },
   { label: "Lunch", value: "lunch" },
   { label: "Dinner", value: "dinner" },
 ] as const;
-const weekdayNames = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
 type MealTypeValue = (typeof mealTypeOptions)[number]["value"];
 type MealFormData = {
-  day: string;
+  day: Date;
   mealType: MealTypeValue;
   name: string;
   notes: string;
 };
 
 const mealsQueryKey = ["meals"];
-
-const getDayNameFromDate = (dateValue: string) => {
-  const parsedDate = new Date(dateValue);
-  if (Number.isNaN(parsedDate.valueOf())) {
-    return "";
-  }
-  return weekdayNames[parsedDate.getDay()];
-};
-
-const getDateForDayName = (day: string) => {
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-  const dayIndex = daysOfWeek.indexOf(day);
-  if (dayIndex < 0) {
-    return weekStart.toISOString();
-  }
-  return addDays(weekStart, dayIndex).toISOString();
-};
 
 type MealPlanningProps = {
   initialMeals?: MealResponse[];
@@ -78,13 +44,14 @@ function MealPlanningRoute() {
 
 export function MealPlanning({ initialMeals }: MealPlanningProps) {
   const queryClient = useQueryClient();
+  const weekDates = useMemo(() => getWeekDates(new Date()), []);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [formData, setFormData] = useState<MealFormData>({
-    day: daysOfWeek[0],
+  const [formData, setFormData] = useState<MealFormData>(() => ({
+    day: weekDates[0],
     mealType: mealTypeOptions[0].value,
     name: "",
     notes: "",
-  });
+  }));
 
   const {
     data: meals = [],
@@ -102,7 +69,7 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mealsQueryKey });
       setFormData({
-        day: daysOfWeek[0],
+        day: weekDates[0],
         mealType: mealTypeOptions[0].value,
         name: "",
         notes: "",
@@ -123,7 +90,7 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
     createMutation.mutate({
       data: {
         name: formData.name,
-        date: getDateForDayName(formData.day),
+        date: startOfDay(formData.day).toISOString(),
         mealType: formData.mealType,
         notes: formData.notes,
       },
@@ -134,10 +101,11 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
     deleteMutation.mutate({ data: { id } });
   };
 
-  const getMealsForDay = (day: string, mealType: MealTypeValue) => {
+  const getMealsForDay = (day: Date, mealType: MealTypeValue) => {
+    const dayKey = getDayKey(day);
     return meals.filter(
       (meal: MealResponse) =>
-        getDayNameFromDate(meal.date) === day && meal.mealType === mealType
+        getDayKey(new Date(meal.date)) === dayKey && meal.mealType === mealType
     );
   };
 
@@ -208,15 +176,21 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
                 </label>
                 <select
                   id="meal-day"
-                  value={formData.day}
-                  onChange={(e) =>
-                    setFormData({ ...formData, day: e.target.value })
-                  }
+                  value={formData.day.toISOString()}
+                  onChange={(e) => {
+                    const selectedDate = new Date(e.target.value);
+                    setFormData({
+                      ...formData,
+                      day: Number.isNaN(selectedDate.valueOf())
+                        ? weekDates[0]
+                        : selectedDate,
+                    });
+                  }}
                   className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
                 >
-                  {daysOfWeek.map((day) => (
-                    <option key={day} value={day}>
-                      {day}
+                  {weekDates.map((day) => (
+                    <option key={day.toISOString()} value={day.toISOString()}>
+                      {format(day, "EEEE")}
                     </option>
                   ))}
                 </select>
@@ -320,10 +294,10 @@ export function MealPlanning({ initialMeals }: MealPlanningProps) {
                 </tr>
               </thead>
               <tbody className="bg-card divide-y divide-border">
-                {daysOfWeek.map((day) => (
-                  <tr key={day} className="hover:bg-accent">
+                {weekDates.map((day) => (
+                  <tr key={day.toISOString()} className="hover:bg-accent">
                     <td className="px-6 py-4 whitespace-nowrap font-medium text-foreground">
-                      {day}
+                      {format(day, "EEEE")}
                     </td>
                     {mealTypeOptions.map((mealType) => (
                       <td key={mealType.value} className="px-6 py-4">

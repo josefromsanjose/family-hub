@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { addDays, startOfWeek } from "date-fns";
 import { describe, it, expect, vi } from "vitest";
 import { MealPlanning } from "./index";
 import { getMeals, createMeal, type MealResponse } from "@/server/meals";
@@ -45,12 +46,14 @@ describe("MealPlanning", () => {
   });
 
   it("renders meals from the server", async () => {
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const wednesday = addDays(weekStart, 2);
     vi.mocked(getMeals).mockResolvedValueOnce([
       {
         id: "meal-1",
         householdId: "house-1",
         name: "Family Chili",
-        date: new Date("2026-01-14T12:00:00.000Z").toISOString(),
+        date: wednesday.toISOString(),
         mealType: "dinner",
         notes: "Add cornbread",
         createdAt: new Date("2026-01-10T12:00:00.000Z").toISOString(),

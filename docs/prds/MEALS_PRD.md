@@ -4,7 +4,7 @@
 
 The Meal Planning feature allows families to plan meals for the week in advance, eliminating daily "what's for dinner?" stress. Currently, the feature has a basic UI that uses local state only - meals are not persisted to the database. This PRD outlines the complete implementation to connect the UI to the database, add week navigation, enable meal editing, and integrate with shopping lists.
 
-**Problem**: The current meal planning UI (`src/routes/_authed/meals.tsx`) stores meals in component state, so data is lost on page refresh. The database schema exists (`Meal` model in `prisma/schema.prisma`) but is not being used. Users cannot navigate between weeks, edit existing meals, or generate shopping lists from meal plans.
+**Problem**: The current meal planning UI (`src/routes/_authed/meals/index.tsx`) stores meals in component state, so data is lost on page refresh. The database schema exists (`Meal` model in `prisma/schema.prisma`) but is not being used. Users cannot navigate between weeks, edit existing meals, or generate shopping lists from meal plans.
 
 **Solution**: Implement a full-stack meal planning system with server-side API, database persistence, week navigation, edit functionality, and shopping list integration.
 
@@ -24,7 +24,7 @@ The Meal Planning feature allows families to plan meals for the week in advance,
 
 **Description:** As a developer, I need server functions to create, read, update, and delete meals so the UI can persist data to the database.
 
-passes: false
+passes: true
 
 **Acceptance Criteria:**
 
@@ -59,7 +59,7 @@ passes: true
 
 **Acceptance Criteria:**
 
-- [x] Remove `useState` for meals in `src/routes/_authed/meals.tsx`
+- [x] Remove `useState` for meals in `src/routes/_authed/meals/index.tsx`
 - [x] Use TanStack Query to fetch meals via `getMeals()` server function
 - [x] Use mutations for create/update/delete operations
 - [x] Invalidate queries after mutations to refresh data
@@ -72,15 +72,17 @@ passes: true
 
 **Description:** As a user, I want meals to be associated with specific dates so I can navigate between weeks and see historical meal plans.
 
+passes: true
+
 **Acceptance Criteria:**
 
-- [ ] Replace day name strings ("Monday", "Tuesday", etc.) with actual Date objects
-- [ ] Calculate week start (Monday) based on current date or selected week
-- [ ] Store meals with proper `date` field (DateTime) in database
-- [ ] Display day names in UI but use dates for data operations
-- [ ] Handle timezone correctly (store dates at midnight UTC or local time)
-- [ ] Typecheck passes
-- [ ] Verify in browser using dev-browser skill
+- [x] Replace day name strings ("Monday", "Tuesday", etc.) with actual Date objects
+- [x] Calculate week start (Monday) based on current date or selected week
+- [x] Store meals with proper `date` field (DateTime) in database
+- [x] Display day names in UI but use dates for data operations
+- [x] Handle timezone correctly (store dates at midnight UTC or local time)
+- [x] Typecheck passes
+- [x] Verify in browser using dev-browser skill
 
 ### US-005: Add week navigation controls
 
@@ -136,7 +138,7 @@ passes: true
 
 **Acceptance Criteria:**
 
-- [ ] Manage meal queries and mutations inside `src/routes/_authed/meals.tsx`
+- [ ] Manage meal queries and mutations inside `src/routes/_authed/meals/index.tsx`
 - [ ] Use TanStack Query for data fetching and mutations
 - [ ] Keep state local to the Meal Planning page (no new global provider)
 - [ ] If reuse is needed later, extract to a feature-scoped hook (not app-wide context)

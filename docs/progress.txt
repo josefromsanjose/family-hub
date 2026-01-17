@@ -22,9 +22,27 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
 ## 2026-01-16 00:34 - US-003
 Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
 - What was implemented: Replaced local meal state with TanStack Query fetches/mutations, added loading/error UI, and wired add/delete to server functions.
-- Files changed: `src/routes/_authed/meals.tsx`, `src/routes/_authed/meals.test.tsx`, `docs/prds/MEALS_PRD.md`
+- Files changed: `src/routes/_authed/meals/index.tsx`, `src/routes/_authed/meals/-meals.test.tsx`, `docs/prds/MEALS_PRD.md`
 - **Learnings for future iterations:**
   - Patterns discovered: For TanStack Query mutations, `createServerFn` receives an extra metadata argument in tests.
   - Gotchas encountered: Meal form labels need `htmlFor`/`id` pairing for RTL queries.
   - Useful context: Browser verification redirected to sign-in at `/sign-in?redirect=%2Fmeals`, so UI verification was blocked without credentials.
+---
+## 2026-01-16 11:55 - US-004
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Switched meal day handling to use week-based Date objects, store local start-of-day ISO strings, and match meals by date keys; updated tests to use current-week dates.
+- Files changed: `src/routes/_authed/meals/index.tsx`, `src/routes/_authed/meals/-meals.test.tsx`, `docs/prds/MEALS_PRD.md`
+- **Learnings for future iterations:**
+  - Patterns discovered: Meal week rows derive from `startOfWeek(..., { weekStartsOn: 1 })` + `addDays` with local `startOfDay`.
+  - Gotchas encountered: Meal rendering now depends on current-week dates, so tests should generate dates from `startOfWeek(new Date())` to stay deterministic.
+  - Useful context: Browser verification still redirects to sign-in without credentials, blocking UI validation.
+---
+## 2026-01-16 11:58 - US-004
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Verified the Meal Planning UI in the browser, confirmed weekday dropdown shows Monday-Sunday and add form fields render alongside the weekly grid.
+- Files changed: `docs/prds/MEALS_PRD.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: Meal Planning UI renders add form inline below the header and uses accessible labels for Day/Meal Type/Meal Name.
+  - Gotchas encountered: None.
+  - Useful context: Browser verification passed at `/meals` with the current session.
 ---
