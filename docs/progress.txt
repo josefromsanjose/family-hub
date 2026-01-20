@@ -4,6 +4,7 @@
 - `createServerFn` uses `.inputValidator`, not `.validator`, for input checks.
 - `react-resizable-panels` exports `Group`/`Separator` (not `PanelGroup`/`PanelResizeHandle`) in this codebase.
 - Reuse `getWeekDates`/`getDayKey` from `src/utils/date.ts` for week/day calculations.
+- Calendar UI primitives live in `src/components/calendar` for reuse across views.
 
 ## 2026-01-15 23:59 - US-001
 Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
@@ -175,4 +176,13 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Patterns discovered: Date-range filters in calendar UI pass start/end ISO strings and optional participantId into `getCalendarEvents`.
   - Gotchas encountered: Calendar events render in both the main list and upcoming panel, so RTL assertions should use `*AllBy*` queries.
   - Useful context: Browser check loaded `/calendar` and showed date range inputs plus member filter cards (screenshot capture failed).
+---
+## 2026-01-19 22:10 - US-003
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Added reusable calendar UI primitives and refactored the calendar route to use shared shell, event cards, and agenda list components with coverage.
+- Files changed: `src/components/calendar/AgendaList.tsx`, `src/components/calendar/CalendarDayColumn.tsx`, `src/components/calendar/CalendarEventCard.tsx`, `src/components/calendar/CalendarEventCard.test.tsx`, `src/components/calendar/CalendarGrid.tsx`, `src/components/calendar/CalendarHeader.tsx`, `src/components/calendar/CalendarShell.tsx`, `src/components/calendar/index.ts`, `src/routes/_authed/calendar/index.tsx`, `docs/prds/EVENTS_PRD.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: Calendar UI primitives are centralized under `src/components/calendar`.
+  - Gotchas encountered: None.
+  - Useful context: Verified the calendar view renders with the new shell, event cards, and upcoming list on `/calendar`.
 ---

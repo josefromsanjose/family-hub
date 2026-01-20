@@ -4,18 +4,23 @@ import { addDays, endOfDay, format, startOfDay, startOfWeek } from "date-fns";
 import { useMemo, useState } from "react";
 import {
   Plus,
-  Trash2,
   Calendar as CalendarIcon,
-  Clock,
   Bell,
   Stethoscope,
 } from "lucide-react";
+import {
+  AgendaList,
+  CalendarEventCard,
+  CalendarHeader,
+  CalendarShell,
+} from "@/components/calendar";
 import { useCalendar } from "@/contexts/CalendarContext";
 import { useHousehold, type HouseholdMember } from "@/contexts/HouseholdContext";
 import { SelectionCard } from "@/components/touch/SelectionCard";
 import { AvatarCard } from "@/components/touch/AvatarCard";
 import { QuickDatePicker } from "@/components/touch/QuickDatePicker";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   getCalendarEvents,
   type CalendarEventResponse,
@@ -68,15 +73,10 @@ function CalendarFilters({
     <div className="bg-card rounded-lg shadow-sm p-6 mb-6 border border-border">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-3">
-          <div>
-            <h2 className="text-lg font-semibold text-card-foreground">
-              Date range
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {format(rangeStart, "MMM d, yyyy")} –{" "}
-              {format(rangeEnd, "MMM d, yyyy")}
-            </p>
-          </div>
+          <CalendarHeader
+            label="Date range"
+            subLabel={``}
+          />
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="space-y-1">
               <label className="text-sm font-medium text-foreground">
@@ -101,14 +101,10 @@ function CalendarFilters({
           </div>
         </div>
         <div className="space-y-3">
-          <div>
-            <h2 className="text-lg font-semibold text-card-foreground">
-              Filter by member
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Show events for the whole household or a specific person.
-            </p>
-          </div>
+          <CalendarHeader
+            label="Filter by member"
+            subLabel=""
+          />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <AvatarCard
               name="All"
@@ -258,23 +254,26 @@ export function CalendarPage() {
     );
   };
 
+  const getEventTypeLabel = (type: (typeof eventTypes)[number]["value"]) => {
+    return eventTypes.find((et) => et.value === type)?.label ?? "Event";
+  };
+
+  const getParticipantLabel = (participantId?: string | null) => {
+    if (!participantId) return null;
+    return members.find((member) => member.id === participantId)?.name ?? null;
+  };
+
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              Family Calendar
-            </h1>
-            <p className="text-muted-foreground">
-              Keep track of appointments, events, and reminders
-            </p>
-          </div>
-          <Button onClick={() => setShowAddForm(!showAddForm)}>
-            <Plus size={20} />
-            Add Event
-          </Button>
-        </div>
+    <CalendarShell
+      title="Family Calendar"
+      description="Keep track of appointments, events, and reminders"
+      actions={
+        <Button onClick={() => setShowAddForm(!showAddForm)}>
+          <Plus size={20} />
+          Add Event
+        </Button>
+      }
+    >
 
         {showAddForm && (
           <div className="bg-card rounded-lg shadow-sm p-6 mb-6 border border-border">
@@ -412,28 +411,28 @@ export function CalendarPage() {
           members={members}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <div className="bg-card rounded-lg shadow-sm border border-border p-6">
-              <h2 className="text-xl font-bold text-card-foreground mb-4">
-                Events by Date
-              </h2>
-              <div className="space-y-4">
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle>Events by Date</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 {eventQuery.isLoading ? (
-                  <div className="text-center py-12">
-                    <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <div className="py-12 text-center">
+                    <CalendarIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                     <p className="text-muted-foreground">Loading events...</p>
                   </div>
                 ) : eventQuery.error ? (
-                  <div className="text-center py-12">
-                    <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <div className="py-12 text-center">
+                    <CalendarIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                     <p className="text-muted-foreground">
                       Error loading events.
                     </p>
                   </div>
                 ) : events.length === 0 ? (
-                  <div className="text-center py-12">
-                    <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <div className="py-12 text-center">
+                    <CalendarIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                     <p className="text-muted-foreground">
                       No events scheduled yet
                     </p>
@@ -446,7 +445,7 @@ export function CalendarPage() {
                         key={date}
                         className="border-b border-border pb-4 last:border-0"
                       >
-                        <h3 className="text-lg font-semibold text-foreground mb-3">
+                        <h3 className="mb-3 text-lg font-semibold text-foreground">
                           {new Date(date).toLocaleDateString("en-US", {
                             weekday: "long",
                             year: "numeric",
@@ -456,125 +455,61 @@ export function CalendarPage() {
                         </h3>
                         <div className="space-y-2">
                           {dateEvents.map((event) => (
-                            <div
+                            <CalendarEventCard
                               key={event.id}
-                              className="flex items-start justify-between gap-4 p-3 rounded-lg border border-border"
-                            >
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span
-                                    className={`px-2 py-1 text-xs font-medium rounded border ${getEventTypeStyle(
-                                      event.type
-                                    )}`}
-                                  >
-                                    {
-                                      eventTypes.find(
-                                        (et) => et.value === event.type
-                                      )?.label
-                                    }
-                                  </span>
-                                  {event.time && (
-                                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                      <Clock size={14} />
-                                      <span>{event.time}</span>
-                                    </div>
-                                  )}
-                                </div>
-                                <h4 className="font-medium text-foreground">
-                                  {event.title}
-                                </h4>
-                                {event.description && (
-                                  <p className="text-sm text-muted-foreground mt-1">
-                                    {event.description}
-                                  </p>
-                                )}
-                                {event.participantId && (
-                                  <p className="text-xs text-muted-foreground mt-1">
-                                    For{" "}
-                                    {members.find(
-                                      (m) => m.id === event.participantId
-                                    )?.name || "Member"}
-                                  </p>
-                                )}
-                              </div>
-                              <button
-                                onClick={() => deleteEvent(event.id)}
-                                className="p-2 hover:bg-destructive/20 rounded text-destructive transition-colors flex-shrink-0"
-                                aria-label="Delete event"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            </div>
+                              title={event.title}
+                              description={event.description}
+                              time={event.time}
+                              typeLabel={getEventTypeLabel(event.type)}
+                              typeClassName={getEventTypeStyle(event.type)}
+                              participantLabel={getParticipantLabel(
+                                event.participantId
+                              )}
+                              onDelete={() => deleteEvent(event.id)}
+                            />
                           ))}
                         </div>
                       </div>
                     ))
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
 
           <div>
-            <div className="bg-card rounded-lg shadow-sm border border-border p-6">
-              <h2 className="text-xl font-bold text-card-foreground mb-4">
-                Upcoming Events
-              </h2>
-              {eventQuery.isLoading ? (
-                <p className="text-muted-foreground text-sm">
-                  Loading events...
-                </p>
-              ) : eventQuery.error ? (
-                <p className="text-muted-foreground text-sm">
-                  Error loading events.
-                </p>
-              ) : upcomingEvents.length === 0 ? (
-                <p className="text-muted-foreground text-sm">
-                  No upcoming events
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {upcomingEvents.map((event) => (
-                    <div
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle>Upcoming Events</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AgendaList
+                  items={upcomingEvents}
+                  isLoading={eventQuery.isLoading}
+                  error={Boolean(eventQuery.error)}
+                  emptyState={
+                    <p className="text-muted-foreground text-sm">
+                      No upcoming events
+                    </p>
+                  }
+                  renderItem={(event) => (
+                    <CalendarEventCard
                       key={event.id}
-                      className="p-3 rounded-lg border border-border hover:bg-accent transition-colors"
-                    >
-                      <div className="flex items-center gap-2 mb-1">
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded border ${getEventTypeStyle(
-                            event.type
-                          )}`}
-                        >
-                          {
-                            eventTypes.find((et) => et.value === event.type)
-                              ?.label
-                          }
-                        </span>
-                      </div>
-                      <h4 className="font-medium text-foreground text-sm mb-1">
-                        {event.title}
-                      </h4>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(event.date).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                        {event.time && ` at ${event.time}`}
-                      </p>
-                      {event.participantId && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          For{" "}
-                          {members.find((m) => m.id === event.participantId)
-                            ?.name || "Member"}
-                        </p>
+                      compact
+                      title={event.title}
+                      time={event.time}
+                      dateLabel={format(new Date(event.date), "MMM d")}
+                      typeLabel={getEventTypeLabel(event.type)}
+                      typeClassName={getEventTypeStyle(event.type)}
+                      participantLabel={getParticipantLabel(
+                        event.participantId
                       )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    />
+                  )}
+                />
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </div>
-    </div>
+      </CalendarShell>
   );
 }

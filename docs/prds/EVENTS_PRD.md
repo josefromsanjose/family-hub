@@ -55,22 +55,22 @@ passes: true
 
 **Description:** As a developer, I need a composable calendar UI so any feature can embed a calendar view consistently.
 
-passes: false
+passes: true
 
 **Acceptance Criteria:**
 
-- [ ] Create composable calendar components that can be assembled per view
-- [ ] Components are view-agnostic and reusable across routes
-- [ ] Include primitives such as:
+- [x] Create composable calendar components that can be assembled per view
+- [x] Components are view-agnostic and reusable across routes
+- [x] Include primitives such as:
   - `CalendarShell` (layout + view controls)
   - `CalendarHeader` (month/week/day label + navigation)
   - `CalendarGrid` (day cells for week/month)
   - `CalendarDayColumn` (day layout for week/day)
   - `CalendarEventCard` (event display)
   - `AgendaList` (list-based view)
-- [ ] Components use existing UI primitives from `src/components/ui/`
-- [ ] No inline styles; use class-based styling
-- [ ] Typecheck passes
+- [x] Components use existing UI primitives from `src/components/ui/`
+- [x] No inline styles; use class-based styling
+- [x] Typecheck passes
 
 ### US-004: Daily, weekly, and monthly views
 
