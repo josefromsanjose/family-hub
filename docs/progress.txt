@@ -149,3 +149,12 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Gotchas encountered: Use `inputValidator` (not `.validator`) with `createServerFn` in this codebase.
   - Useful context: Shopping list success feedback now uses sonner toasts and navigates to `/shopping`.
 ---
+## 2026-01-19 10:00 - US-012
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Added a week-scoped meals query on the dashboard and displayed the planned count on the "Meals This Week" card with loading/empty handling.
+- Files changed: `src/routes/_authed/index.tsx`, `src/routes/_authed/-index.test.tsx`, `docs/prds/MEALS_PRD.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: None.
+  - Gotchas encountered: None.
+  - Useful context: Dashboard meal count uses `getMeals` with week start/end ISO dates.
+---

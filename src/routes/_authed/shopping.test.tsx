@@ -13,6 +13,7 @@ vi.mock("@/server/shopping", () => ({
   getShoppingItems: vi.fn(),
   createShoppingItem: vi.fn(),
   updateShoppingItem: vi.fn(),
+  deleteShoppingItem: vi.fn(),
 }));
 
 afterEach(() => {

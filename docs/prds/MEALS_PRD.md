@@ -210,15 +210,17 @@ passes: true
 
 **Description:** As a user, I want the dashboard to show accurate meal planning statistics.
 
+passes: true
+
 **Acceptance Criteria:**
 
-- [ ] Update "Meals This Week" card in `src/routes/_authed/index.tsx` to fetch actual meal count
-- [ ] Query meals for current week from database
-- [ ] Display count of meals planned for current week
-- [ ] Show "0 planned" if no meals exist
-- [ ] Card links to meal planning page
-- [ ] Typecheck passes
-- [ ] Verify in browser using dev-browser skill
+- [x] Update "Meals This Week" card in `src/routes/_authed/index.tsx` to fetch actual meal count
+- [x] Query meals for current week from database
+- [x] Display count of meals planned for current week
+- [x] Show "0 planned" if no meals exist
+- [x] Card links to meal planning page
+- [x] Typecheck passes
+- [x] Verify in browser using dev-browser skill
 
 ## Functional Requirements
 

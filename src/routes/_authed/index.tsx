@@ -1,5 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Link } from "@tanstack/react-router";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { endOfDay } from "date-fns";
 import {
   Calendar,
   ShoppingCart,
@@ -10,36 +12,16 @@ import {
   ListTodo,
 } from "lucide-react";
 import { useHousehold } from "@/contexts/HouseholdContext";
+import { getMeals } from "@/server/meals";
+import { getDayKey, getWeekDates } from "@/utils/date";
 
 export const Route = createFileRoute("/_authed/")({ component: Dashboard });
 
-function Dashboard() {
+export function Dashboard() {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <DashboardCard
-            title="Meals This Week"
-            value="7 planned"
-            icon={UtensilsCrossed}
-            href="/meals"
-            color="bg-chart-1"
-          />
-          <DashboardCard
-            title="Shopping Items"
-            value="12 items"
-            icon={ShoppingCart}
-            href="/shopping"
-            color="bg-chart-2"
-          />
-          <DashboardCard
-            title="Upcoming Events"
-            value="3 this week"
-            icon={Calendar}
-            href="/calendar"
-            color="bg-chart-4"
-          />
-        </div>
+        <DashboardStats />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <QuickActionsCard />
@@ -51,18 +33,66 @@ function Dashboard() {
   );
 }
 
+function DashboardStats() {
+  const weekDates = useMemo(() => getWeekDates(new Date()), []);
+  const weekStart = weekDates[0];
+  const weekEnd = weekDates[6];
+  const {
+    data: meals = [],
+    isLoading: isMealsLoading,
+    isError: isMealsError,
+  } = useQuery({
+    queryKey: ["meals", "week-count", getDayKey(weekStart)],
+    queryFn: () =>
+      getMeals({
+        data: {
+          startDate: weekStart.toISOString(),
+          endDate: endOfDay(weekEnd).toISOString(),
+        },
+      }),
+  });
+  const mealCount = meals.length;
+  const mealsThisWeekLabel = isMealsLoading
+    ? "Loading..."
+    : `${mealCount} planned`;
+  const mealsThisWeekValue = isMealsError ? "0 planned" : mealsThisWeekLabel;
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <DashboardCard
+        title="Meals This Week"
+        value={mealsThisWeekValue}
+        icon={UtensilsCrossed}
+        href="/meals"
+      />
+      <DashboardCard
+        title="Shopping Items"
+        value="12 items"
+        icon={ShoppingCart}
+        href="/shopping"
+      />
+      <DashboardCard
+        title="Upcoming Events"
+        value="3 this week"
+        icon={Calendar}
+        href="/calendar"
+      />
+    </div>
+  );
+}
+
 function DashboardCard({
   title,
   value,
   icon: Icon,
   href,
-  color,
+  color = "bg-chart-2",
 }: {
   title: string;
   value: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
   href: string;
-  color: string;
+  color?: string;
 }) {
   return (
     <Link
