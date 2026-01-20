@@ -90,8 +90,7 @@ function CalendarViewTabs({
   };
 
   return (
-    <div className="space-y-3">
-      <CalendarHeader label="View" subLabel="Day, week, or month" />
+    <div className="">
       <Tabs value={view} onValueChange={handleViewChange}>
         <TabsList className="w-full sm:w-fit">
           {calendarViews.map((option) => (
@@ -485,13 +484,13 @@ export function CalendarPage() {
           </div>
         )}
 
-        <div className="mb-1">
+        <div className="">
           <CalendarViewTabs view={view} onViewChange={setView} />
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[220px_1fr]">
           <Card className="h-fit">
-            <CardHeader className="pb-4">
+            <CardHeader>
               <Button onClick={() => setShowAddForm(!showAddForm)}>
                 <Plus size={20} />
                 Add Event
@@ -551,9 +550,6 @@ export function CalendarPage() {
           </Card>
 
           <Card>
-            <CardHeader className="pb-4">
-              <CalendarHeader label={viewLabel} subLabel={rangeLabel} />
-            </CardHeader>
             <CardContent className="space-y-4">
               {eventQuery.isLoading ? (
                 <div className="py-12 text-center">

@@ -20,8 +20,8 @@ function CalendarShell({
   headerClassName,
 }: CalendarShellProps) {
   return (
-    <div className={cn("min-h-screen bg-background p-6", className)}>
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
+    <div className={cn("min-h-screen bg-background px-6", className)}>
+      <div className="mx-auto flex w-full max-w-7xl flex-col mt-2 gap-2">
         <div
           className={cn(
             "flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between",
