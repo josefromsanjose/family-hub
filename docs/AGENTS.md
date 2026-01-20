@@ -4,3 +4,21 @@
 - Keep server function CRUD patterns consistent: validate inputs, enforce ownership/authorization, and return typed, frontend-friendly data.
 - Avoid top-level imports of Node-only modules (e.g., `@/db`, Prisma, `pg`) in code that may be bundled for the client; use server-only helpers or dynamic imports (e.g., `getPrisma()` from `src/server/db.ts`) inside server handlers.
 - Reuse `src/utils/date.ts` helpers (`getWeekDates`, `getDayKey`) for week/day calculations to avoid duplicate date logic in features like meals.
+- NEVER reset the database
+- Use Zod (or existing schema helpers) for server input validation; return typed errors, not exceptions for flow control.
+- Prefer TanStack Router loaders/actions for data fetching/mutations; keep route files thin and delegate to server modules.
+- Keep Prisma access inside server-only modules; expose a narrow API from src/server/* to UI.
+- Follow src/components/ui/* patterns for UI primitives; avoid one-off variants unless needed.
+- Write RTL/Vitest tests for new UI components and for route behavior in src/routes/* tests.
+- Build React components as small, focused functional components with hooks at top level.
+- Break up files when a component exceeds ~150-200 lines or has multiple responsibilities.
+- Extract reusable logic into hooks in src/hooks and shared UI into src/components.
+- Co-locate route-specific subcomponents under their route folder (e.g., src/routes/_authed/tasks/-components).
+- Keep one primary export per file; avoid mixing unrelated components in a single file.
+- Prefer composition over prop drilling; use context for cross-route shared state.
+- Keep state close to where it’s used; lift only when multiple components need it.
+- Split components by responsibility: route orchestration vs presentational UI.
+- Avoid derived state; compute from props/loader data, memoize only when expensive.
+- Keep render pure; use useEffect for side effects, not during render.
+- Use a single source of truth; don’t mirror loader data into local state unless editing.
+- Encapsulate repeated behavior in focused hooks; avoid hooks that do too much.

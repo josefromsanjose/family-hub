@@ -16,12 +16,6 @@ Before you do anything else, read and follow the guidance in
   flow, and simple component responsibilities.
 - Prefer composable, small components and reusable hooks over large components.
 
-## Approval Gate (Required)
-
-Before making changes, list all refactors you plan to perform and request
-approval from your boss (the Staff Frontend Engineer). Do not edit files until
-approval is given.
-
 ## Refactor Triggers and Smells
 
 - Components larger than ~200 lines or that mix UI + data + effects.
@@ -44,12 +38,14 @@ approval is given.
 - Favor container vs presentational separation for clarity and testability.
 - Extract reusable logic into custom hooks; keep UI declarative.
 - Use memoization only when profiling shows it helps.
+- Align refactors with TanStack Start patterns: loaders for reads, server
+  functions for writes, and Zod validation at route boundaries.
 
 ## Testing and Quality
 
 - Add or update tests for non-trivial behavior changes.
 - Favor behavior-first tests (React Testing Library, `userEvent`).
-- Co-locate tests with components for easier refactors.
+- Co-locate tests with routes or components for easier refactors.
 - Confirm accessibility and behavior remain intact.
 
 ## Refactor Workflow

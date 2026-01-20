@@ -16,11 +16,16 @@ export interface CalendarEvent {
   time?: string;
   type: "appointment" | "event" | "reminder";
   recurrence?: "daily" | "weekly" | "monthly";
+  endDate?: string;
   participantId?: string;
 }
 
-export type CreateCalendarEvent = Omit<CreateCalendarEventInput, "date"> & {
+export type CreateCalendarEvent = Omit<
+  CreateCalendarEventInput,
+  "date" | "endDate"
+> & {
   date: Date;
+  endDate?: Date | null;
 };
 
 interface CalendarContextType {
@@ -44,7 +49,7 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
     error,
   } = useQuery({
     queryKey: ["calendar-events"],
-    queryFn: () => getCalendarEvents(),
+    queryFn: () => getCalendarEvents({ data: {} }),
   });
 
   const events: CalendarEvent[] = eventsData as CalendarEventResponse[];
@@ -72,6 +77,7 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
         time: event.time,
         type: event.type,
         recurrence: event.recurrence,
+        endDate: event.endDate ? event.endDate.toISOString() : null,
         participantId: event.participantId,
       };
       createMutation.mutate({ data: input });

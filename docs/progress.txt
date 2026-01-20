@@ -158,3 +158,12 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Gotchas encountered: None.
   - Useful context: Dashboard meal count uses `getMeals` with week start/end ISO dates.
 ---
+## 2026-01-19 21:15 - US-001
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Added household-scoped calendar event CRUD with date-range queries, validation, and response mapping, plus unit coverage and context updates for query invocation.
+- Files changed: `src/server/calendar.ts`, `src/server/calendar.test.ts`, `src/contexts/CalendarContext.tsx`, `docs/prds/EVENTS_PRD.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: None.
+  - Gotchas encountered: None.
+  - Useful context: Calendar events now include optional `endDate` in server responses.
+---

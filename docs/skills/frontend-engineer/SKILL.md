@@ -31,7 +31,7 @@ Use file-based routing. Keep route files thin: compose UI from components, keep 
 - Prefer loaders for read-only data and server functions for mutations.
 - Validate search params and route params at the route boundary.
 - Return structured loader data; avoid leaking raw backend responses into UI.
-- Use route-level `pending` and `error` components for loading/error UX.
+- Use route-level `pendingComponent` and `errorComponent` (or route boundaries) for loading/error UX.
 - Use layout routes for shared context, validation, and error handling.
 
 ### Zod Validation (TanStack Guidance)
@@ -76,6 +76,12 @@ Use file-based routing. Keep route files thin: compose UI from components, keep 
 - Keep touch targets >= 44px and follow mobile-first layout.
 - Use consistent spacing and typography; prefer existing utility classes.
 - Ensure accessible labels and aria attributes for interactive elements.
+
+## Directory Conventions
+
+- Route-specific subcomponents live alongside their route in a `-components` folder.
+- Shared UI primitives and reusable components live in `src/components`.
+- Reusable hooks live in `src/hooks`.
 
 ## Testing Requirements
 
