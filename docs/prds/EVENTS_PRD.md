@@ -41,15 +41,15 @@ passes: true
 
 **Description:** As a user, I want to see my household events in the calendar so the schedule is always up to date.
 
-passes: false
+passes: true
 
 **Acceptance Criteria:**
 
-- [ ] Use TanStack Query to fetch events for a selected date range
-- [ ] Show loading and error states in calendar views
-- [ ] Filter events by date range and optional participant
-- [ ] Display event type, title, time, and participant at a glance
-- [ ] Typecheck passes
+- [x] Use TanStack Query to fetch events for a selected date range
+- [x] Show loading and error states in calendar views
+- [x] Filter events by date range and optional participant
+- [x] Display event type, title, time, and participant at a glance
+- [x] Typecheck passes
 
 ### US-003: Composable calendar UI components
 

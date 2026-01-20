@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { addDays, endOfDay, format, startOfDay, startOfWeek } from "date-fns";
 import { useMemo, useState } from "react";
 import {
   Plus,
@@ -9,13 +11,19 @@ import {
   Stethoscope,
 } from "lucide-react";
 import { useCalendar } from "@/contexts/CalendarContext";
-import { useHousehold } from "@/contexts/HouseholdContext";
+import { useHousehold, type HouseholdMember } from "@/contexts/HouseholdContext";
 import { SelectionCard } from "@/components/touch/SelectionCard";
 import { AvatarCard } from "@/components/touch/AvatarCard";
 import { QuickDatePicker } from "@/components/touch/QuickDatePicker";
+import { Input } from "@/components/ui/input";
+import {
+  getCalendarEvents,
+  type CalendarEventResponse,
+} from "@/server/calendar";
+import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/_authed/calendar")({
-  component: Calendar,
+export const Route = createFileRoute("/_authed/calendar/")({
+  component: CalendarPage,
 });
 
 const eventTypes = [
@@ -39,10 +47,104 @@ const eventTypes = [
   },
 ] as const;
 
-function Calendar() {
-  const { events, addEvent, deleteEvent, isLoading } = useCalendar();
+function CalendarFilters({
+  rangeStart,
+  rangeEnd,
+  onStartChange,
+  onEndChange,
+  participantFilter,
+  onParticipantChange,
+  members,
+}: {
+  rangeStart: Date;
+  rangeEnd: Date;
+  onStartChange: (value: string) => void;
+  onEndChange: (value: string) => void;
+  participantFilter: string | null;
+  onParticipantChange: (value: string | null) => void;
+  members: HouseholdMember[];
+}) {
+  return (
+    <div className="bg-card rounded-lg shadow-sm p-6 mb-6 border border-border">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div className="space-y-3">
+          <div>
+            <h2 className="text-lg font-semibold text-card-foreground">
+              Date range
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {format(rangeStart, "MMM d, yyyy")} –{" "}
+              {format(rangeEnd, "MMM d, yyyy")}
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-foreground">
+                Start date
+              </label>
+              <Input
+                type="date"
+                value={format(rangeStart, "yyyy-MM-dd")}
+                onChange={(event) => onStartChange(event.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-foreground">
+                End date
+              </label>
+              <Input
+                type="date"
+                value={format(rangeEnd, "yyyy-MM-dd")}
+                onChange={(event) => onEndChange(event.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <h2 className="text-lg font-semibold text-card-foreground">
+              Filter by member
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Show events for the whole household or a specific person.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <AvatarCard
+              name="All"
+              color="bg-muted"
+              selected={participantFilter === null}
+              onSelect={() => onParticipantChange(null)}
+            />
+            {members.map((member) => (
+              <AvatarCard
+                key={member.id}
+                name={member.name}
+                color={member.color || "bg-muted"}
+                selected={participantFilter === member.id}
+                onSelect={() => onParticipantChange(member.id)}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function CalendarPage() {
+  const { addEvent, deleteEvent } = useCalendar();
   const { members } = useHousehold();
   const [showAddForm, setShowAddForm] = useState(false);
+  const [rangeStart, setRangeStart] = useState(() =>
+    startOfWeek(new Date(), { weekStartsOn: 1 })
+  );
+  const [rangeEnd, setRangeEnd] = useState(() =>
+    addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 6)
+  );
+  const [participantFilter, setParticipantFilter] = useState<string | null>(
+    null
+  );
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -74,6 +176,34 @@ function Calendar() {
     setShowAddForm(false);
   };
 
+  const startDateIso = useMemo(
+    () => startOfDay(rangeStart).toISOString(),
+    [rangeStart]
+  );
+  const endDateIso = useMemo(
+    () => endOfDay(rangeEnd).toISOString(),
+    [rangeEnd]
+  );
+
+  const eventQuery = useQuery({
+    queryKey: [
+      "calendar-events",
+      startDateIso,
+      endDateIso,
+      participantFilter ?? "all",
+    ],
+    queryFn: () =>
+      getCalendarEvents({
+        data: {
+          startDate: startDateIso,
+          endDate: endDateIso,
+          ...(participantFilter ? { participantId: participantFilter } : {}),
+        },
+      }),
+  });
+
+  const events = eventQuery.data ?? [];
+
   const eventsByDate = useMemo(() => {
     const grouped = events.reduce(
       (acc, event) => {
@@ -82,7 +212,7 @@ function Calendar() {
         acc[dateKey].push(event);
         return acc;
       },
-      {} as Record<string, typeof events>
+      {} as Record<string, CalendarEventResponse[]>
     );
     Object.values(grouped).forEach((items) => {
       items.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
@@ -102,6 +232,26 @@ function Calendar() {
       .slice(0, 5);
   }, [events]);
 
+  const handleStartChange = (value: string) => {
+    if (!value) return;
+    const nextStart = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(nextStart.valueOf())) return;
+    setRangeStart(nextStart);
+    if (nextStart > rangeEnd) {
+      setRangeEnd(nextStart);
+    }
+  };
+
+  const handleEndChange = (value: string) => {
+    if (!value) return;
+    const nextEnd = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(nextEnd.valueOf())) return;
+    setRangeEnd(nextEnd);
+    if (nextEnd < rangeStart) {
+      setRangeStart(nextEnd);
+    }
+  };
+
   const getEventTypeStyle = (type: (typeof eventTypes)[number]["value"]) => {
     return (
       eventTypes.find((et) => et.value === type)?.color || eventTypes[0].color
@@ -120,13 +270,10 @@ function Calendar() {
               Keep track of appointments, events, and reminders
             </p>
           </div>
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-          >
+          <Button onClick={() => setShowAddForm(!showAddForm)}>
             <Plus size={20} />
             Add Event
-          </button>
+          </Button>
         </div>
 
         {showAddForm && (
@@ -255,6 +402,16 @@ function Calendar() {
           </div>
         )}
 
+        <CalendarFilters
+          rangeStart={rangeStart}
+          rangeEnd={rangeEnd}
+          onStartChange={handleStartChange}
+          onEndChange={handleEndChange}
+          participantFilter={participantFilter}
+          onParticipantChange={setParticipantFilter}
+          members={members}
+        />
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <div className="bg-card rounded-lg shadow-sm border border-border p-6">
@@ -262,10 +419,17 @@ function Calendar() {
                 Events by Date
               </h2>
               <div className="space-y-4">
-                {isLoading ? (
+                {eventQuery.isLoading ? (
                   <div className="text-center py-12">
                     <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">Loading events...</p>
+                  </div>
+                ) : eventQuery.error ? (
+                  <div className="text-center py-12">
+                    <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">
+                      Error loading events.
+                    </p>
                   </div>
                 ) : events.length === 0 ? (
                   <div className="text-center py-12">
@@ -355,9 +519,13 @@ function Calendar() {
               <h2 className="text-xl font-bold text-card-foreground mb-4">
                 Upcoming Events
               </h2>
-              {isLoading ? (
+              {eventQuery.isLoading ? (
                 <p className="text-muted-foreground text-sm">
                   Loading events...
+                </p>
+              ) : eventQuery.error ? (
+                <p className="text-muted-foreground text-sm">
+                  Error loading events.
                 </p>
               ) : upcomingEvents.length === 0 ? (
                 <p className="text-muted-foreground text-sm">

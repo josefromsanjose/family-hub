@@ -22,3 +22,4 @@
 - Keep render pure; use useEffect for side effects, not during render.
 - Use a single source of truth; don’t mirror loader data into local state unless editing.
 - Encapsulate repeated behavior in focused hooks; avoid hooks that do too much.
+- Prefer native button interaction states (active/focus-visible) for touch feedback; avoid JS "pressed" state unless necessary.

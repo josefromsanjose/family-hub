@@ -167,3 +167,12 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Gotchas encountered: None.
   - Useful context: Calendar events now include optional `endDate` in server responses.
 ---
+## 2026-01-19 21:25 - US-002
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Added date-range and participant filtering for calendar events with TanStack Query, plus loading/error UI and coverage for filters and rendering.
+- Files changed: `src/routes/_authed/calendar/index.tsx`, `src/routes/_authed/calendar/index.test.tsx`, `docs/prds/EVENTS_PRD.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: Date-range filters in calendar UI pass start/end ISO strings and optional participantId into `getCalendarEvents`.
+  - Gotchas encountered: Calendar events render in both the main list and upcoming panel, so RTL assertions should use `*AllBy*` queries.
+  - Useful context: Browser check loaded `/calendar` and showed date range inputs plus member filter cards (screenshot capture failed).
+---

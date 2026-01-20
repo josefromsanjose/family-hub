@@ -259,12 +259,12 @@ graph TD
 TanStack Router uses file-based routing where file structure maps to URL structure:
 
 - `src/routes/index.tsx` → `/`
-- `src/routes/meals.tsx` → `/meals`
-- `src/routes/tasks.tsx` → `/tasks`
+- `src/routes/meals/index.tsx` → `/meals`
+- `src/routes/tasks/tasks/index.tsx` → `/tasks`
 - `src/routes/my-chores.tsx` → `/my-chores`
 - `src/routes/shopping.tsx` → `/shopping`
-- `src/routes/calendar.tsx` → `/calendar`
-- `src/routes/settings.tsx` → `/settings`
+- `src/routes/_authed/calendar/index.tsx` → `/calendar`
+- `src/routes/settings/index.tsx` → `/settings`
 
 ### Route Configuration
 
