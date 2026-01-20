@@ -186,3 +186,21 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Gotchas encountered: None.
   - Useful context: Verified the calendar view renders with the new shell, event cards, and upcoming list on `/calendar`.
 ---
+## 2026-01-19 22:45 - US-004
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Added daily/weekly/monthly calendar views with a view switcher, date navigation, and month grid indicators; updated calendar rendering and tests to align with view-based ranges.
+- Files changed: `src/routes/_authed/calendar/index.tsx`, `src/routes/_authed/calendar/index.test.tsx`, `docs/prds/EVENTS_PRD.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: View ranges derived from a single `viewDate` keep query ranges aligned with day/week/month switches.
+  - Gotchas encountered: Calendar view tests should use dates within the active week because weekly views render only visible days.
+  - Useful context: Verified the calendar view switcher and date controls on `/calendar`, including the monthly tab toggle.
+---
+## 2026-01-19 23:30 - Calendar UX Refresh
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Removed focus date controls and upcoming events, defaulted views to today, moved member filters into a left column, and added hourly grid layouts for day/week views.
+- Files changed: `src/routes/_authed/calendar/index.tsx`, `src/routes/_authed/calendar/index.test.tsx`, `docs/prds/EVENTS_PRD.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: Hourly grids render cleanly by pairing a time column with per-day columns in a CSS grid.
+  - Gotchas encountered: None.
+  - Useful context: Verified Day/Week/Month tabs and member column on `/calendar`; screenshot capture failed in automation.
+---

@@ -3,7 +3,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 type CalendarShellProps = {
-  title: string
+  title?: string
   description?: string
   actions?: React.ReactNode
   children: React.ReactNode
@@ -28,12 +28,14 @@ function CalendarShell({
             headerClassName
           )}
         >
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-foreground">{title}</h1>
-            {description ? (
-              <p className="text-muted-foreground">{description}</p>
-            ) : null}
-          </div>
+          {title ? (
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold text-foreground">{title}</h1>
+              {description ? (
+                <p className="text-muted-foreground">{description}</p>
+              ) : null}
+            </div>
+          ) : null}
           {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
         </div>
         {children}

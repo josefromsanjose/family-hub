@@ -1,31 +1,45 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { addDays, endOfDay, format, startOfDay, startOfWeek } from "date-fns";
-import { useMemo, useState } from "react";
 import {
-  Plus,
-  Calendar as CalendarIcon,
+  eachDayOfInterval,
+  endOfDay,
+  endOfMonth,
+  endOfWeek,
+  format,
+  isSameDay,
+  isSameMonth,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+} from "date-fns";
+import { Fragment, useMemo, useState } from "react";
+import {
   Bell,
+  Calendar as CalendarIcon,
+  Check,
+  Plus,
   Stethoscope,
 } from "lucide-react";
 import {
-  AgendaList,
   CalendarEventCard,
+  CalendarGrid,
   CalendarHeader,
   CalendarShell,
 } from "@/components/calendar";
 import { useCalendar } from "@/contexts/CalendarContext";
-import { useHousehold, type HouseholdMember } from "@/contexts/HouseholdContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
 import { SelectionCard } from "@/components/touch/SelectionCard";
 import { AvatarCard } from "@/components/touch/AvatarCard";
 import { QuickDatePicker } from "@/components/touch/QuickDatePicker";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   getCalendarEvents,
   type CalendarEventResponse,
 } from "@/server/calendar";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { getDayKey, getWeekDates } from "@/utils/date";
 
 export const Route = createFileRoute("/_authed/calendar/")({
   component: CalendarPage,
@@ -52,77 +66,95 @@ const eventTypes = [
   },
 ] as const;
 
-function CalendarFilters({
-  rangeStart,
-  rangeEnd,
-  onStartChange,
-  onEndChange,
-  participantFilter,
-  onParticipantChange,
-  members,
+type CalendarView = "day" | "week" | "month";
+
+const calendarViews: Array<{ value: CalendarView; label: string }> = [
+  { value: "day", label: "Day" },
+  { value: "week", label: "Week" },
+  { value: "month", label: "Month" },
+];
+
+const weekdayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function CalendarViewTabs({
+  view,
+  onViewChange,
 }: {
-  rangeStart: Date;
-  rangeEnd: Date;
-  onStartChange: (value: string) => void;
-  onEndChange: (value: string) => void;
-  participantFilter: string | null;
-  onParticipantChange: (value: string | null) => void;
-  members: HouseholdMember[];
+  view: CalendarView;
+  onViewChange: (value: CalendarView) => void;
 }) {
+  const handleViewChange = (value: string) => {
+    if (value === "day" || value === "week" || value === "month") {
+      onViewChange(value);
+    }
+  };
+
   return (
-    <div className="bg-card rounded-lg shadow-sm p-6 mb-6 border border-border">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-        <div className="space-y-3">
-          <CalendarHeader
-            label="Date range"
-            subLabel={``}
-          />
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-foreground">
-                Start date
-              </label>
-              <Input
-                type="date"
-                value={format(rangeStart, "yyyy-MM-dd")}
-                onChange={(event) => onStartChange(event.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-foreground">
-                End date
-              </label>
-              <Input
-                type="date"
-                value={format(rangeEnd, "yyyy-MM-dd")}
-                onChange={(event) => onEndChange(event.target.value)}
-              />
-            </div>
+    <div className="space-y-3">
+      <CalendarHeader label="View" subLabel="Day, week, or month" />
+      <Tabs value={view} onValueChange={handleViewChange}>
+        <TabsList className="w-full sm:w-fit">
+          {calendarViews.map((option) => (
+            <TabsTrigger key={option.value} value={option.value}>
+              {option.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+    </div>
+  );
+}
+
+function CalendarMonthCell({
+  date,
+  isCurrentMonth,
+  isToday,
+  events,
+}: {
+  date: Date;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  events: CalendarEventResponse[];
+}) {
+  const visibleEvents = events.slice(0, 2);
+
+  return (
+    <div
+      className={cn(
+        "flex h-full flex-col gap-2 rounded-lg border border-border p-2 text-xs",
+        isCurrentMonth ? "bg-card" : "bg-muted/30",
+        isToday ? "border-primary/60 bg-primary/5" : null
+      )}
+    >
+      <div className="flex items-center justify-between">
+        <span
+          className={cn(
+            "text-sm font-semibold",
+            isCurrentMonth ? "text-foreground" : "text-muted-foreground"
+          )}
+        >
+          {format(date, "d")}
+        </span>
+        {events.length > 0 ? (
+          <span className="text-[10px] text-muted-foreground">
+            {events.length} {events.length === 1 ? "event" : "events"}
+          </span>
+        ) : null}
+      </div>
+      <div className="space-y-1">
+        {visibleEvents.map((event) => (
+          <div
+            key={event.id}
+            className="truncate rounded bg-muted px-2 py-1 text-[10px] text-muted-foreground"
+          >
+            {event.title}
           </div>
-        </div>
-        <div className="space-y-3">
-          <CalendarHeader
-            label="Filter by member"
-            subLabel=""
-          />
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <AvatarCard
-              name="All"
-              color="bg-muted"
-              selected={participantFilter === null}
-              onSelect={() => onParticipantChange(null)}
-            />
-            {members.map((member) => (
-              <AvatarCard
-                key={member.id}
-                name={member.name}
-                color={member.color || "bg-muted"}
-                selected={participantFilter === member.id}
-                onSelect={() => onParticipantChange(member.id)}
-              />
-            ))}
-          </div>
-        </div>
+        ))}
+        {events.length > visibleEvents.length ? (
+          <p className="text-[10px] text-muted-foreground">
+            +{events.length - visibleEvents.length} more
+          </p>
+        ) : null}
       </div>
     </div>
   );
@@ -132,12 +164,7 @@ export function CalendarPage() {
   const { addEvent, deleteEvent } = useCalendar();
   const { members } = useHousehold();
   const [showAddForm, setShowAddForm] = useState(false);
-  const [rangeStart, setRangeStart] = useState(() =>
-    startOfWeek(new Date(), { weekStartsOn: 1 })
-  );
-  const [rangeEnd, setRangeEnd] = useState(() =>
-    addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 6)
-  );
+  const [view, setView] = useState<CalendarView>("week");
   const [participantFilter, setParticipantFilter] = useState<string | null>(
     null
   );
@@ -172,6 +199,62 @@ export function CalendarPage() {
     setShowAddForm(false);
   };
 
+  const today = startOfDay(new Date());
+
+  const viewRange = useMemo(() => {
+    const baseDate = today;
+
+    if (view === "day") {
+      return {
+        rangeStart: baseDate,
+        rangeEnd: baseDate,
+        weekDates: [] as Date[],
+        monthDates: [] as Date[],
+      };
+    }
+
+    if (view === "week") {
+      const weekDates = getWeekDates(baseDate);
+      return {
+        rangeStart: weekDates[0],
+        rangeEnd: weekDates[weekDates.length - 1],
+        weekDates,
+        monthDates: [] as Date[],
+      };
+    }
+
+    const monthStart = startOfMonth(baseDate);
+    const monthEnd = endOfMonth(baseDate);
+    const gridStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+    const gridEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+
+    return {
+      rangeStart: gridStart,
+      rangeEnd: gridEnd,
+      weekDates: [] as Date[],
+      monthDates: eachDayOfInterval({ start: gridStart, end: gridEnd }),
+    };
+  }, [today, view]);
+
+  const rangeStart = viewRange.rangeStart;
+  const rangeEnd = viewRange.rangeEnd;
+  const weekDates = viewRange.weekDates;
+  const monthDates = viewRange.monthDates;
+  const rangeLabel = useMemo(() => {
+    if (view === "day") {
+      return format(today, "EEEE, MMM d, yyyy");
+    }
+
+    if (view === "week") {
+      return `${format(rangeStart, "MMM d")} - ${format(
+        rangeEnd,
+        "MMM d, yyyy"
+      )}`;
+    }
+
+    return format(today, "MMMM yyyy");
+  }, [rangeEnd, rangeStart, today, view]);
+
   const startDateIso = useMemo(
     () => startOfDay(rangeStart).toISOString(),
     [rangeStart]
@@ -203,7 +286,7 @@ export function CalendarPage() {
   const eventsByDate = useMemo(() => {
     const grouped = events.reduce(
       (acc, event) => {
-        const dateKey = event.date.split("T")[0];
+        const dateKey = getDayKey(new Date(event.date));
         if (!acc[dateKey]) acc[dateKey] = [];
         acc[dateKey].push(event);
         return acc;
@@ -216,64 +299,65 @@ export function CalendarPage() {
     return grouped;
   }, [events]);
 
-  const upcomingEvents = useMemo(() => {
-    const today = new Date().toISOString().split("T")[0];
-    return events
-      .filter((event) => event.date.split("T")[0] >= today)
-      .sort((a, b) => {
-        const dateCompare = a.date.localeCompare(b.date);
-        if (dateCompare !== 0) return dateCompare;
-        return (a.time || "").localeCompare(b.time || "");
-      })
-      .slice(0, 5);
+  const hourSlots = useMemo(
+    () =>
+      Array.from({ length: 24 }, (_, hour) => ({
+        hour,
+        label:
+          hour === 0
+            ? "12 AM"
+            : hour < 12
+              ? `${hour} AM`
+              : hour === 12
+                ? "12 PM"
+                : `${hour - 12} PM`,
+      })),
+    []
+  );
+
+  const allDayEventsByDate = useMemo(() => {
+    const grouped: Record<string, CalendarEventResponse[]> = {};
+    events.forEach((event) => {
+      if (event.time) return;
+      const dateKey = getDayKey(new Date(event.date));
+      if (!grouped[dateKey]) grouped[dateKey] = [];
+      grouped[dateKey].push(event);
+    });
+    return grouped;
   }, [events]);
 
-  const handleStartChange = (value: string) => {
-    if (!value) return;
-    const nextStart = new Date(`${value}T00:00:00`);
-    if (Number.isNaN(nextStart.valueOf())) return;
-    setRangeStart(nextStart);
-    if (nextStart > rangeEnd) {
-      setRangeEnd(nextStart);
-    }
-  };
-
-  const handleEndChange = (value: string) => {
-    if (!value) return;
-    const nextEnd = new Date(`${value}T00:00:00`);
-    if (Number.isNaN(nextEnd.valueOf())) return;
-    setRangeEnd(nextEnd);
-    if (nextEnd < rangeStart) {
-      setRangeStart(nextEnd);
-    }
-  };
-
-  const getEventTypeStyle = (type: (typeof eventTypes)[number]["value"]) => {
-    return (
-      eventTypes.find((et) => et.value === type)?.color || eventTypes[0].color
-    );
-  };
-
-  const getEventTypeLabel = (type: (typeof eventTypes)[number]["value"]) => {
-    return eventTypes.find((et) => et.value === type)?.label ?? "Event";
-  };
+  const timedEventsByDateHour = useMemo(() => {
+    const grouped: Record<string, Record<number, CalendarEventResponse[]>> = {};
+    events.forEach((event) => {
+      if (!event.time) return;
+      const [hourPart] = event.time.split(":");
+      const parsedHour = Number(hourPart);
+      if (Number.isNaN(parsedHour)) return;
+      const clampedHour = Math.min(Math.max(parsedHour, 0), 23);
+      const dateKey = getDayKey(new Date(event.date));
+      if (!grouped[dateKey]) grouped[dateKey] = {};
+      if (!grouped[dateKey][clampedHour]) grouped[dateKey][clampedHour] = [];
+      grouped[dateKey][clampedHour].push(event);
+    });
+    return grouped;
+  }, [events]);
 
   const getParticipantLabel = (participantId?: string | null) => {
     if (!participantId) return null;
     return members.find((member) => member.id === participantId)?.name ?? null;
   };
 
+  const getEventsForDate = (date: Date) =>
+    eventsByDate[getDayKey(date)] ?? [];
+  const viewLabel =
+    view === "day" ? "Day" : view === "week" ? "Week" : "Month";
+  const getAllDayEventsForDate = (date: Date) =>
+    allDayEventsByDate[getDayKey(date)] ?? [];
+  const getEventsForHour = (date: Date, hour: number) =>
+    timedEventsByDateHour[getDayKey(date)]?.[hour] ?? [];
+
   return (
-    <CalendarShell
-      title="Family Calendar"
-      description="Keep track of appointments, events, and reminders"
-      actions={
-        <Button onClick={() => setShowAddForm(!showAddForm)}>
-          <Plus size={20} />
-          Add Event
-        </Button>
-      }
-    >
+    <CalendarShell>
 
         {showAddForm && (
           <div className="bg-card rounded-lg shadow-sm p-6 mb-6 border border-border">
@@ -401,114 +485,264 @@ export function CalendarPage() {
           </div>
         )}
 
-        <CalendarFilters
-          rangeStart={rangeStart}
-          rangeEnd={rangeEnd}
-          onStartChange={handleStartChange}
-          onEndChange={handleEndChange}
-          participantFilter={participantFilter}
-          onParticipantChange={setParticipantFilter}
-          members={members}
-        />
+        <div className="mb-1">
+          <CalendarViewTabs view={view} onViewChange={setView} />
+        </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader className="pb-4">
-                <CardTitle>Events by Date</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {eventQuery.isLoading ? (
-                  <div className="py-12 text-center">
-                    <CalendarIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                    <p className="text-muted-foreground">Loading events...</p>
-                  </div>
-                ) : eventQuery.error ? (
-                  <div className="py-12 text-center">
-                    <CalendarIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                    <p className="text-muted-foreground">
-                      Error loading events.
-                    </p>
-                  </div>
-                ) : events.length === 0 ? (
-                  <div className="py-12 text-center">
-                    <CalendarIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                    <p className="text-muted-foreground">
-                      No events scheduled yet
-                    </p>
-                  </div>
-                ) : (
-                  Object.entries(eventsByDate)
-                    .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
-                    .map(([date, dateEvents]) => (
-                      <div
-                        key={date}
-                        className="border-b border-border pb-4 last:border-0"
-                      >
-                        <h3 className="mb-3 text-lg font-semibold text-foreground">
-                          {new Date(date).toLocaleDateString("en-US", {
-                            weekday: "long",
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </h3>
-                        <div className="space-y-2">
-                          {dateEvents.map((event) => (
-                            <CalendarEventCard
-                              key={event.id}
-                              title={event.title}
-                              description={event.description}
-                              time={event.time}
-                              typeLabel={getEventTypeLabel(event.type)}
-                              typeClassName={getEventTypeStyle(event.type)}
-                              participantLabel={getParticipantLabel(
-                                event.participantId
-                              )}
-                              onDelete={() => deleteEvent(event.id)}
-                            />
-                          ))}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[220px_1fr]">
+          <Card className="h-fit">
+            <CardHeader className="pb-4">
+              <Button onClick={() => setShowAddForm(!showAddForm)}>
+                <Plus size={20} />
+                Add Event
+              </Button>
+              <CardTitle>Members</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <button
+                type="button"
+                onClick={() => setParticipantFilter(null)}
+                aria-label={`Select All`}
+                aria-pressed={participantFilter === null}
+                className={cn(
+                  "relative flex w-full items-center justify-between gap-3 rounded-xl border-2 px-2 py-2",
+                  "transition-all duration-150 active:scale-[0.98]",
+                  "active:border-primary/70 active:bg-primary/10",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                  participantFilter === null
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/50"
+                )}
+              >
+                <span className="text-sm font-medium">All Members</span>
+                {participantFilter === null && (
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <Check className="h-3 w-3" />
+                  </span>
+                )}
+              </button>
+              {members.map((member) => (
+                <Fragment key={member.id}>
+                  <button
+                    type="button"
+                    onClick={() => setParticipantFilter(member.id)}
+                    aria-label={`Select ${member.name}`}
+                    aria-pressed={participantFilter === member.id}
+                    className={cn(
+                      "relative flex w-full items-center justify-between gap-3 rounded-xl border-2 px-2 py-2",
+                      "transition-all duration-150 active:scale-[0.98]",
+                      "active:border-primary/70 active:bg-primary/10",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                      participantFilter === member.id
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    )}
+                  >
+                    <span className="text-sm font-medium">{member.name}</span>
+                    {participantFilter === member.id && (
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                        <Check className="h-3 w-3" />
+                      </span>
+                    )}
+                  </button>
+                </Fragment>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-4">
+              <CalendarHeader label={viewLabel} subLabel={rangeLabel} />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {eventQuery.isLoading ? (
+                <div className="py-12 text-center">
+                  <CalendarIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                  <p className="text-muted-foreground">Loading events...</p>
+                </div>
+              ) : eventQuery.error ? (
+                <div className="py-12 text-center">
+                  <CalendarIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                  <p className="text-muted-foreground">Error loading events.</p>
+                </div>
+              ) : (
+                <>
+                  {view === "day" ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-[72px_1fr] gap-3 text-xs font-semibold text-muted-foreground">
+                        <div />
+                        <div className="text-sm font-semibold text-foreground">
+                          {format(today, "EEE, MMM d")}
                         </div>
                       </div>
-                    ))
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          <div>
-            <Card>
-              <CardHeader className="pb-4">
-                <CardTitle>Upcoming Events</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AgendaList
-                  items={upcomingEvents}
-                  isLoading={eventQuery.isLoading}
-                  error={Boolean(eventQuery.error)}
-                  emptyState={
-                    <p className="text-muted-foreground text-sm">
-                      No upcoming events
-                    </p>
-                  }
-                  renderItem={(event) => (
-                    <CalendarEventCard
-                      key={event.id}
-                      compact
-                      title={event.title}
-                      time={event.time}
-                      dateLabel={format(new Date(event.date), "MMM d")}
-                      typeLabel={getEventTypeLabel(event.type)}
-                      typeClassName={getEventTypeStyle(event.type)}
-                      participantLabel={getParticipantLabel(
-                        event.participantId
-                      )}
-                    />
-                  )}
-                />
-              </CardContent>
-            </Card>
-          </div>
+                      <div className="grid grid-cols-[72px_1fr] gap-3">
+                        <div className="text-xs font-semibold text-muted-foreground">
+                          All day
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          {getAllDayEventsForDate(today).length === 0 ? (
+                            <p className="text-xs text-muted-foreground">
+                              No all-day events.
+                            </p>
+                          ) : (
+                            getAllDayEventsForDate(today).map((event) => (
+                              <CalendarEventCard
+                                key={event.id}
+                                compact
+                                title={event.title}
+                                description={event.description}
+                                time={event.time}
+                                participantLabel={getParticipantLabel(
+                                  event.participantId
+                                )}
+                                onDelete={() => deleteEvent(event.id)}
+                              />
+                            ))
+                          )}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-[72px_1fr]">
+                        {hourSlots.map((slot) => (
+                          <Fragment key={slot.hour}>
+                            <div className="border-t border-border py-3 text-[11px] text-muted-foreground">
+                              {slot.label}
+                            </div>
+                            <div className="border-t border-border px-2 py-2 min-h-12">
+                              {getEventsForHour(today, slot.hour).length === 0 ? (
+                                <span className="text-[11px] text-muted-foreground">
+                                  &nbsp;
+                                </span>
+                              ) : (
+                                getEventsForHour(today, slot.hour).map(
+                                  (event) => (
+                                    <CalendarEventCard
+                                      key={event.id}
+                                      compact
+                                      title={event.title}
+                                      description={event.description}
+                                      time={event.time}
+                                      participantLabel={getParticipantLabel(
+                                        event.participantId
+                                      )}
+                                      onDelete={() => deleteEvent(event.id)}
+                                    />
+                                  )
+                                )
+                              )}
+                            </div>
+                          </Fragment>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                  {view === "week" ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-[72px_repeat(7,1fr)] gap-2 text-xs font-semibold text-muted-foreground">
+                        <div />
+                        {weekDates.map((date) => (
+                          <div
+                            key={getDayKey(date)}
+                            className={cn(
+                              "text-center",
+                              isSameDay(date, today)
+                                ? "text-foreground"
+                                : "text-muted-foreground"
+                            )}
+                          >
+                            <div className="text-[11px] uppercase">
+                              {format(date, "EEE")}
+                            </div>
+                            <div className="text-sm font-semibold text-foreground">
+                              {format(date, "d")}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-[72px_repeat(7,1fr)] gap-2">
+                        <div className="text-xs font-semibold text-muted-foreground">
+                          All day
+                        </div>
+                        {weekDates.map((date) => (
+                          <div key={getDayKey(date)} className="flex flex-col gap-2">
+                            {getAllDayEventsForDate(date).length === 0 ? (
+                              <span className="text-xs text-muted-foreground">
+                                &nbsp;
+                              </span>
+                            ) : (
+                              getAllDayEventsForDate(date).map((event) => (
+                                <CalendarEventCard
+                                  key={event.id}
+                                  compact
+                                  title={event.title}
+                                  description={event.description}
+                                  time={event.time}
+                                  participantLabel={getParticipantLabel(
+                                    event.participantId
+                                  )}
+                                  onDelete={() => deleteEvent(event.id)}
+                                />
+                              ))
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-[72px_repeat(7,1fr)]">
+                        {hourSlots.map((slot) => (
+                          <Fragment key={slot.hour}>
+                            <div className="border-t border-border py-3 text-[11px] text-muted-foreground">
+                              {slot.label}
+                            </div>
+                            {weekDates.map((date) => (
+                              <div
+                                key={`${getDayKey(date)}-${slot.hour}`}
+                                className="border-t border-border px-2 py-2 min-h-12"
+                              >
+                                {getEventsForHour(date, slot.hour).map((event) => (
+                                  <CalendarEventCard
+                                    key={event.id}
+                                    compact
+                                    title={event.title}
+                                    description={event.description}
+                                    time={event.time}
+                                    participantLabel={getParticipantLabel(
+                                      event.participantId
+                                    )}
+                                    onDelete={() => deleteEvent(event.id)}
+                                  />
+                                ))}
+                              </div>
+                            ))}
+                          </Fragment>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                  {view === "month" ? (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-7 gap-3 text-xs font-semibold text-muted-foreground">
+                        {weekdayLabels.map((label) => (
+                          <div key={label} className="text-center">
+                            {label}
+                          </div>
+                        ))}
+                      </div>
+                      <CalendarGrid columns={7}>
+                        {monthDates.map((date) => (
+                          <CalendarMonthCell
+                            key={getDayKey(date)}
+                            date={date}
+                            isCurrentMonth={isSameMonth(date, today)}
+                            isToday={isSameDay(date, today)}
+                            events={getEventsForDate(date)}
+                          />
+                        ))}
+                      </CalendarGrid>
+                    </div>
+                  ) : null}
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </CalendarShell>
   );

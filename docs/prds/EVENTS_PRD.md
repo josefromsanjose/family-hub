@@ -76,16 +76,16 @@ passes: true
 
 **Description:** As a user, I want to switch between daily, weekly, and monthly views to see the schedule at different levels of detail.
 
-passes: false
+passes: true
 
 **Acceptance Criteria:**
 
-- [ ] Provide view switcher between Daily / Weekly / Monthly
-- [ ] Daily view shows a single day timeline or list
-- [ ] Weekly view shows Monday–Sunday with events grouped by day
-- [ ] Monthly view shows a grid of days with event indicators
-- [ ] Views share a consistent data model and reuse composable components
-- [ ] Typecheck passes
+- [x] Provide view switcher between Day / Week / Month
+- [x] Daily view shows a single day timeline or list
+- [x] Weekly view shows Monday–Sunday with events grouped by day
+- [x] Monthly view shows a grid of days with event indicators
+- [x] Views share a consistent data model and reuse composable components
+- [x] Typecheck passes
 
 ### US-005: Event recurrence
 
@@ -166,6 +166,8 @@ passes: false
 - Use existing UI primitives from `src/components/ui/` and match app styling
 - Keep event creation simple with clear labels and minimal required fields
 - Prioritize visual clarity for busy parents and kids
+- Default to today's date with Day/Week/Month view tabs and an hourly grid for day/week views
+- Place member filters in a dedicated left column instead of a mini calendar
 
 ## Technical Considerations
 

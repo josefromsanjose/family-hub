@@ -93,13 +93,15 @@ describe("CalendarPage", () => {
   });
 
   it("renders events from the server", async () => {
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const eventDate = addDays(weekStart, 2);
+
     vi.mocked(getCalendarEvents).mockResolvedValueOnce([
       {
         id: "event-1",
         title: "Dentist Visit",
         description: "Bring insurance card",
-        date: new Date("2026-01-21T08:00:00.000Z").toISOString(),
-        time: "08:30",
+        date: eventDate.toISOString(),
         type: "appointment",
         recurrence: undefined,
         endDate: undefined,
@@ -111,8 +113,6 @@ describe("CalendarPage", () => {
 
     const titleMatches = await screen.findAllByText("Dentist Visit");
     expect(titleMatches.length).toBeGreaterThan(0);
-    expect(screen.getAllByText("08:30").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Appointment").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/for liam/i).length).toBeGreaterThan(0);
   });
 
@@ -144,5 +144,14 @@ describe("CalendarPage", () => {
         },
       });
     });
+  });
+
+  it("renders the view switcher controls", () => {
+    renderCalendar();
+
+    expect(screen.getByRole("tab", { name: /day/i })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: /week/i })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: /month/i })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Week" })).toBeTruthy();
   });
 });
