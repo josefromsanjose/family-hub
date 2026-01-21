@@ -36,7 +36,7 @@ export default function Header() {
   return (
     <>
       <header className="bg-background border-b border-border shadow-sm">
-        <div className="p-4 flex items-center justify-between w-full">
+        <div className="py-2 px-4 flex items-center justify-between w-full">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsOpen(true)}

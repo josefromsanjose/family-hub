@@ -3,9 +3,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getCalendarEvents,
   createCalendarEvent,
+  updateCalendarEvent,
   deleteCalendarEvent,
   type CalendarEventResponse,
   type CreateCalendarEventInput,
+  type UpdateCalendarEventInput,
 } from "@/server/calendar";
 
 export interface CalendarEvent {
@@ -28,11 +30,20 @@ export type CreateCalendarEvent = Omit<
   endDate?: Date | null;
 };
 
+export type UpdateCalendarEvent = Omit<
+  UpdateCalendarEventInput,
+  "date" | "endDate"
+> & {
+  date?: Date;
+  endDate?: Date | null;
+};
+
 interface CalendarContextType {
   events: CalendarEvent[];
   isLoading: boolean;
   error: Error | null;
   addEvent: (event: CreateCalendarEvent) => void;
+  updateEvent: (event: UpdateCalendarEvent) => void;
   deleteEvent: (id: string) => void;
 }
 
@@ -68,6 +79,13 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: updateCalendarEvent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["calendar-events"] });
+    },
+  });
+
   const addEvent = useCallback(
     (event: CreateCalendarEvent) => {
       const input: CreateCalendarEventInput = {
@@ -92,6 +110,31 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
     [deleteMutation]
   );
 
+  const updateEvent = useCallback(
+    (event: UpdateCalendarEvent) => {
+      const input: UpdateCalendarEventInput = {
+        id: event.id,
+        title: event.title,
+        description:
+          event.description === undefined ? undefined : event.description || null,
+        date: event.date ? event.date.toISOString() : undefined,
+        time: event.time === undefined ? undefined : event.time || null,
+        type: event.type,
+        recurrence: event.recurrence,
+        endDate:
+          event.endDate === undefined
+            ? undefined
+            : event.endDate
+              ? event.endDate.toISOString()
+              : null,
+        participantId:
+          event.participantId === undefined ? undefined : event.participantId,
+      };
+      updateMutation.mutate({ data: input });
+    },
+    [updateMutation]
+  );
+
   return (
     <CalendarContext.Provider
       value={{
@@ -99,6 +142,7 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
         isLoading,
         error: error as Error | null,
         addEvent,
+        updateEvent,
         deleteEvent: deleteEventById,
       }}
     >
