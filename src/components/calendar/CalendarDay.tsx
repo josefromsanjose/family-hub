@@ -55,7 +55,7 @@ function CalendarDay({
       type="button"
       onClick={() => onDateClick?.(date)}
       className={cn(
-        "bg-background p-2 min-h-[120px] flex flex-col gap-1 overflow-hidden text-left",
+        "bg-background p-2 flex h-full min-h-0 flex-col gap-1 overflow-hidden text-left",
         "transition-colors hover:bg-accent/30",
         !isCurrentMonth && "bg-muted/30",
         className

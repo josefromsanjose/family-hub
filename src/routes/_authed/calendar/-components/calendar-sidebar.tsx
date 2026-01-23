@@ -4,20 +4,21 @@ import type { HouseholdMember } from "@/contexts/HouseholdContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useHousehold } from "@/contexts/HouseholdContext";
 
 type CalendarSidebarProps = {
-  members: HouseholdMember[];
   selectedMemberId: string | null;
   onMemberSelect: (memberId: string | null) => void;
   onAddEvent: () => void;
 };
 
 function CalendarSidebar({
-  members,
   selectedMemberId,
   onMemberSelect,
   onAddEvent,
 }: CalendarSidebarProps) {
+  const { members } = useHousehold();
+
   return (
     <Card className="h-fit">
       <CardHeader>

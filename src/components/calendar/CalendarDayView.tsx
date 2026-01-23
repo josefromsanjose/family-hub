@@ -1,31 +1,42 @@
-import { Fragment } from "react";
-import { format } from "date-fns";
+import { Fragment, useMemo } from "react";
+import { format, startOfDay } from "date-fns";
 
 import type { CalendarEventResponse } from "@/server/calendar";
+import { getHourSlots, groupEventsByDate } from "@/utils/calendar";
+import { getDayKey } from "@/utils/date";
 import { CalendarEventCard } from "./CalendarEventCard";
 
-type HourSlot = {
-  hour: number;
-  label: string;
-};
-
 type CalendarDayViewProps = {
-  date: Date;
-  hourSlots: HourSlot[];
-  getAllDayEventsForDate: (date: Date) => CalendarEventResponse[];
-  getEventsForHour: (date: Date, hour: number) => CalendarEventResponse[];
-  getParticipantLabel: (participantId?: string | null) => string | null;
+  events: CalendarEventResponse[];
   onDeleteEvent: (eventId: string) => void;
 };
 
 function CalendarDayView({
-  date,
-  hourSlots,
-  getAllDayEventsForDate,
-  getEventsForHour,
-  getParticipantLabel,
+  events,
   onDeleteEvent,
 }: CalendarDayViewProps) {
+  const date = useMemo(() => startOfDay(new Date()), []);
+  const hourSlots = useMemo(() => getHourSlots(), []);
+  const eventsByDate = useMemo(() => groupEventsByDate(events), [events]);
+  const allDayEvents = useMemo(
+    () => (eventsByDate[getDayKey(date)] ?? []).filter((event) => !event.time),
+    [date, eventsByDate]
+  );
+  const timedEventsByHour = useMemo(() => {
+    const grouped: Record<number, CalendarEventResponse[]> = {};
+    (eventsByDate[getDayKey(date)] ?? [])
+      .filter((event) => event.time)
+      .forEach((event) => {
+        const [hourPart] = event.time?.split(":") ?? [];
+        const parsedHour = Number(hourPart);
+        if (Number.isNaN(parsedHour)) return;
+        const clampedHour = Math.min(Math.max(parsedHour, 0), 23);
+        if (!grouped[clampedHour]) grouped[clampedHour] = [];
+        grouped[clampedHour].push(event);
+      });
+    return grouped;
+  }, [date, eventsByDate]);
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-[72px_1fr] gap-3 text-xs font-semibold text-muted-foreground">
@@ -37,17 +48,16 @@ function CalendarDayView({
       <div className="grid grid-cols-[72px_1fr] gap-3">
         <div className="text-xs font-semibold text-muted-foreground">All day</div>
         <div className="flex flex-col gap-2">
-          {getAllDayEventsForDate(date).length === 0 ? (
+          {allDayEvents.length === 0 ? (
             <p className="text-xs text-muted-foreground">No all-day events.</p>
           ) : (
-            getAllDayEventsForDate(date).map((event) => (
+            allDayEvents.map((event) => (
               <CalendarEventCard
                 key={event.id}
                 compact
                 title={event.title}
                 description={event.description}
                 time={event.time}
-                participantLabel={getParticipantLabel(event.participantId)}
                 onDelete={() => onDeleteEvent(event.id)}
               />
             ))
@@ -61,19 +71,18 @@ function CalendarDayView({
               {slot.label}
             </div>
             <div className="border-t border-border px-2 py-2 min-h-12">
-              {getEventsForHour(date, slot.hour).length === 0 ? (
+              {(timedEventsByHour[slot.hour] ?? []).length === 0 ? (
                 <span className="text-[11px] text-muted-foreground">
                   &nbsp;
                 </span>
               ) : (
-                getEventsForHour(date, slot.hour).map((event) => (
+                (timedEventsByHour[slot.hour] ?? []).map((event) => (
                   <CalendarEventCard
                     key={event.id}
                     compact
                     title={event.title}
                     description={event.description}
                     time={event.time}
-                    participantLabel={getParticipantLabel(event.participantId)}
                     onDelete={() => onDeleteEvent(event.id)}
                   />
                 ))

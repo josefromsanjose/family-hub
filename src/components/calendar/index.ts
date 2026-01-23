@@ -8,6 +8,5 @@ export { CalendarEventForm, eventTypes } from "./CalendarEventForm";
 export { CalendarEventTimed } from "./CalendarEventTimed";
 export { CalendarMonthHeader } from "./CalendarMonthHeader";
 export { CalendarDayProvider, CalendarProvider } from "./CalendarContext";
-export { CalendarSidebar } from "./CalendarSidebar";
 export { CalendarMonth } from "./CalendarMonth";
 export { CalendarWeekView } from "./CalendarWeekView";

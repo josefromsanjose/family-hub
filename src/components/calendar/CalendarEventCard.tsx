@@ -1,13 +1,11 @@
-import { Clock, Trash2 } from "lucide-react"
+import { Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 
 type CalendarEventCardProps = {
   title: string
   description?: string | null
   time?: string | null
-  participantLabel?: string | null
   dateLabel?: string
   compact?: boolean
   onDelete?: () => void
@@ -17,7 +15,6 @@ function CalendarEventCard({
   title,
   description,
   time,
-  participantLabel,
   dateLabel,
   compact = false,
   onDelete,
@@ -31,11 +28,6 @@ function CalendarEventCard({
             {dateLabel}
           </p>
         ) : null}
-        {participantLabel ? (
-          <p className="mt-1 text-xs text-muted-foreground">
-            For {participantLabel}
-          </p>
-        ) : null}
       </div>
     )
   }
@@ -46,9 +38,6 @@ function CalendarEventCard({
         <h4 className="font-medium text-foreground">{title}</h4>
         {description ? (
           <p className="text-sm text-muted-foreground">{description}</p>
-        ) : null}
-        {participantLabel ? (
-          <p className="text-xs text-muted-foreground">For {participantLabel}</p>
         ) : null}
       </div>
       {onDelete ? (

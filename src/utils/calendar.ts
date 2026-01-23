@@ -56,3 +56,16 @@ export const formatEventTime = (time?: string | null) => {
   const formatted = format(new Date(2024, 0, 1, hours, minutes), "h:mma");
   return formatted.replace(":00", "").toLowerCase();
 };
+
+export const getHourSlots = () =>
+  Array.from({ length: 24 }, (_, hour) => ({
+    hour,
+    label:
+      hour === 0
+        ? "12 AM"
+        : hour < 12
+          ? `${hour} AM`
+          : hour === 12
+            ? "12 PM"
+            : `${hour - 12} PM`,
+  }));

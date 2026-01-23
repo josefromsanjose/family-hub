@@ -31,7 +31,7 @@ function CalendarMonth({
   const eventsByDate = groupEventsByDate(events);
 
   return (
-    <div className="space-y-2">
+    <div className="flex h-full flex-col space-y-2">
       <div className="grid grid-cols-7 text-[11px] font-semibold uppercase text-muted-foreground">
         {weekdayLabels.map((label) => (
           <div key={label} className="flex items-center justify-center py-2">
@@ -39,7 +39,7 @@ function CalendarMonth({
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7 auto-rows-fr gap-px rounded-2xl bg-border overflow-hidden [aspect-ratio:7/5]">
+      <div className="grid flex-1 min-h-0 grid-cols-7 auto-rows-fr gap-px rounded-2xl bg-border overflow-hidden">
         {weeks.flatMap((weekDates) =>
           weekDates.map((date) => {
             const dateKey = getDayKey(date);
