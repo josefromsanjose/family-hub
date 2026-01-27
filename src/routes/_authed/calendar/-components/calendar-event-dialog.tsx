@@ -34,6 +34,8 @@ const defaultFormData: CalendarEventFormData = {
   description: "",
   date: new Date(),
   time: "",
+  recurrence: "none",
+  endDate: null,
   participantId: null,
 };
 
@@ -100,6 +102,8 @@ const useCalendarEventDialogState = (participantId: string | null) => {
         description: event.description ?? "",
         date: new Date(event.date),
         time: event.time ?? "",
+        recurrence: event.recurrence ?? "none",
+        endDate: event.endDate ? new Date(event.endDate) : null,
       })
     );
     setIsOpen(true);
@@ -169,6 +173,11 @@ function CalendarEventDialog({
         description: formData.description ? formData.description : null,
         date: formData.date.toISOString(),
         time: formData.time ? formData.time : null,
+        recurrence: formData.recurrence === "none" ? null : formData.recurrence,
+        endDate:
+          formData.recurrence === "none" || !formData.endDate
+            ? null
+            : formData.endDate.toISOString(),
         participantId: formData.participantId,
       };
       updateMutation.mutate({ data: input });
@@ -178,6 +187,12 @@ function CalendarEventDialog({
         description: formData.description || undefined,
         date: formData.date.toISOString(),
         time: formData.time || undefined,
+        recurrence:
+          formData.recurrence === "none" ? undefined : formData.recurrence,
+        endDate:
+          formData.recurrence === "none" || !formData.endDate
+            ? null
+            : formData.endDate.toISOString(),
         participantId: formData.participantId,
       };
       createMutation.mutate({ data: input });

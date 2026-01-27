@@ -13,7 +13,7 @@ export type CalendarEventResponse = {
   description?: string;
   date: string;
   time?: string;
-  recurrence?: "daily" | "weekly" | "monthly";
+  recurrence?: "daily" | "weekly" | "monthly" | "yearly";
   endDate?: string;
   participantId?: string;
 };
@@ -23,7 +23,7 @@ export type CreateCalendarEventInput = {
   description?: string;
   date: string; // ISO string or YYYY-MM-DD
   time?: string;
-  recurrence?: "daily" | "weekly" | "monthly";
+  recurrence?: "daily" | "weekly" | "monthly" | "yearly";
   endDate?: string | null;
   participantId?: string | null;
 };
@@ -34,7 +34,7 @@ export type UpdateCalendarEventInput = {
   description?: string | null;
   date?: string;
   time?: string | null;
-  recurrence?: "daily" | "weekly" | "monthly" | null;
+  recurrence?: "daily" | "weekly" | "monthly" | "yearly" | null;
   endDate?: string | null;
   participantId?: string | null;
 };

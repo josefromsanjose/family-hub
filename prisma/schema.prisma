@@ -316,6 +316,7 @@ enum EventRecurrence {
   daily
   weekly
   monthly
+  yearly
 }
 
 model CalendarEvent {

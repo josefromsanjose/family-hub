@@ -16,7 +16,7 @@ export interface CalendarEvent {
   description?: string;
   date: string;
   time?: string;
-  recurrence?: "daily" | "weekly" | "monthly";
+  recurrence?: "daily" | "weekly" | "monthly" | "yearly";
   endDate?: string;
   participantId?: string;
 }
