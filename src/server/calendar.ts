@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import type { EventRecurrence, EventType } from "@prisma/client";
+import type { EventRecurrence } from "@prisma/client";
 import { getPrisma } from "@/server/db";
 import { getCurrentUserHouseholdId } from "@/server/household";
 
@@ -13,7 +13,6 @@ export type CalendarEventResponse = {
   description?: string;
   date: string;
   time?: string;
-  type: "appointment" | "event" | "reminder";
   recurrence?: "daily" | "weekly" | "monthly";
   endDate?: string;
   participantId?: string;
@@ -24,7 +23,6 @@ export type CreateCalendarEventInput = {
   description?: string;
   date: string; // ISO string or YYYY-MM-DD
   time?: string;
-  type: "appointment" | "event" | "reminder";
   recurrence?: "daily" | "weekly" | "monthly";
   endDate?: string | null;
   participantId?: string | null;
@@ -36,7 +34,6 @@ export type UpdateCalendarEventInput = {
   description?: string | null;
   date?: string;
   time?: string | null;
-  type?: "appointment" | "event" | "reminder";
   recurrence?: "daily" | "weekly" | "monthly" | null;
   endDate?: string | null;
   participantId?: string | null;
@@ -58,7 +55,6 @@ const toCalendarEventResponse = (event: {
   description: string | null;
   date: Date;
   time: string | null;
-  type: EventType;
   recurrence: EventRecurrence | null;
   endDate: Date | null;
   participantId: string | null;
@@ -68,7 +64,6 @@ const toCalendarEventResponse = (event: {
   description: event.description || undefined,
   date: event.date.toISOString(),
   time: event.time || undefined,
-  type: event.type as CalendarEventResponse["type"],
   recurrence:
     (event.recurrence as CalendarEventResponse["recurrence"]) || undefined,
   endDate: event.endDate ? event.endDate.toISOString() : undefined,
@@ -175,7 +170,6 @@ export const createCalendarEvent = createServerFn({ method: "POST" })
         description: data.description?.trim() || null,
         date: new Date(data.date),
         time: data.time || null,
-        type: data.type as EventType,
         recurrence: data.recurrence
           ? (data.recurrence as EventRecurrence)
           : null,
@@ -247,7 +241,6 @@ export const updateCalendarEvent = createServerFn({ method: "POST" })
         }),
         ...(data.date !== undefined && { date: new Date(data.date) }),
         ...(data.time !== undefined && { time: data.time || null }),
-        ...(data.type !== undefined && { type: data.type as EventType }),
         ...(data.recurrence !== undefined && {
           recurrence: data.recurrence
             ? (data.recurrence as EventRecurrence)

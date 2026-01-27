@@ -16,7 +16,6 @@ export interface CalendarEvent {
   description?: string;
   date: string;
   time?: string;
-  type: "appointment" | "event" | "reminder";
   recurrence?: "daily" | "weekly" | "monthly";
   endDate?: string;
   participantId?: string;
@@ -93,7 +92,6 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
         description: event.description,
         date: event.date.toISOString(),
         time: event.time,
-        type: event.type,
         recurrence: event.recurrence,
         endDate: event.endDate ? event.endDate.toISOString() : null,
         participantId: event.participantId,
@@ -119,7 +117,6 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
           event.description === undefined ? undefined : event.description || null,
         date: event.date ? event.date.toISOString() : undefined,
         time: event.time === undefined ? undefined : event.time || null,
-        type: event.type,
         recurrence: event.recurrence,
         endDate:
           event.endDate === undefined

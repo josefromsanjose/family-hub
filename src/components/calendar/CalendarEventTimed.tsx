@@ -1,7 +1,7 @@
 import type { CalendarEventResponse } from "@/server/calendar";
 import { cn } from "@/lib/utils";
 import { formatEventTime } from "@/utils/calendar";
-import { eventTypeStyles } from "./CalendarEventAllDay";
+import { eventStyles } from "./CalendarEventAllDay";
 
 type CalendarEventTimedProps = {
   event: CalendarEventResponse;
@@ -10,7 +10,6 @@ type CalendarEventTimedProps = {
 };
 
 function CalendarEventTimed({ event, onClick, className }: CalendarEventTimedProps) {
-  const styles = eventTypeStyles[event.type];
   const timeLabel = formatEventTime(event.time);
 
   return (
@@ -26,7 +25,7 @@ function CalendarEventTimed({ event, onClick, className }: CalendarEventTimedPro
         className
       )}
     >
-      <span className={cn("text-[8px]", styles.dot)}>●</span>
+      <span className={cn("text-[8px]", eventStyles.dot)}>●</span>
       {timeLabel ? <span className="whitespace-nowrap">{timeLabel}</span> : null}
       <span className="truncate">{event.title}</span>
     </button>

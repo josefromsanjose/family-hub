@@ -1,41 +1,13 @@
-import type { ComponentType } from "react";
-import { Bell, Calendar as CalendarIcon, Stethoscope } from "lucide-react";
-
 import type { HouseholdMember } from "@/contexts/HouseholdContext";
-import { SelectionCard } from "@/components/touch/SelectionCard";
 import { AvatarCard } from "@/components/touch/AvatarCard";
 import { QuickDatePicker } from "@/components/touch/QuickDatePicker";
 import { Button } from "@/components/ui/button";
-
-export const eventTypes = [
-  {
-    value: "appointment",
-    label: "Appointment",
-    color: "bg-chart-1/30 text-chart-1 border-chart-1/50",
-    icon: Stethoscope,
-  },
-  {
-    value: "event",
-    label: "Event",
-    color: "bg-chart-2/30 text-chart-2 border-chart-2/50",
-    icon: CalendarIcon,
-  },
-  {
-    value: "reminder",
-    label: "Reminder",
-    color: "bg-chart-4/30 text-chart-4 border-chart-4/50",
-    icon: Bell,
-  },
-] as const;
-
-type EventType = (typeof eventTypes)[number]["value"];
 
 export type CalendarEventFormData = {
   title: string;
   description: string;
   date: Date;
   time: string;
-  type: EventType;
   participantId: string | null;
 };
 
@@ -116,25 +88,6 @@ function CalendarEventForm({
             onChange={(event) => updateForm({ time: event.target.value })}
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:border-transparent focus:ring-2 focus:ring-ring"
           />
-        </div>
-        <div className="md:col-span-2">
-          <label className="mb-2 block text-sm font-medium text-foreground">
-            Event Type
-          </label>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {eventTypes.map((type) => {
-              const Icon = type.icon as ComponentType<{ className?: string }>;
-              return (
-                <SelectionCard
-                  key={type.value}
-                  label={type.label}
-                  icon={<Icon className="h-6 w-6" />}
-                  selected={formData.type === type.value}
-                  onSelect={() => updateForm({ type: type.value })}
-                />
-              );
-            })}
-          </div>
         </div>
         <div className="md:col-span-2">
           <label className="mb-2 block text-sm font-medium text-foreground">

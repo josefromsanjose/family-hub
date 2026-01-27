@@ -16,27 +16,23 @@ describe("CalendarDay", () => {
         id: "1",
         title: "Alex's Birthday",
         date: new Date(2026, 0, 20).toISOString(),
-        type: "event",
       },
       {
         id: "2",
         title: "Family Dinner",
         date: new Date(2026, 0, 20).toISOString(),
-        type: "reminder",
       },
       {
         id: "3",
         title: "Roof inspection",
         date: new Date(2026, 0, 20).toISOString(),
         time: "12:00",
-        type: "appointment",
       },
       {
         id: "4",
         title: "Smog check",
         date: new Date(2026, 0, 20).toISOString(),
         time: "14:00",
-        type: "appointment",
       },
     ];
 

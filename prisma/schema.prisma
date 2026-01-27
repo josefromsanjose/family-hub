@@ -312,12 +312,6 @@ model ShoppingItem {
 // Calendar Events
 // ============================================================================
 
-enum EventType {
-  appointment
-  event
-  reminder
-}
-
 enum EventRecurrence {
   daily
   weekly
@@ -331,7 +325,6 @@ model CalendarEvent {
   description String?
   date        DateTime          // Start date
   time        String?           // Optional time (HH:mm format)
-  type        EventType
   recurrence  EventRecurrence?  // NULL = one-time event
   endDate     DateTime?         // For recurring: when recurrence ends (optional)
   participantId String?         // Optional member the event is for
@@ -344,7 +337,6 @@ model CalendarEvent {
 
   @@index([householdId])
   @@index([date])
-  @@index([type])
   @@index([recurrence])
   @@index([participantId])
   @@map("calendar_events")

@@ -367,7 +367,7 @@ function MemberLandingPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="px-2 py-1 text-xs font-semibold rounded-full bg-secondary text-secondary-foreground">
-                        {event.type}
+                        Event
                       </span>
                       {event.time && (
                         <span className="text-xs text-muted-foreground">

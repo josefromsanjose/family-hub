@@ -67,7 +67,6 @@ describe("calendar server functions", () => {
         description: null,
         date: baseDate,
         time: "09:00",
-        type: "event",
         recurrence: "weekly",
         endDate,
         participantId: null,
@@ -87,7 +86,6 @@ describe("calendar server functions", () => {
         description: undefined,
         date: baseDate.toISOString(),
         time: "09:00",
-        type: "event",
         recurrence: "weekly",
         endDate: endDate.toISOString(),
         participantId: undefined,
@@ -101,7 +99,6 @@ describe("calendar server functions", () => {
         data: {
           title: "Checkup",
           date: "not-a-date",
-          type: "appointment",
         },
       })
     ).rejects.toThrow("Date is invalid");

@@ -95,16 +95,20 @@ export function CalendarPage() {
             <CardContent className="flex h-full flex-col space-y-4 overflow-hidden">
               <>
                 {view === "day" ? (
+                  <Calendar month={rangeState.currentMonth}>
                   <CalendarDayView
                     events={events}
                     onDeleteEvent={deleteEvent}
                   />
+                  </Calendar>
                 ) : null}
                 {view === "week" ? (
-                  <CalendarWeekView
-                    events={events}
-                    onDeleteEvent={deleteEvent}
-                  />
+                    <Calendar month={rangeState.currentMonth}>
+                      <CalendarWeekView
+                        events={events}
+                        onDeleteEvent={deleteEvent}
+                      />
+                  </Calendar>
                 ) : null}
                 {view === "month" ? (
                   <Calendar month={rangeState.currentMonth}>

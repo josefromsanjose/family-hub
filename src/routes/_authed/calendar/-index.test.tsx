@@ -102,7 +102,6 @@ describe("CalendarPage", () => {
         title: "Dentist Visit",
         description: "Bring insurance card",
         date: eventDate.toISOString(),
-        type: "appointment",
         recurrence: undefined,
         endDate: undefined,
         participantId: "member-1",

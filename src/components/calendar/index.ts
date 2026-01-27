@@ -4,7 +4,6 @@ export { CalendarDayView } from "./CalendarDayView";
 export { CalendarEventAllDay } from "./CalendarEventAllDay";
 export { CalendarEvent } from "./CalendarEvent";
 export { CalendarEventCard } from "./CalendarEventCard";
-export { CalendarEventForm, eventTypes } from "./CalendarEventForm";
 export { CalendarEventTimed } from "./CalendarEventTimed";
 export { CalendarMonthHeader } from "./CalendarMonthHeader";
 export { CalendarDayProvider, CalendarProvider } from "./CalendarContext";

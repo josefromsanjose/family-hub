@@ -34,6 +34,28 @@ export function Dashboard() {
 }
 
 function DashboardStats() {
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <DashboardMealStats />
+      <DashboardCard
+        title="Shopping Items"
+        value="12 items"
+        icon={ShoppingCart}
+        href="/shopping"
+      />
+      <DashboardCard
+        title="Upcoming Events"
+        value="3 this week"
+        icon={Calendar}
+        href="/calendar"
+      />
+    </div>
+  );
+}
+
+function DashboardMealStats() {
+
   const weekDates = useMemo(() => getWeekDates(new Date()), []);
   const weekStart = weekDates[0];
   const weekEnd = weekDates[6];
@@ -52,32 +74,29 @@ function DashboardStats() {
       }),
   });
   const mealCount = meals.length;
-  const mealsThisWeekLabel = isMealsLoading
-    ? "Loading..."
-    : `${mealCount} planned`;
+  const mealsThisWeekLabel = `${mealCount} planned`;
   const mealsThisWeekValue = isMealsError ? "0 planned" : mealsThisWeekLabel;
-
+  
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <>
+     { isMealsLoading ? (
+      <div className="flex items-center bg-card rounded-lg shadow-sm p-6 transition-shadow border border-border">
+        <div className="animate-pulse flex items-center space-x-2">
+          <div className="flex flex-col gap-2">
+            <div className="h-3 w-24 rounded bg-muted" />
+            <div className="h-4 w-16 rounded bg-muted" />
+          </div>
+        </div>
+      </div>
+     ) : (
       <DashboardCard
-        title="Meals This Week"
-        value={mealsThisWeekValue}
-        icon={UtensilsCrossed}
-        href="/meals"
-      />
-      <DashboardCard
-        title="Shopping Items"
-        value="12 items"
-        icon={ShoppingCart}
-        href="/shopping"
-      />
-      <DashboardCard
-        title="Upcoming Events"
-        value="3 this week"
-        icon={Calendar}
-        href="/calendar"
-      />
-    </div>
+          title="Meals This Week"
+          value={mealsThisWeekValue}
+          icon={UtensilsCrossed}
+          href="/meals"
+        />
+     )}
+    </>
   );
 }
 
