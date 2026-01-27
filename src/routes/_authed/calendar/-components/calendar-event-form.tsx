@@ -1,7 +1,9 @@
+import { useState } from "react";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import type { HouseholdMember } from "@/contexts/HouseholdContext";
 import { AvatarCard } from "@/components/touch/AvatarCard";
-import { QuickDatePicker } from "@/components/touch/QuickDatePicker";
+import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -67,25 +69,13 @@ function CalendarEventForm({
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:border-transparent focus:ring-2 focus:ring-ring"
           />
         </div>
-        <div className="md:col-span-2">
-          <label className="mb-1 block text-sm font-medium text-foreground">
-            Description (optional)
-          </label>
-          <textarea
-            value={formData.description}
-            onChange={(event) => updateForm({ description: event.target.value })}
-            placeholder="Additional details..."
-            rows={3}
-            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:border-transparent focus:ring-2 focus:ring-ring"
-          />
-        </div>
-        <div className="md:col-span-2">
+        <div className="md:col-span-1">
           <label className="mb-2 block text-sm font-medium text-foreground">
             Date
           </label>
-          <QuickDatePicker
-            value={formData.date}
-            onChange={(date) => date && updateForm({ date })}
+          <DatePickerCard
+            date={formData.date}
+            onSelect={(date) => updateForm({ date })}
           />
         </div>
         <div>
@@ -167,6 +157,19 @@ function CalendarEventForm({
             ))}
           </div>
         </div>
+        
+        <div className="md:col-span-2">
+          <label className="mb-1 block text-sm font-medium text-foreground">
+            Description (optional)
+          </label>
+          <textarea
+            value={formData.description}
+            onChange={(event) => updateForm({ description: event.target.value })}
+            placeholder="Additional details..."
+            rows={3}
+            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:border-transparent focus:ring-2 focus:ring-ring"
+          />
+        </div>
       </div>
       <div className="mt-4 flex gap-3">
         <Button onClick={onSubmit}>{submitLabel}</Button>
@@ -174,6 +177,71 @@ function CalendarEventForm({
           Cancel
         </Button>
       </div>
+    </div>
+  );
+}
+
+type DatePickerCardProps = {
+  date: Date;
+  onSelect: (date: Date) => void;
+};
+
+function DatePickerCard({ date, onSelect }: DatePickerCardProps) {
+  const [showCalendar, setShowCalendar] = useState(false);
+
+  return (
+    <div className="relative">
+      {showCalendar ? (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowCalendar(false)}
+          aria-hidden="true"
+        />
+      ) : null}
+      <button
+        type="button"
+        onClick={() => setShowCalendar(true)}
+        className={[
+          "w-full min-h-[80px] p-4 rounded-xl",
+          "flex items-center gap-4 text-left text-foreground",
+          "transition-all duration-150 active:scale-[0.98]",
+          "border-2",
+          showCalendar
+            ? "border-primary bg-primary/5"
+            : "border-border bg-background hover:border-primary/50",
+        ].join(" ")}
+      >
+        <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center text-muted-foreground">
+          <CalendarIcon className="w-6 h-6" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-lg font-semibold truncate">
+            {format(date, "EEE, MMM d")}
+          </div>
+          <div className="text-sm text-muted-foreground truncate">
+            Pick a Date
+          </div>
+        </div>
+      </button>
+      {showCalendar ? (
+        <div className="absolute left-0 top-full z-50 mt-3 w-full">
+          <div className="border rounded-xl p-3 bg-background shadow-lg">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={(nextDate) => {
+                if (!nextDate) return;
+                onSelect(nextDate);
+                setShowCalendar(false);
+              }}
+              className="mx-auto"
+              classNames={{
+                day: "h-11 w-11 text-base",
+              }}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
