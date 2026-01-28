@@ -13,7 +13,7 @@ function SignInPage() {
   const { redirect } = Route.useSearch();
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex items-center justify-center min-h-screen">
       <SignIn
         routing="path"
         path="/sign-in"
