@@ -70,7 +70,7 @@ export function CalendarPage() {
   return (
     <div
       style={{ height: "calc(100vh - 64px)" }}
-      className="flex flex-col bg-background px-6 pb-8 overflow-y-hidden"
+      className="flex flex-col px-6 pb-8 overflow-y-hidden"
     >
       <div className="mx-auto flex w-full max-w-[1800px] flex-1 flex-col mt-2 gap-2">
         <CalendarHeaderBar
