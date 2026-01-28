@@ -35,7 +35,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-background border-b border-border shadow-sm">
+      <header className="bg-background shadow-sm">
         <div className="py-2 px-4 flex items-center justify-between w-full">
           <div className="flex items-center gap-4">
             <button

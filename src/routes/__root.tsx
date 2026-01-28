@@ -110,8 +110,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HouseholdProvider>
           <TasksProvider>
             <CalendarProvider>
-              <Header />
-              {children}
+              <div className="min-h-screen flex flex-col">
+                <Header />
+                <main className="flex-1 min-h-0">{children}</main>
+              </div>
               <Toaster />
               <TanStackDevtools
                 config={{
