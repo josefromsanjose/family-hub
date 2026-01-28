@@ -15,10 +15,12 @@ import { FullHeightContainer } from "@/components/FullHeightContainer";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authed/settings/")({
-  loader: async () => {
-    return {
-      members: await getHouseholdMembers(),
-    };
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData({
+      queryKey: ["household-members"],
+      queryFn: () => getHouseholdMembers(),
+    });
+    return null;
   },
   pendingComponent: SettingsPending,
   component: Settings,
@@ -38,13 +40,11 @@ function getRoleLabel(role: HouseholdRole) {
 
 function Settings() {
   const queryClient = useQueryClient();
-  const { members: initialMembers } = Route.useLoaderData();
 
   // Fetch members with TanStack Query
-  const { data: members = initialMembers, error } = useQuery({
+  const { data: members = [], error } = useQuery({
     queryKey: ["household-members"],
     queryFn: () => getHouseholdMembers(),
-    initialData: initialMembers,
   });
 
   const deleteMutation = useMutation({

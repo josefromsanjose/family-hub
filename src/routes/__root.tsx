@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import {
   HeadContent,
   Scripts,
-  createRootRoute,
+  createRootRouteWithContext,
   Outlet,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
@@ -16,10 +16,15 @@ import { TasksProvider } from "@/contexts/TasksContext";
 import { CalendarProvider } from "@/contexts/CalendarContext";
 import { fetchClerkAuth } from "@/server/auth";
 import { registerServiceWorker } from "../utils/registerServiceWorker";
+import type { QueryClient } from "@tanstack/react-query";
 
 import appCss from "../styles.css?url";
 
-export const Route = createRootRoute({
+interface RouterContext {
+  queryClient: QueryClient;
+}
+
+export const Route = createRootRouteWithContext<RouterContext>()({
   beforeLoad: async () => {
     const { userId } = await fetchClerkAuth();
 
@@ -27,6 +32,7 @@ export const Route = createRootRoute({
       userId,
     };
   },
+
   head: () => ({
     meta: [
       {
@@ -81,7 +87,6 @@ export const Route = createRootRoute({
       },
     ],
   }),
-
   shellComponent: RootComponent,
 });
 
