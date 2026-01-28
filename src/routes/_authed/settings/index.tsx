@@ -152,9 +152,9 @@ function AddMemberCard() {
           </div>
 
           {/* Label */}
-          <h3 className="font-semibold text-muted-foreground text-lg mb-1">
+          <h2 className="font-semibold text-muted-foreground text-lg mb-1">
             Add Member
-          </h3>
+          </h2>
           <p className="text-sm text-muted-foreground">
             Add a new family member
           </p>
