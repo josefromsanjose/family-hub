@@ -134,6 +134,152 @@ code {
   }
 }
 
+.app-shell {
+  min-height: 100vh;
+  position: relative;
+  isolation: isolate;
+  background-color: var(--background);
+}
+
+.app-background {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden; 
+
+}
+
+.app-stars {
+  position: absolute;
+  inset: 0;
+}
+
+.app-stars span {
+  position: absolute;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+  animation: star-drift 22s ease-in-out infinite alternate;
+}
+
+.app-stars span:nth-child(3n) {
+  width: 2px;
+  height: 2px;
+}
+
+.app-stars span:nth-child(3n + 1) {
+  width: 6px;
+  height: 6px;
+}
+
+.app-stars span:nth-child(3n + 2) {
+  width: 3px;
+  height: 3px;
+}
+
+.app-stars span:nth-child(1) { top: 12%; left: 8%; animation-duration: 30s; }
+.app-stars span:nth-child(2) { top: 18%; left: 22%; animation-duration: 24s; }
+.app-stars span:nth-child(3) { top: 8%; left: 45%; animation-duration: 34s; }
+.app-stars span:nth-child(4) { top: 28%; left: 62%; animation-duration: 26s; }
+.app-stars span:nth-child(5) { top: 14%; left: 78%; animation-duration: 32s; }
+.app-stars span:nth-child(6) { top: 36%; left: 12%; animation-duration: 27s; }
+.app-stars span:nth-child(7) { top: 42%; left: 30%; animation-duration: 33s; }
+.app-stars span:nth-child(8) { top: 38%; left: 52%; animation-duration: 25s; }
+.app-stars span:nth-child(9) { top: 46%; left: 70%; animation-duration: 36s; }
+.app-stars span:nth-child(10) { top: 58%; left: 85%; animation-duration: 29s; }
+.app-stars span:nth-child(11) { top: 62%; left: 18%; animation-duration: 31s; }
+.app-stars span:nth-child(12) { top: 66%; left: 36%; animation-duration: 23s; }
+.app-stars span:nth-child(13) { top: 72%; left: 54%; animation-duration: 35s; }
+.app-stars span:nth-child(14) { top: 78%; left: 68%; animation-duration: 26s; }
+.app-stars span:nth-child(15) { top: 84%; left: 10%; animation-duration: 30s; }
+.app-stars span:nth-child(16) { top: 88%; left: 28%; animation-duration: 28s; }
+.app-stars span:nth-child(17) { top: 82%; left: 44%; animation-duration: 34s; }
+.app-stars span:nth-child(18) { top: 90%; left: 62%; animation-duration: 24s; }
+.app-stars span:nth-child(19) { top: 76%; left: 80%; animation-duration: 32s; }
+.app-stars span:nth-child(20) { top: 52%; left: 6%; animation-duration: 27s; }
+
+.app-glow {
+  position: absolute;
+  width: 60vmax;
+  height: 60vmax;
+  filter: blur(140px);
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.app-glow-primary {
+  color: var(--chart-2);
+  top: -20vmax;
+  right: -10vmax;
+  --glow-opacity: .08;
+  animation:
+    glow-intro 1600ms ease-out both,
+    glow-drift-primary 5s ease-in-out 1600ms infinite alternate;
+    
+}
+
+.app-glow-secondary {
+  color: var(--chart-3);
+  bottom: -25vmax;
+  left: -15vmax;
+  --glow-opacity: .10;
+  animation:
+    glow-intro 1800ms ease-out both,
+    glow-drift-secondary 8s ease-in-out 1800ms infinite alternate;
+}
+
+
+.app-glow > circle,
+.app-glow > ellipse {
+  fill: currentColor;
+}
+
+@keyframes glow-intro {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  100% {
+    opacity: var(--glow-opacity, 0.35);
+    transform: scale(1);
+  }
+}
+
+@keyframes star-drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.2;
+  }
+  100% {
+    transform: translate3d(100px, -80px, 0);
+    opacity: 0.95;
+  }
+}
+
+@keyframes glow-drift-primary {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(-8vmax, 6vmax, 0) scale(1.04);
+  }
+}
+
+@keyframes glow-drift-secondary {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(9vmax, -6vmax, 0) scale(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-glow-primary,
+  .app-glow-secondary {
+    animation: none;
+  }
+}
+
 @layer base {
   * {
     scrollbar-width: thin;

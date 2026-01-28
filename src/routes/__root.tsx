@@ -106,13 +106,52 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="app-shell">
         <HouseholdProvider>
           <TasksProvider>
             <CalendarProvider>
-              <div className="min-h-screen flex flex-col">
+              <div className="min-h-screen flex flex-col app-shell">
+                <div className="app-background" aria-hidden="true">
+                  <div className="app-stars" aria-hidden="true">
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                  <svg
+                    className="app-glow app-glow-primary"
+                    viewBox="0 0 800 800"
+                    role="presentation"
+                  >
+                    <circle cx="400" cy="400" r="320" />
+                  </svg>
+                  <svg
+                    className="app-glow app-glow-secondary"
+                    viewBox="0 0 900 900"
+                    role="presentation"
+                  >
+                    <ellipse cx="450" cy="450" rx="360" ry="280" />
+                  </svg>
+                
+                </div>
                 <Header />
-                <main className="flex-1 min-h-0">{children}</main>
+                <main className="flex-1 min-h-0 z-10">{children}</main>
               </div>
               <Toaster />
               <TanStackDevtools

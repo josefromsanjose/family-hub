@@ -3,7 +3,7 @@ import { FullHeightContainer } from "@/components/FullHeightContainer";
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <FullHeightContainer className="bg-background p-6">
+    <FullHeightContainer className="p-6">
       <div className="max-w-7xl mx-auto h-full flex flex-col">{children}</div>
     </FullHeightContainer>
   );

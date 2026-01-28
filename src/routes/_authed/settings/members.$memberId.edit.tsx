@@ -106,7 +106,7 @@ function MemberEditPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="min-h-screen p-6">
         <div className="max-w-2xl mx-auto">
           <Card className="border border-destructive bg-destructive/10 p-6 text-center">
             <p className="text-destructive">
@@ -120,7 +120,7 @@ function MemberEditPage() {
 
   if (!member) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="min-h-screen p-6">
         <div className="max-w-2xl mx-auto space-y-6">
           <Card className="p-6 text-center">
             <h1 className="text-xl font-semibold text-foreground">
@@ -139,7 +139,7 @@ function MemberEditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen p-6">
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="flex items-center gap-3">
           <Button asChild variant="ghost" size="icon">

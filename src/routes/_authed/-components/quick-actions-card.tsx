@@ -1,14 +1,15 @@
 import type { ComponentType } from "react";
 import { Link } from "@tanstack/react-router";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { quickActions } from "./dashboard-data";
 
 export function QuickActionsCard() {
   return (
-    <div className="bg-card rounded-lg shadow-sm p-6 border border-border h-full flex flex-col">
-      <h2 className="text-xl font-bold text-card-foreground mb-4">
-        Quick Actions
-      </h2>
-      <div className="space-y-3 flex-1 min-h-0 overflow-y-auto pr-1">
+    <Card className="h-full">
+      <CardHeader className="pb-0">
+        <CardTitle className="text-xl">Quick Actions</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3 flex-1 min-h-0 overflow-y-auto pr-1">
         {quickActions.map((action) => (
           <QuickActionLink
             key={action.href + action.label}
@@ -17,8 +18,8 @@ export function QuickActionsCard() {
             icon={action.icon}
           />
         ))}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 

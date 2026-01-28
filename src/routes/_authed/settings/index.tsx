@@ -12,6 +12,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FullHeightContainer } from "@/components/FullHeightContainer";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authed/settings/")({
   loader: async () => {
@@ -63,7 +64,7 @@ function Settings() {
 
   if (error) {
     return (
-      <FullHeightContainer className="bg-background p-6">
+      <FullHeightContainer className="p-6">
         <div className="max-w-4xl mx-auto h-full flex flex-col">
           <div className="bg-destructive/10 border border-destructive rounded-lg p-6 text-center">
             <p className="text-destructive">
@@ -76,7 +77,7 @@ function Settings() {
   }
 
   return (
-    <FullHeightContainer className="bg-background p-6">
+    <FullHeightContainer className="p-6">
       <div className="max-w-4xl mx-auto h-full flex flex-col">
         <div className="flex items-center gap-3 mb-6">
           <Users className="text-muted-foreground" size={24} />
@@ -195,8 +196,8 @@ function MemberCard({ member, onDelete, isDeleting }: MemberCardProps) {
         {/* Large avatar with person icon */}
         <div className="relative mb-4">
           <Avatar className="w-20 h-20">
-            <AvatarFallback className={member.color || "bg-muted"}>
-              <User className="w-10 h-10 text-white/80" />
+            <AvatarFallback className={cn(member.color || "bg-muted")}>
+              <User className="w-10 h-10 text-white" />
             </AvatarFallback>
           </Avatar>
           {member.clerkUserId && (

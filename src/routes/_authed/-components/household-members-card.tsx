@@ -1,5 +1,6 @@
 import { Settings, Users } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useHousehold } from "@/contexts/HouseholdContext";
 
 interface HouseholdMember {
@@ -13,11 +14,9 @@ export function HouseholdMembersCard() {
   const { members = [], isLoading } = useHousehold();
 
   return (
-    <div className="bg-card rounded-lg shadow-sm p-6 border border-border h-full flex flex-col">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-card-foreground">
-          Household Members
-        </h2>
+    <Card className="h-full">
+      <CardHeader className="flex items-center justify-between pb-0">
+        <CardTitle className="text-xl">Household Members</CardTitle>
         <Link
           to="/settings"
           className="p-2 hover:bg-accent rounded-lg transition-colors text-muted-foreground"
@@ -25,8 +24,8 @@ export function HouseholdMembersCard() {
         >
           <Settings size={18} />
         </Link>
-      </div>
-      <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+      </CardHeader>
+      <CardContent className="flex-1 min-h-0 overflow-y-auto pr-1">
         {isLoading ? (
           <MembersLoadingState />
         ) : members.length === 0 ? (
@@ -44,8 +43,8 @@ export function HouseholdMembersCard() {
             </Link>
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 

@@ -198,7 +198,7 @@ function NewMemberWizard() {
   }, [step.id]);
 
   return (
-    <div className="bg-background flex flex-col">
+    <div className="flex flex-col">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background border-b border-border">
         <div className="flex items-center gap-2 p-4">
