@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FullHeightContainer } from "@/components/FullHeightContainer";
 
 export const Route = createFileRoute("/_authed/settings/")({
   loader: async () => {
@@ -62,61 +63,54 @@ function Settings() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-4xl mx-auto">
+      <FullHeightContainer className="bg-background p-6">
+        <div className="max-w-4xl mx-auto h-full flex flex-col">
           <div className="bg-destructive/10 border border-destructive rounded-lg p-6 text-center">
             <p className="text-destructive">
               Error loading household members. Please try again.
             </p>
           </div>
         </div>
-      </div>
+      </FullHeightContainer>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Settings</h1>
-          <p className="text-muted-foreground">
-            Manage your household members and preferences
-          </p>
-        </div>
-
-        {/* Section header */}
+    <FullHeightContainer className="bg-background p-6">
+      <div className="max-w-4xl mx-auto h-full flex flex-col">
         <div className="flex items-center gap-3 mb-6">
           <Users className="text-muted-foreground" size={24} />
-          <h2 className="text-xl font-bold text-foreground">
+          <h1 className="text-xl font-bold text-foreground">
             Household Members
-          </h2>
+          </h1>
         </div>
 
         {/* Content */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Add Member Card - always first */}
-          <AddMemberCard />
+        <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Add Member Card - always first */}
+            <AddMemberCard />
 
-          {/* Member Cards */}
-          {members.map((member) => (
-            <MemberCard
-              key={member.id}
-              member={member}
-              onDelete={() => handleDelete(member)}
-              isDeleting={deleteMutation.isPending}
-            />
-          ))}
+            {/* Member Cards */}
+            {members.map((member) => (
+              <MemberCard
+                key={member.id}
+                member={member}
+                onDelete={() => handleDelete(member)}
+                isDeleting={deleteMutation.isPending}
+              />
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </FullHeightContainer>
   );
 }
 
 function SettingsPending() {
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto">
+    <FullHeightContainer className="bg-background p-6">
+      <div className="max-w-4xl mx-auto h-full flex flex-col">
         <div className="mb-8 space-y-2">
           <Skeleton className="h-8 w-40" />
           <Skeleton className="h-4 w-64" />
@@ -129,13 +123,15 @@ function SettingsPending() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <MemberCardSkeleton />
-          <MemberCardSkeleton />
-          <MemberCardSkeleton />
+        <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <MemberCardSkeleton />
+            <MemberCardSkeleton />
+            <MemberCardSkeleton />
+          </div>
         </div>
       </div>
-    </div>
+    </FullHeightContainer>
   );
 }
 
