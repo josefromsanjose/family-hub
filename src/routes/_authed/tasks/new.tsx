@@ -7,7 +7,7 @@ export const Route = createFileRoute("/_authed/tasks/new")({
 
 function NewTaskPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <TaskWizard />
     </div>
   );

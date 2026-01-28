@@ -85,6 +85,14 @@ export const Route = createRootRoute({
   shellComponent: RootComponent,
 });
 
+function StarIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 32 32" role="presentation" {...props}>
+      <path d="M16 0L18.5 12.2L32 16L18.5 19.8L16 32L13.5 19.8L0 16L13.5 12.2L16 0Z" />
+    </svg>
+  );
+}
+
 function RootComponent() {
   return (
     <AppClerkProvider>
@@ -113,26 +121,26 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               <div className="min-h-screen flex flex-col app-shell">
                 <div className="app-background" aria-hidden="true">
                   <div className="app-stars" aria-hidden="true">
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
+                    <StarIcon className="app-star" />
                   </div>
                   <svg
                     className="app-glow app-glow-primary"

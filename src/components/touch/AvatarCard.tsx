@@ -25,7 +25,7 @@ export function AvatarCard({
       aria-label={ariaLabel || `Select ${name}`}
       aria-pressed={selected}
       className={cn(
-        "relative flex flex-col items-center gap-2 p-4 rounded-xl min-h-[100px]",
+        "bg-card/60 relative flex flex-col items-center gap-2 p-4 rounded-xl min-h-[100px]",
         "border-2 transition-all duration-150 active:scale-[0.98]",
         "active:border-primary/70 active:bg-primary/10",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",

@@ -136,7 +136,7 @@ function TasksAndChores() {
   const oneTimeTasks = tasks.filter((task) => !task.recurrence).length;
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex items-center justify-between">
           <div>
