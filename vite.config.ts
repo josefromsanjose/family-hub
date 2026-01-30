@@ -7,6 +7,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 
 const config = defineConfig(() => {
+  
   const plugins: PluginOption[] = [
     devtools(),
     nitro(),
@@ -24,6 +25,10 @@ const config = defineConfig(() => {
       alias: [
         { find: "use-sync-external-store/shim/index.js", replacement: "react" },
       ],
+    },
+    server: {
+      host: true,
+      port: 3000,
     },
   };
 });

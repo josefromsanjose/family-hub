@@ -11,6 +11,13 @@ export function FullHeightContainer({
   className,
 }: FullHeightContainerProps) {
   return (
-    <div className={cn("h-[calc(100vh-64px)]", className)}>{children}</div>
+    <div
+      className={cn(
+        "h-[calc(100vh-64px)] h-[calc(100svh-64px)]",
+        className
+      )}
+    >
+      {children}
+    </div>
   );
 }
