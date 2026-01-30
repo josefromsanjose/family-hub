@@ -280,6 +280,7 @@ Use file-based routing. Keep route files thin: compose UI from components, keep 
 ## Directory Conventions
 
 - Route-specific subcomponents live alongside their route in a `-components` folder.
+- Route-specific hooks live alongside their route in a `-hooks` folder (compose shared hooks/context for that page).
 - Shared UI primitives and reusable components live in `src/components`.
 - Reusable hooks live in `src/hooks`.
 

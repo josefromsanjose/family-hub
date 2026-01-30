@@ -164,6 +164,33 @@ export const getHouseholdMembers = createServerFn({ method: "GET" }).handler(
   }
 );
 
+// Type for fetching a single member
+export type GetMemberByIdInput = {
+  id: string;
+};
+
+// GET: Fetch a single member by ID (scoped to current user's household)
+export const getHouseholdMemberById = createServerFn({ method: "GET" })
+  .inputValidator((input: GetMemberByIdInput) => {
+    if (!input.id) {
+      throw new Error("Member ID is required");
+    }
+    return input;
+  })
+  .handler(async ({ data }): Promise<HouseholdMemberResponse | null> => {
+    const householdId = await getCurrentUserHouseholdId();
+    const prisma = await getPrisma();
+
+    const member = await prisma.householdMember.findFirst({
+      where: {
+        id: data.id,
+        householdId,
+      },
+    });
+
+    return member;
+  });
+
 // Type for creating a new member
 export type CreateMemberInput = {
   name: string;
