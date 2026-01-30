@@ -204,3 +204,12 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Gotchas encountered: None.
   - Useful context: Verified Day/Week/Month tabs and member column on `/calendar`; screenshot capture failed in automation.
 ---
+## 2026-01-30 12:00 - US-001
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Added Convex schema mirroring the Prisma data models with enum validators and indexes, and added the Convex dependency.
+- Files changed: `convex/schema.ts`, `package.json`, `package-lock.json`, `docs/prd/prd-migrate-to-convex.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: Convex schema uses `defineSchema`/`defineTable` with `v.union` enums and explicit index definitions to mirror Prisma models.
+  - Gotchas encountered: None.
+  - Useful context: Date fields are represented as numeric timestamps to model Prisma DateTime fields.
+---
