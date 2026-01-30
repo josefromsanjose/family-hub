@@ -83,7 +83,7 @@ function MemberLandingPage() {
 
   if (!member) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="min-h-screen p-6">
         <div className="max-w-4xl mx-auto">
           <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
             <h1 className="text-2xl font-bold text-foreground mb-2">
@@ -121,7 +121,7 @@ function MemberLandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen p-6">
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="bg-card rounded-lg shadow-sm border border-border p-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">

@@ -11,7 +11,7 @@ import {
 } from "@/server/shopping";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-export const Route = createFileRoute("/_authed/shopping")({ component: ShoppingLists });
+export const Route = createFileRoute("/_authed/shopping/")({ component: ShoppingLists });
 
 const categories = ["Produce", "Meat & Seafood", "Dairy", "Bakery", "Pantry", "Frozen", "Other"];
 
