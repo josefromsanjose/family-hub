@@ -1,3 +1,46 @@
+# Deployment Guide (Vercel + Convex)
+
+## Overview
+
+Family Hub deploys on Vercel and uses Convex for the production data layer.
+Run a Convex deploy as part of the Vercel build so the schema and tables exist
+in the production deployment.
+
+## Vercel Configuration
+
+### Build Command
+
+Use the Convex deploy script so schema updates run before the frontend build:
+
+```
+npm run deploy:vercel
+```
+
+This script runs:
+
+```
+convex deploy --cmd "npm run build"
+```
+
+### Environment Variables (Production)
+
+Set these in the Vercel project (Production environment):
+
+- `CONVEX_DEPLOY_KEY` (Convex Dashboard → Project Settings → Production deploy key)
+- `CONVEX_URL`
+- `VITE_CONVEX_URL`
+- `CONVEX_ADMIN_KEY`
+- `CLERK_ISSUER_URL`
+- `CLERK_JWT_AUDIENCE`
+- `VITE_CLERK_PUBLISHABLE_KEY`
+
+## Verification
+
+After deployment:
+
+1. Open the Convex Dashboard and switch to the Production deployment.
+2. Confirm tables from `convex/schema.ts` exist.
+3. Load the Vercel URL and verify authenticated pages load without errors.
 # Household Hub - Deployment Guide
 
 ## Overview

@@ -38,12 +38,11 @@ async function getMealLibraryItemById(
 
 export const getMeals = internalQuery({
   args: {
-    clerkUserId: v.string(),
     startDate: v.optional(v.string()),
     endDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const startDate = args.startDate ? new Date(args.startDate).valueOf() : null;
     const endDate = args.endDate ? new Date(args.endDate).valueOf() : null;
 
@@ -69,17 +68,17 @@ export const getMeals = internalQuery({
 });
 
 export const getMealById = internalQuery({
-  args: { clerkUserId: v.string(), id: v.string() },
+  args: { id: v.string() },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     return getMealByIdInHousehold(ctx, householdId, args.id);
   },
 });
 
 export const getMealLibraryItems = internalQuery({
-  args: { clerkUserId: v.string(), query: v.optional(v.string()) },
+  args: { query: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const items = await ctx.db
       .query("mealLibraryItems")
       .withIndex("by_householdId", (q) => q.eq("householdId", householdId))
@@ -103,7 +102,6 @@ export const getMealLibraryItems = internalQuery({
 
 export const createMeal = internalMutation({
   args: {
-    clerkUserId: v.string(),
     name: v.optional(v.string()),
     date: v.string(),
     mealType,
@@ -111,7 +109,7 @@ export const createMeal = internalMutation({
     mealLibraryItemId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const now = Date.now();
     let name = args.name?.trim() ?? "";
     let notes = args.notes?.trim() || null;
@@ -148,12 +146,11 @@ export const createMeal = internalMutation({
 
 export const createMealLibraryItem = internalMutation({
   args: {
-    clerkUserId: v.string(),
     name: v.string(),
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const now = Date.now();
 
     const item = {
@@ -172,7 +169,6 @@ export const createMealLibraryItem = internalMutation({
 
 export const updateMeal = internalMutation({
   args: {
-    clerkUserId: v.string(),
     id: v.string(),
     name: v.optional(v.string()),
     date: v.optional(v.string()),
@@ -180,7 +176,7 @@ export const updateMeal = internalMutation({
     notes: v.optional(v.union(v.null(), v.string())),
   },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const existingMeal = await getMealByIdInHousehold(
       ctx,
       householdId,
@@ -209,9 +205,9 @@ export const updateMeal = internalMutation({
 });
 
 export const deleteMeal = internalMutation({
-  args: { clerkUserId: v.string(), id: v.string() },
+  args: { id: v.string() },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const existingMeal = await getMealByIdInHousehold(
       ctx,
       householdId,

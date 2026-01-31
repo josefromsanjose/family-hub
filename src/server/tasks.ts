@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getClerkUserId } from "@/server/clerk";
 import { getConvexClient } from "@/server/convex";
 import { internal } from "../../convex/_generated/api";
 
@@ -143,11 +142,8 @@ export type UpdateTaskInput = {
 // GET: Fetch all tasks for the current user's household
 export const getTasks = createServerFn({ method: "GET" }).handler(
   async (): Promise<TaskResponse[]> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
-    const tasks = await convex.query(internal.tasks.getTasks, {
-      clerkUserId: userId,
-    });
+    const convex = await getConvexClient();
+    const tasks = await convex.query(internal.tasks.getTasks, {});
 
     return tasks.map(toTaskResponse);
   }
@@ -156,13 +152,10 @@ export const getTasks = createServerFn({ method: "GET" }).handler(
 // GET: Fetch all completion records for the current user's household
 export const getCompletionRecords = createServerFn({ method: "GET" }).handler(
   async (): Promise<CompletionRecordResponse[]> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const completions = await convex.query(
       internal.tasks.getCompletionRecords,
-      {
-        clerkUserId: userId,
-      }
+      {}
     );
 
     return completions.map(toCompletionResponse);
@@ -182,10 +175,8 @@ export const createTask = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<TaskResponse> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const task = await convex.mutation(internal.tasks.createTask, {
-      clerkUserId: userId,
       title: data.title.trim(),
       ...(data.description !== undefined ? { description: data.description } : {}),
       ...(data.assignedTo ? { assignedTo: data.assignedTo } : {}),
@@ -223,10 +214,8 @@ export const updateTask = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<TaskResponse> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const task = await convex.mutation(internal.tasks.updateTask, {
-      clerkUserId: userId,
       id: data.id,
       ...(data.title !== undefined && { title: data.title.trim() }),
       ...(data.description !== undefined ? { description: data.description } : {}),
@@ -274,10 +263,8 @@ export const deleteTask = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     return convex.mutation(internal.tasks.deleteTask, {
-      clerkUserId: userId,
       id: data.id,
     });
   });
@@ -299,10 +286,8 @@ export const completeTask = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     return convex.mutation(internal.tasks.completeTask, {
-      clerkUserId: userId,
       taskId: data.taskId,
       completedBy: data.completedBy,
     });
@@ -321,10 +306,8 @@ export const uncompleteTask = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     return convex.mutation(internal.tasks.uncompleteTask, {
-      clerkUserId: userId,
       taskId: data.taskId,
     });
   });

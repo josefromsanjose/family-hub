@@ -41,9 +41,9 @@ const dedupeItems = (items: string[]) => {
 };
 
 export const getShoppingItems = internalQuery({
-  args: { clerkUserId: v.string() },
-  handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+  args: {},
+  handler: async (ctx) => {
+    const householdId = await requireHouseholdId(ctx);
     const items = await ctx.db
       .query("shoppingItems")
       .withIndex("by_householdId", (q) => q.eq("householdId", householdId))
@@ -65,13 +65,12 @@ export const getShoppingItems = internalQuery({
 
 export const createShoppingItem = internalMutation({
   args: {
-    clerkUserId: v.string(),
     name: v.string(),
     quantity: v.optional(v.string()),
     category: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const now = Date.now();
     const category = args.category?.trim() || "Other";
     const quantity = args.quantity?.trim() || null;
@@ -95,7 +94,6 @@ export const createShoppingItem = internalMutation({
 
 export const updateShoppingItem = internalMutation({
   args: {
-    clerkUserId: v.string(),
     id: v.string(),
     name: v.optional(v.string()),
     quantity: v.optional(v.union(v.null(), v.string())),
@@ -103,7 +101,7 @@ export const updateShoppingItem = internalMutation({
     completed: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const existingItem = await getShoppingItemById(
       ctx,
       householdId,
@@ -130,9 +128,9 @@ export const updateShoppingItem = internalMutation({
 });
 
 export const deleteShoppingItem = internalMutation({
-  args: { clerkUserId: v.string(), id: v.string() },
+  args: { id: v.string() },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const existingItem = await getShoppingItemById(
       ctx,
       householdId,
@@ -150,12 +148,11 @@ export const deleteShoppingItem = internalMutation({
 
 export const createShoppingItemsFromMeals = internalMutation({
   args: {
-    clerkUserId: v.string(),
     mealIds: v.array(v.string()),
     category: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const category = args.category?.trim() || "Other";
     const mealIdSet = new Set(args.mealIds);
 

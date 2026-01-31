@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getClerkUserId } from "@/server/clerk";
 import { getConvexClient } from "@/server/convex";
 import { internal } from "../../convex/_generated/api";
 
@@ -132,10 +131,8 @@ export const getMeals = createServerFn({ method: "GET" })
     return input;
   })
   .handler(async ({ data }): Promise<MealResponse[]> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const meals = await convex.query(internal.meals.getMeals, {
-      clerkUserId: userId,
       ...(data.startDate ? { startDate: data.startDate } : {}),
       ...(data.endDate ? { endDate: data.endDate } : {}),
     });
@@ -151,10 +148,8 @@ export const getMealById = createServerFn({ method: "GET" })
     return input;
   })
   .handler(async ({ data }): Promise<MealResponse | null> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const meal = await convex.query(internal.meals.getMealById, {
-      clerkUserId: userId,
       id: data.id,
     });
 
@@ -167,10 +162,8 @@ export const getMealLibraryItems = createServerFn({ method: "GET" })
     return { query: query && query.length > 0 ? query : undefined };
   })
   .handler(async ({ data }): Promise<MealLibraryItemResponse[]> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const items = await convex.query(internal.meals.getMealLibraryItems, {
-      clerkUserId: userId,
       ...(data.query ? { query: data.query } : {}),
     });
 
@@ -199,10 +192,8 @@ export const createMeal = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<MealResponse> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const meal = await convex.mutation(internal.meals.createMeal, {
-      clerkUserId: userId,
       ...(data.name !== undefined ? { name: data.name.trim() } : {}),
       date: data.date,
       mealType: data.mealType,
@@ -223,10 +214,8 @@ export const createMealLibraryItem = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<MealLibraryItemResponse> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const item = await convex.mutation(internal.meals.createMealLibraryItem, {
-      clerkUserId: userId,
       name: data.name.trim(),
       ...(data.notes !== undefined ? { notes: data.notes } : {}),
     });
@@ -251,10 +240,8 @@ export const updateMeal = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<MealResponse> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const meal = await convex.mutation(internal.meals.updateMeal, {
-      clerkUserId: userId,
       id: data.id,
       ...(data.name !== undefined && { name: data.name.trim() }),
       ...(data.date !== undefined && { date: data.date }),
@@ -273,10 +260,8 @@ export const deleteMeal = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     return convex.mutation(internal.meals.deleteMeal, {
-      clerkUserId: userId,
       id: data.id,
     });
   });

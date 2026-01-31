@@ -8,7 +8,7 @@ const mockConvexClient = vi.hoisted(() => ({
 const mockGetClerkUserId = vi.hoisted(() => vi.fn());
 
 vi.mock("@/server/convex", () => ({
-  getConvexClient: () => mockConvexClient,
+  getConvexClient: async () => mockConvexClient,
 }));
 
 vi.mock("@/server/clerk", () => ({
@@ -69,9 +69,7 @@ describe("calendar server functions", () => {
 
     expect(mockConvexClient.query).toHaveBeenCalledWith(
       expect.anything(),
-      {
-        clerkUserId: "user-1",
-      }
+      {}
     );
     expect(result).toEqual([
       {

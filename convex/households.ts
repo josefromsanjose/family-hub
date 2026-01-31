@@ -3,6 +3,7 @@ import { internalMutation, internalQuery } from "./_generated/server";
 import {
   getMemberByClerkUserId,
   getMemberByIdInHousehold,
+  requireClerkUserId,
   requireHouseholdId,
 } from "./lib/household";
 import { generateId } from "./lib/ids";
@@ -45,13 +46,13 @@ const memberLocale = v.union(v.literal("en"), v.literal("es"));
 
 export const ensureHouseholdForClerkUser = internalMutation({
   args: {
-    clerkUserId: v.string(),
     memberName: v.string(),
   },
   handler: async (ctx, args) => {
+    const clerkUserId = await requireClerkUserId(ctx);
     const existingMember = await getMemberByClerkUserId(
       ctx,
-      args.clerkUserId
+      clerkUserId
     );
     if (existingMember) {
       return {
@@ -76,7 +77,7 @@ export const ensureHouseholdForClerkUser = internalMutation({
     await ctx.db.insert("householdMembers", {
       id: memberId,
       householdId,
-      clerkUserId: args.clerkUserId,
+      clerkUserId,
       name: args.memberName,
       locale: DEFAULT_MEMBER_LOCALE,
       role: DEFAULT_OWNER_ROLE,
@@ -97,17 +98,17 @@ export const ensureHouseholdForClerkUser = internalMutation({
 });
 
 export const getHouseholdIdForClerkUser = internalQuery({
-  args: { clerkUserId: v.string() },
-  handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+  args: {},
+  handler: async (ctx) => {
+    const householdId = await requireHouseholdId(ctx);
     return { householdId };
   },
 });
 
 export const getHouseholdMembers = internalQuery({
-  args: { clerkUserId: v.string() },
-  handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+  args: {},
+  handler: async (ctx) => {
+    const householdId = await requireHouseholdId(ctx);
     const members = await ctx.db
       .query("householdMembers")
       .withIndex("by_householdId", (q) => q.eq("householdId", householdId))
@@ -119,16 +120,15 @@ export const getHouseholdMembers = internalQuery({
 });
 
 export const getHouseholdMemberById = internalQuery({
-  args: { clerkUserId: v.string(), id: v.string() },
+  args: { id: v.string() },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     return getMemberByIdInHousehold(ctx, householdId, args.id);
   },
 });
 
 export const createHouseholdMember = internalMutation({
   args: {
-    clerkUserId: v.string(),
     name: v.string(),
     role: v.optional(householdRole),
     locale: v.optional(memberLocale),
@@ -137,7 +137,7 @@ export const createHouseholdMember = internalMutation({
     color: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const now = Date.now();
 
     const memberCount = await ctx.db
@@ -171,7 +171,6 @@ export const createHouseholdMember = internalMutation({
 
 export const updateHouseholdMember = internalMutation({
   args: {
-    clerkUserId: v.string(),
     id: v.string(),
     name: v.optional(v.string()),
     role: v.optional(householdRole),
@@ -181,7 +180,7 @@ export const updateHouseholdMember = internalMutation({
     color: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const existingMember = await getMemberByIdInHousehold(
       ctx,
       householdId,
@@ -221,9 +220,9 @@ export const updateHouseholdMember = internalMutation({
 });
 
 export const deleteHouseholdMember = internalMutation({
-  args: { clerkUserId: v.string(), id: v.string() },
+  args: { id: v.string() },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const existingMember = await getMemberByIdInHousehold(
       ctx,
       householdId,

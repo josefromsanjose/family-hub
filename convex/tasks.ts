@@ -51,9 +51,9 @@ async function assertMembersInHousehold(
 }
 
 export const getTasks = internalQuery({
-  args: { clerkUserId: v.string() },
-  handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+  args: {},
+  handler: async (ctx) => {
+    const householdId = await requireHouseholdId(ctx);
     const tasks = await ctx.db
       .query("tasks")
       .withIndex("by_householdId", (q) => q.eq("householdId", householdId))
@@ -83,9 +83,9 @@ export const getTasks = internalQuery({
 });
 
 export const getCompletionRecords = internalQuery({
-  args: { clerkUserId: v.string() },
-  handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+  args: {},
+  handler: async (ctx) => {
+    const householdId = await requireHouseholdId(ctx);
     const completions = await ctx.db
       .query("completionRecords")
       .withIndex("by_householdId", (q) => q.eq("householdId", householdId))
@@ -98,7 +98,6 @@ export const getCompletionRecords = internalQuery({
 
 export const createTask = internalMutation({
   args: {
-    clerkUserId: v.string(),
     title: v.string(),
     description: v.optional(v.string()),
     assignedTo: v.optional(v.string()),
@@ -114,7 +113,7 @@ export const createTask = internalMutation({
     rotationAnchorDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
 
     if (args.assignedTo) {
       const member = await getMemberByIdInHousehold(
@@ -171,7 +170,6 @@ export const createTask = internalMutation({
 
 export const updateTask = internalMutation({
   args: {
-    clerkUserId: v.string(),
     id: v.string(),
     title: v.optional(v.string()),
     description: v.optional(v.union(v.null(), v.string())),
@@ -189,7 +187,7 @@ export const updateTask = internalMutation({
     rotationAnchorDate: v.optional(v.union(v.null(), v.string())),
   },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const existingTask = await getTaskByIdInHousehold(
       ctx,
       householdId,
@@ -281,9 +279,9 @@ export const updateTask = internalMutation({
 });
 
 export const deleteTask = internalMutation({
-  args: { clerkUserId: v.string(), id: v.string() },
+  args: { id: v.string() },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const existingTask = await getTaskByIdInHousehold(
       ctx,
       householdId,
@@ -316,10 +314,10 @@ export const deleteTask = internalMutation({
 });
 
 export const completeTask = internalMutation({
-  args: { clerkUserId: v.string(), taskId: v.string(), completedBy: v.string() },
+  args: { taskId: v.string(), completedBy: v.string() },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
-    const currentMember = await requireMember(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
+    const currentMember = await requireMember(ctx);
     const task = await getTaskByIdInHousehold(ctx, householdId, args.taskId);
 
     if (!task) {
@@ -349,9 +347,9 @@ export const completeTask = internalMutation({
 });
 
 export const uncompleteTask = internalMutation({
-  args: { clerkUserId: v.string(), taskId: v.string() },
+  args: { taskId: v.string() },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const task = await getTaskByIdInHousehold(ctx, householdId, args.taskId);
 
     if (!task) {

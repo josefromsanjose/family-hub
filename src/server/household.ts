@@ -62,9 +62,8 @@ export const ensureHouseholdForCurrentUser = createServerFn({
     user.emailAddresses[0]?.emailAddress?.split("@")[0] ||
     "Owner";
 
-  const convex = getConvexClient();
+  const convex = await getConvexClient(userId);
   return convex.mutation(internal.households.ensureHouseholdForClerkUser, {
-    clerkUserId: userId,
     memberName,
   });
 });
@@ -90,13 +89,10 @@ export type HouseholdMemberResponse = {
 
 // Helper to get current user's household ID
 export async function getCurrentUserHouseholdId(): Promise<string> {
-  const userId = await getClerkUserId();
-  const convex = getConvexClient();
+  const convex = await getConvexClient();
   const result = await convex.query(
     internal.households.getHouseholdIdForClerkUser,
-    {
-      clerkUserId: userId,
-    }
+    {}
   );
   return result.householdId;
 }
@@ -104,13 +100,10 @@ export async function getCurrentUserHouseholdId(): Promise<string> {
 // GET: Fetch all members for the current user's household
 export const getHouseholdMembers = createServerFn({ method: "GET" }).handler(
   async (): Promise<HouseholdMemberResponse[]> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const members = await convex.query(
       internal.households.getHouseholdMembers,
-      {
-        clerkUserId: userId,
-      }
+      {}
     );
 
     return members.map(toHouseholdMemberResponse);
@@ -131,12 +124,10 @@ export const getHouseholdMemberById = createServerFn({ method: "GET" })
     return input;
   })
   .handler(async ({ data }): Promise<HouseholdMemberResponse | null> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const member = await convex.query(
       internal.households.getHouseholdMemberById,
       {
-        clerkUserId: userId,
         id: data.id,
       }
     );
@@ -163,12 +154,10 @@ export const createHouseholdMember = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<HouseholdMemberResponse> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const member = await convex.mutation(
       internal.households.createHouseholdMember,
       {
-        clerkUserId: userId,
         name: data.name.trim(),
         role: data.role || DEFAULT_NEW_MEMBER_ROLE,
         ...(data.locale !== undefined && { locale: data.locale }),
@@ -203,12 +192,10 @@ export const updateHouseholdMember = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<HouseholdMemberResponse> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const member = await convex.mutation(
       internal.households.updateHouseholdMember,
       {
-        clerkUserId: userId,
         id: data.id,
         ...(data.name !== undefined && { name: data.name.trim() }),
         ...(data.role !== undefined && { role: data.role }),
@@ -238,10 +225,8 @@ export const deleteHouseholdMember = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     return convex.mutation(internal.households.deleteHouseholdMember, {
-      clerkUserId: userId,
       id: data.id,
     });
   });

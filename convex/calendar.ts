@@ -27,13 +27,12 @@ async function getEventByIdInHousehold(
 
 export const getCalendarEvents = internalQuery({
   args: {
-    clerkUserId: v.string(),
     startDate: v.optional(v.string()),
     endDate: v.optional(v.string()),
     participantId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const startDate = args.startDate ? new Date(args.startDate).valueOf() : null;
     const endDate = args.endDate ? new Date(args.endDate).valueOf() : null;
 
@@ -62,7 +61,6 @@ export const getCalendarEvents = internalQuery({
 
 export const createCalendarEvent = internalMutation({
   args: {
-    clerkUserId: v.string(),
     title: v.string(),
     description: v.optional(v.string()),
     date: v.string(),
@@ -72,7 +70,7 @@ export const createCalendarEvent = internalMutation({
     participantId: v.optional(v.union(v.null(), v.string())),
   },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
 
     if (args.participantId) {
       const member = await getMemberByIdInHousehold(
@@ -107,7 +105,6 @@ export const createCalendarEvent = internalMutation({
 
 export const updateCalendarEvent = internalMutation({
   args: {
-    clerkUserId: v.string(),
     id: v.string(),
     title: v.optional(v.string()),
     description: v.optional(v.union(v.null(), v.string())),
@@ -118,7 +115,7 @@ export const updateCalendarEvent = internalMutation({
     participantId: v.optional(v.union(v.null(), v.string())),
   },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const existingEvent = await getEventByIdInHousehold(
       ctx,
       householdId,
@@ -165,9 +162,9 @@ export const updateCalendarEvent = internalMutation({
 });
 
 export const deleteCalendarEvent = internalMutation({
-  args: { clerkUserId: v.string(), id: v.string() },
+  args: { id: v.string() },
   handler: async (ctx, args) => {
-    const householdId = await requireHouseholdId(ctx, args.clerkUserId);
+    const householdId = await requireHouseholdId(ctx);
     const existingEvent = await getEventByIdInHousehold(
       ctx,
       householdId,

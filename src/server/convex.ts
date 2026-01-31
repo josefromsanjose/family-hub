@@ -5,7 +5,9 @@ import type {
   FunctionReference,
   FunctionReturnType,
   OptionalRestArgs,
+  UserIdentityAttributes,
 } from "convex/server";
+import { getClerkUserId } from "@/server/clerk";
 
 type AnyQuery = FunctionReference<"query", any, any, any>;
 type AnyMutation = FunctionReference<"mutation", any, any, any>;
@@ -33,8 +35,6 @@ type ConvexHttpClientInternal = Omit<
   ) => void;
 };
 
-let convexClient: ConvexHttpClientInternal | null = null;
-
 function getConvexUrl() {
   const url = process.env.CONVEX_URL || process.env.VITE_CONVEX_URL;
   if (!url) {
@@ -51,12 +51,26 @@ function getConvexAdminKey() {
   return key;
 }
 
-export function getConvexClient() {
-  if (!convexClient) {
-    convexClient = new ConvexHttpClient(
+function getClerkIssuer() {
+  const issuer = process.env.CLERK_ISSUER_URL;
+  if (!issuer) {
+    throw new Error("Missing CLERK_ISSUER_URL");
+  }
+  return issuer;
+}
+
+export async function getConvexClient(
+  clerkUserId?: string
+): Promise<ConvexHttpClientInternal> {
+  const identityUserId = clerkUserId ?? (await getClerkUserId());
+  const actingAsIdentity: UserIdentityAttributes = {
+    subject: identityUserId,
+    issuer: getClerkIssuer(),
+  };
+
+  const convexClient = new ConvexHttpClient(
       getConvexUrl()
     ) as unknown as ConvexHttpClientInternal;
-    convexClient.setAdminAuth(getConvexAdminKey());
-  }
+  convexClient.setAdminAuth(getConvexAdminKey(), actingAsIdentity);
   return convexClient;
 }

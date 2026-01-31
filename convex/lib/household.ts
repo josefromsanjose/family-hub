@@ -2,6 +2,14 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 
 type DbCtx = QueryCtx | MutationCtx;
 
+export async function requireClerkUserId(ctx: DbCtx) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity?.subject) {
+    throw new Error("Unauthorized");
+  }
+  return identity.subject;
+}
+
 export async function getMemberByClerkUserId(
   ctx: DbCtx,
   clerkUserId: string
@@ -12,7 +20,8 @@ export async function getMemberByClerkUserId(
     .unique();
 }
 
-export async function requireHouseholdId(ctx: DbCtx, clerkUserId: string) {
+export async function requireHouseholdId(ctx: DbCtx) {
+  const clerkUserId = await requireClerkUserId(ctx);
   const member = await getMemberByClerkUserId(ctx, clerkUserId);
   if (!member) {
     throw new Error("No household found for user");
@@ -20,7 +29,8 @@ export async function requireHouseholdId(ctx: DbCtx, clerkUserId: string) {
   return member.householdId;
 }
 
-export async function requireMember(ctx: DbCtx, clerkUserId: string) {
+export async function requireMember(ctx: DbCtx) {
+  const clerkUserId = await requireClerkUserId(ctx);
   const member = await getMemberByClerkUserId(ctx, clerkUserId);
   if (!member) {
     throw new Error("No household member found for user");

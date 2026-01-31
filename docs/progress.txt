@@ -6,6 +6,7 @@
 - Reuse `getWeekDates`/`getDayKey` from `src/utils/date.ts` for week/day calculations.
 - Calendar UI primitives live in `src/components/calendar` for reuse across views.
 - Convex functions should reuse shared household scoping helpers from `convex/lib/household`.
+- Convex server calls use `getConvexClient` with `actingAsIdentity`; Convex functions read Clerk identity via `requireClerkUserId`.
 
 ## 2026-01-15 23:59 - US-001
 Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
@@ -222,4 +223,13 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Patterns discovered: Convex server functions centralize household scoping via `convex/lib/household`.
   - Gotchas encountered: Convex dev must run once to generate `convex/_generated` before tests.
   - Useful context: Convex React Query integration lives in `src/router.tsx` with provider wiring in `src/routes/__root.tsx`.
+---
+## 2026-01-30 18:30 - US-003
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Added Convex auth config, routed Clerk identity into Convex via `actingAsIdentity`, and updated Convex functions to read identity from `ctx.auth` with household scoping; updated server calls, tests, and docs.
+- Files changed: `convex/auth.config.ts`, `convex/lib/household.ts`, `convex/households.ts`, `convex/tasks.ts`, `convex/meals.ts`, `convex/shopping.ts`, `convex/calendar.ts`, `src/server/convex.ts`, `src/server/household.ts`, `src/server/tasks.ts`, `src/server/meals.ts`, `src/server/shopping.ts`, `src/server/calendar.ts`, `src/server/calendar.test.ts`, `src/server/meals.test.ts`, `docs/system/DATABASE.md`, `docs/prd/prd-migrate-to-convex.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: Convex internal functions should rely on `ctx.auth.getUserIdentity()` via `requireClerkUserId`.
+  - Gotchas encountered: `ConvexHttpClient` is stateful; create it per request when setting auth/identity.
+  - Useful context: Convex auth config requires `CLERK_ISSUER_URL` and `CLERK_JWT_AUDIENCE`.
 ---

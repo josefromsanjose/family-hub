@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getClerkUserId } from "@/server/clerk";
 import { getConvexClient } from "@/server/convex";
 import { internal } from "../../convex/_generated/api";
 
@@ -79,11 +78,8 @@ export type DeleteShoppingItemInput = z.infer<typeof deleteShoppingItemSchema>;
 
 export const getShoppingItems = createServerFn({ method: "GET" }).handler(
   async (): Promise<ShoppingItemResponse[]> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
-    const items = await convex.query(internal.shopping.getShoppingItems, {
-      clerkUserId: userId,
-    });
+    const convex = await getConvexClient();
+    const items = await convex.query(internal.shopping.getShoppingItems, {});
 
     return items.map(toShoppingItemResponse);
   }
@@ -94,10 +90,8 @@ export const createShoppingItem = createServerFn({ method: "POST" })
     createShoppingItemSchema.parse(input)
   )
   .handler(async ({ data }): Promise<ShoppingItemResponse> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const item = await convex.mutation(internal.shopping.createShoppingItem, {
-      clerkUserId: userId,
       name: data.name.trim(),
       ...(data.quantity ? { quantity: data.quantity } : {}),
       ...(data.category ? { category: data.category } : {}),
@@ -111,10 +105,8 @@ export const updateShoppingItem = createServerFn({ method: "POST" })
     updateShoppingItemSchema.parse(input)
   )
   .handler(async ({ data }): Promise<ShoppingItemResponse> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const item = await convex.mutation(internal.shopping.updateShoppingItem, {
-      clerkUserId: userId,
       id: data.id,
       ...(data.name !== undefined && { name: data.name.trim() }),
       ...(data.quantity !== undefined && { quantity: data.quantity }),
@@ -130,10 +122,8 @@ export const deleteShoppingItem = createServerFn({ method: "POST" })
     deleteShoppingItemSchema.parse(input)
   )
   .handler(async ({ data }): Promise<{ id: string }> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     return convex.mutation(internal.shopping.deleteShoppingItem, {
-      clerkUserId: userId,
       id: data.id,
     });
   });
@@ -143,10 +133,8 @@ export const createShoppingItemsFromMeals = createServerFn({ method: "POST" })
     return createShoppingItemsSchema.parse(input);
   })
   .handler(async ({ data }): Promise<CreateShoppingItemsFromMealsResponse> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     return convex.mutation(internal.shopping.createShoppingItemsFromMeals, {
-      clerkUserId: userId,
       mealIds: data.mealIds,
       ...(data.category ? { category: data.category } : {}),
     });

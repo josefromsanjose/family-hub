@@ -48,15 +48,15 @@ passes: true
 
 **Description:** As a developer, I want household-scoped access to remain consistent so users only access their household data.
 
-passes: false
+passes: true
 
 **Acceptance Criteria:**
 
-- [ ] All Convex queries/mutations enforce household scoping.
-- [ ] Clerk auth is integrated with Convex and user identity is available in Convex functions.
-- [ ] Auth token verification and identity mapping are documented.
-- [ ] Unauthorized access returns clear errors.
-- [ ] Typecheck/lint passes.
+- [x] All Convex queries/mutations enforce household scoping.
+- [x] Clerk auth is integrated with Convex and user identity is available in Convex functions.
+- [x] Auth token verification and identity mapping are documented.
+- [x] Unauthorized access returns clear errors.
+- [x] Typecheck/lint passes.
 
 ### US-004: Account for role/permission seeding
 

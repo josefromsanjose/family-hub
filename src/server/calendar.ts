@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getClerkUserId } from "@/server/clerk";
 import { getConvexClient } from "@/server/convex";
 import { internal } from "../../convex/_generated/api";
 
@@ -95,12 +94,10 @@ export const getCalendarEvents = createServerFn({ method: "GET" })
     return input;
   })
   .handler(async ({ data }): Promise<CalendarEventResponse[]> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const filters = data ?? {};
 
     const events = await convex.query(internal.calendar.getCalendarEvents, {
-      clerkUserId: userId,
       ...(filters.startDate ? { startDate: filters.startDate } : {}),
       ...(filters.endDate ? { endDate: filters.endDate } : {}),
       ...(filters.participantId ? { participantId: filters.participantId } : {}),
@@ -137,10 +134,8 @@ export const createCalendarEvent = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<CalendarEventResponse> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const event = await convex.mutation(internal.calendar.createCalendarEvent, {
-      clerkUserId: userId,
       title: data.title.trim(),
       ...(data.description !== undefined
         ? { description: data.description }
@@ -187,10 +182,8 @@ export const updateCalendarEvent = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<CalendarEventResponse> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     const event = await convex.mutation(internal.calendar.updateCalendarEvent, {
-      clerkUserId: userId,
       id: data.id,
       ...(data.title !== undefined && { title: data.title.trim() }),
       ...(data.description !== undefined
@@ -216,10 +209,8 @@ export const deleteCalendarEvent = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
-    const userId = await getClerkUserId();
-    const convex = getConvexClient();
+    const convex = await getConvexClient();
     return convex.mutation(internal.calendar.deleteCalendarEvent, {
-      clerkUserId: userId,
       id: data.id,
     });
   });

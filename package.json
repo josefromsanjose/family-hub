@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
-    "prebuild": "prisma generate",
     "preview": "vite preview",
     "test": "vitest run",
+    "deploy:vercel": "convex deploy --cmd \"npm run build\"",
     "db:generate": "dotenv -e .env.local -- prisma generate",
     "db:push": "dotenv -e .env.local -- prisma db push",
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev",
