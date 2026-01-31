@@ -33,16 +33,16 @@ passes: true
 
 Reference: https://docs.convex.dev/quickstart/tanstack-start
 
-passes: false
+passes: true
 
 **Acceptance Criteria:**
 
-- [ ] Run `npx convex dev` at the start of the story to set up a dev deployment and sync functions.
-- [ ] Add Convex client/router wiring per the quickstart (ConvexProvider + ConvexQueryClient integration).
-- [ ] All Prisma access in `src/server/*` is replaced with Convex queries/mutations.
-- [ ] Input validation and authorization patterns remain consistent.
-- [ ] Returned data matches existing response shapes used by the UI.
-- [ ] Typecheck/lint passes.
+- [x] Run `npx convex dev` at the start of the story to set up a dev deployment and sync functions.
+- [x] Add Convex client/router wiring per the quickstart (ConvexProvider + ConvexQueryClient integration).
+- [x] All Prisma access in `src/server/*` is replaced with Convex queries/mutations.
+- [x] Input validation and authorization patterns remain consistent.
+- [x] Returned data matches existing response shapes used by the UI.
+- [x] Typecheck/lint passes.
 
 ### US-003: Preserve household scoping and Clerk auth checks
 

@@ -5,6 +5,7 @@
 - `react-resizable-panels` exports `Group`/`Separator` (not `PanelGroup`/`PanelResizeHandle`) in this codebase.
 - Reuse `getWeekDates`/`getDayKey` from `src/utils/date.ts` for week/day calculations.
 - Calendar UI primitives live in `src/components/calendar` for reuse across views.
+- Convex functions should reuse shared household scoping helpers from `convex/lib/household`.
 
 ## 2026-01-15 23:59 - US-001
 Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
@@ -212,4 +213,13 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Patterns discovered: Convex schema uses `defineSchema`/`defineTable` with `v.union` enums and explicit index definitions to mirror Prisma models.
   - Gotchas encountered: None.
   - Useful context: Date fields are represented as numeric timestamps to model Prisma DateTime fields.
+---
+## 2026-01-30 15:56 - US-002
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Wired Convex client/query integration, replaced server data access with Convex functions, updated tests and docs for Convex env usage.
+- Files changed: `src/routes/__root.tsx`, `src/router.tsx`, `src/server/convex.ts`, `src/server/clerk.ts`, `convex/schema.ts`, `convex/households.ts`, `convex/tasks.ts`, `convex/meals.ts`, `convex/shopping.ts`, `convex/calendar.ts`, `convex/lib/ids.ts`, `convex/lib/household.ts`, `src/server/household.ts`, `src/server/tasks.ts`, `src/server/meals.ts`, `src/server/shopping.ts`, `src/server/calendar.ts`, `src/server/meals.test.ts`, `src/server/calendar.test.ts`, `src/components/calendar/CalendarEventCard.test.tsx`, `src/routes/_authed/calendar/-index.test.tsx`, `docs/system/DATABASE.md`, `docs/prd/prd-migrate-to-convex.md`
+- **Learnings for future iterations:**
+  - Patterns discovered: Convex server functions centralize household scoping via `convex/lib/household`.
+  - Gotchas encountered: Convex dev must run once to generate `convex/_generated` before tests.
+  - Useful context: Convex React Query integration lives in `src/router.tsx` with provider wiring in `src/routes/__root.tsx`.
 ---

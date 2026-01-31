@@ -7,8 +7,11 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
+import { ConvexProviderWithClerk } from "convex/react-clerk";
+import { useAuth } from "@clerk/tanstack-react-start";
 
 import AppClerkProvider from "@/integrations/clerk/provider";
+import { convexClient } from "@/integrations/convex/client";
 import Header from "@/components/Header";
 import { Toaster } from "@/components/ui/sonner";
 import { HouseholdProvider } from "@/contexts/HouseholdContext";
@@ -101,9 +104,11 @@ function StarIcon(props: React.SVGProps<SVGSVGElement>) {
 function RootComponent() {
   return (
     <AppClerkProvider>
-      <RootDocument>
-        <Outlet />
-      </RootDocument>
+      <ConvexProviderWithClerk client={convexClient} useAuth={useAuth}>
+        <RootDocument>
+          <Outlet />
+        </RootDocument>
+      </ConvexProviderWithClerk>
     </AppClerkProvider>
   );
 }

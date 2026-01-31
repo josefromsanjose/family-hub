@@ -1,26 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const mockPrisma = vi.hoisted(() => ({
-  calendarEvent: {
-    findMany: vi.fn(),
-    create: vi.fn(),
-    findFirst: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
-  },
-  householdMember: {
-    findFirst: vi.fn(),
-  },
+const mockConvexClient = vi.hoisted(() => ({
+  query: vi.fn(),
+  mutation: vi.fn(),
 }));
 
-const mockGetCurrentUserHouseholdId = vi.hoisted(() => vi.fn());
+const mockGetClerkUserId = vi.hoisted(() => vi.fn());
 
-vi.mock("@/db", () => ({
-  prisma: mockPrisma,
+vi.mock("@/server/convex", () => ({
+  getConvexClient: () => mockConvexClient,
 }));
 
-vi.mock("@/server/household", () => ({
-  getCurrentUserHouseholdId: mockGetCurrentUserHouseholdId,
+vi.mock("@/server/clerk", () => ({
+  getClerkUserId: mockGetClerkUserId,
 }));
 
 vi.mock("@tanstack/react-start", () => ({
@@ -55,30 +47,32 @@ describe("calendar server functions", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetCurrentUserHouseholdId.mockResolvedValue("household-1");
+    mockGetClerkUserId.mockResolvedValue("user-1");
   });
 
   it("maps events to ISO dates for getCalendarEvents", async () => {
     const endDate = new Date("2026-02-01T00:00:00.000Z");
-    mockPrisma.calendarEvent.findMany.mockResolvedValue([
+    mockConvexClient.query.mockResolvedValue([
       {
         id: "event-1",
         title: "Soccer",
         description: null,
-        date: baseDate,
+        date: baseDate.valueOf(),
         time: "09:00",
         recurrence: "weekly",
-        endDate,
+        endDate: endDate.valueOf(),
         participantId: null,
       },
     ]);
 
     const result = await getCalendarEvents({ data: {} });
 
-    expect(mockPrisma.calendarEvent.findMany).toHaveBeenCalledWith({
-      where: { householdId: "household-1" },
-      orderBy: [{ date: "asc" }, { time: "asc" }],
-    });
+    expect(mockConvexClient.query).toHaveBeenCalledWith(
+      expect.anything(),
+      {
+        clerkUserId: "user-1",
+      }
+    );
     expect(result).toEqual([
       {
         id: "event-1",
@@ -104,8 +98,10 @@ describe("calendar server functions", () => {
     ).rejects.toThrow("Date is invalid");
   });
 
-  it("rejects updateCalendarEvent when event is not found", async () => {
-    mockPrisma.calendarEvent.findFirst.mockResolvedValue(null);
+  it("surfaces errors from updateCalendarEvent mutation", async () => {
+    mockConvexClient.mutation.mockRejectedValue(
+      new Error("Event not found or not authorized")
+    );
 
     await expect(
       updateCalendarEvent({

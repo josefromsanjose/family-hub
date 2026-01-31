@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import type { MealType } from "@prisma/client";
-import { getPrisma } from "@/server/db";
-import { getCurrentUserHouseholdId } from "@/server/household";
+import { getClerkUserId } from "@/server/clerk";
+import { getConvexClient } from "@/server/convex";
+import { internal } from "../../convex/_generated/api";
 
 // ============================================================================
 // Type Definitions
@@ -66,42 +66,48 @@ export type GetMealLibraryItemsInput = {
   query?: string;
 };
 
-const toMealResponse = (meal: {
+type MealRecord = {
   id: string;
   householdId: string;
   name: string;
-  date: Date;
-  mealType: MealType;
+  date: number;
+  mealType: MealResponse["mealType"];
   notes: string | null;
-  mealLibraryItemId?: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-}): MealResponse => ({
+  mealLibraryItemId: string | null;
+  createdAt: number;
+  updatedAt: number;
+};
+
+type MealLibraryItemRecord = {
+  id: string;
+  householdId: string;
+  name: string;
+  notes: string | null;
+  createdAt: number;
+  updatedAt: number;
+};
+
+const toMealResponse = (meal: MealRecord): MealResponse => ({
   id: meal.id,
   householdId: meal.householdId,
   name: meal.name,
-  date: meal.date.toISOString(),
-  mealType: meal.mealType as MealResponse["mealType"],
+  date: new Date(meal.date).toISOString(),
+  mealType: meal.mealType,
   notes: meal.notes || undefined,
   mealLibraryItemId: meal.mealLibraryItemId || undefined,
-  createdAt: meal.createdAt.toISOString(),
-  updatedAt: meal.updatedAt.toISOString(),
+  createdAt: new Date(meal.createdAt).toISOString(),
+  updatedAt: new Date(meal.updatedAt).toISOString(),
 });
 
-const toMealLibraryItemResponse = (item: {
-  id: string;
-  householdId: string;
-  name: string;
-  notes: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-}): MealLibraryItemResponse => ({
+const toMealLibraryItemResponse = (
+  item: MealLibraryItemRecord
+): MealLibraryItemResponse => ({
   id: item.id,
   householdId: item.householdId,
   name: item.name,
   notes: item.notes || undefined,
-  createdAt: item.createdAt.toISOString(),
-  updatedAt: item.updatedAt.toISOString(),
+  createdAt: new Date(item.createdAt).toISOString(),
+  updatedAt: new Date(item.updatedAt).toISOString(),
 });
 
 // ============================================================================
@@ -126,24 +132,12 @@ export const getMeals = createServerFn({ method: "GET" })
     return input;
   })
   .handler(async ({ data }): Promise<MealResponse[]> => {
-    const householdId = await getCurrentUserHouseholdId();
-    const prisma = await getPrisma();
-    const startDate = data.startDate ? new Date(data.startDate) : null;
-    const endDate = data.endDate ? new Date(data.endDate) : null;
-
-    const meals = await prisma.meal.findMany({
-      where: {
-        householdId,
-        ...(startDate || endDate
-          ? {
-              date: {
-                ...(startDate ? { gte: startDate } : {}),
-                ...(endDate ? { lte: endDate } : {}),
-              },
-            }
-          : {}),
-      },
-      orderBy: [{ date: "asc" }, { mealType: "asc" }, { createdAt: "asc" }],
+    const userId = await getClerkUserId();
+    const convex = getConvexClient();
+    const meals = await convex.query(internal.meals.getMeals, {
+      clerkUserId: userId,
+      ...(data.startDate ? { startDate: data.startDate } : {}),
+      ...(data.endDate ? { endDate: data.endDate } : {}),
     });
 
     return meals.map(toMealResponse);
@@ -157,11 +151,11 @@ export const getMealById = createServerFn({ method: "GET" })
     return input;
   })
   .handler(async ({ data }): Promise<MealResponse | null> => {
-    const householdId = await getCurrentUserHouseholdId();
-    const prisma = await getPrisma();
-
-    const meal = await prisma.meal.findFirst({
-      where: { id: data.id, householdId },
+    const userId = await getClerkUserId();
+    const convex = getConvexClient();
+    const meal = await convex.query(internal.meals.getMealById, {
+      clerkUserId: userId,
+      id: data.id,
     });
 
     return meal ? toMealResponse(meal) : null;
@@ -173,17 +167,11 @@ export const getMealLibraryItems = createServerFn({ method: "GET" })
     return { query: query && query.length > 0 ? query : undefined };
   })
   .handler(async ({ data }): Promise<MealLibraryItemResponse[]> => {
-    const householdId = await getCurrentUserHouseholdId();
-    const prisma = await getPrisma();
-
-    const items = await prisma.mealLibraryItem.findMany({
-      where: {
-        householdId,
-        ...(data.query
-          ? { name: { contains: data.query, mode: "insensitive" } }
-          : {}),
-      },
-      orderBy: [{ updatedAt: "desc" }, { name: "asc" }],
+    const userId = await getClerkUserId();
+    const convex = getConvexClient();
+    const items = await convex.query(internal.meals.getMealLibraryItems, {
+      clerkUserId: userId,
+      ...(data.query ? { query: data.query } : {}),
     });
 
     return items.map(toMealLibraryItemResponse);
@@ -211,31 +199,17 @@ export const createMeal = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<MealResponse> => {
-    const householdId = await getCurrentUserHouseholdId();
-    const prisma = await getPrisma();
-    let name = data.name?.trim() ?? "";
-    let notes = data.notes?.trim() || null;
-
-    if (data.mealLibraryItemId) {
-      const libraryItem = await prisma.mealLibraryItem.findFirst({
-        where: { id: data.mealLibraryItemId, householdId },
-      });
-      if (!libraryItem) {
-        throw new Error("Meal library item not found or not authorized");
-      }
-      name = libraryItem.name.trim();
-      notes = libraryItem.notes?.trim() || null;
-    }
-
-    const meal = await prisma.meal.create({
-      data: {
-        householdId,
-        name,
-        date: new Date(data.date),
-        mealType: data.mealType as MealType,
-        notes,
-        mealLibraryItemId: data.mealLibraryItemId ?? null,
-      },
+    const userId = await getClerkUserId();
+    const convex = getConvexClient();
+    const meal = await convex.mutation(internal.meals.createMeal, {
+      clerkUserId: userId,
+      ...(data.name !== undefined ? { name: data.name.trim() } : {}),
+      date: data.date,
+      mealType: data.mealType,
+      ...(data.notes !== undefined ? { notes: data.notes } : {}),
+      ...(data.mealLibraryItemId
+        ? { mealLibraryItemId: data.mealLibraryItemId }
+        : {}),
     });
 
     return toMealResponse(meal);
@@ -249,15 +223,12 @@ export const createMealLibraryItem = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<MealLibraryItemResponse> => {
-    const householdId = await getCurrentUserHouseholdId();
-    const prisma = await getPrisma();
-
-    const item = await prisma.mealLibraryItem.create({
-      data: {
-        householdId,
-        name: data.name.trim(),
-        notes: data.notes?.trim() || null,
-      },
+    const userId = await getClerkUserId();
+    const convex = getConvexClient();
+    const item = await convex.mutation(internal.meals.createMealLibraryItem, {
+      clerkUserId: userId,
+      name: data.name.trim(),
+      ...(data.notes !== undefined ? { notes: data.notes } : {}),
     });
 
     return toMealLibraryItemResponse(item);
@@ -280,29 +251,15 @@ export const updateMeal = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<MealResponse> => {
-    const householdId = await getCurrentUserHouseholdId();
-    const prisma = await getPrisma();
-
-    const existingMeal = await prisma.meal.findFirst({
-      where: { id: data.id, householdId },
-    });
-
-    if (!existingMeal) {
-      throw new Error("Meal not found or not authorized");
-    }
-
-    const meal = await prisma.meal.update({
-      where: { id: data.id },
-      data: {
-        ...(data.name !== undefined && { name: data.name.trim() }),
-        ...(data.date !== undefined && { date: new Date(data.date) }),
-        ...(data.mealType !== undefined && {
-          mealType: data.mealType as MealType,
-        }),
-        ...(data.notes !== undefined && {
-          notes: data.notes?.trim() || null,
-        }),
-      },
+    const userId = await getClerkUserId();
+    const convex = getConvexClient();
+    const meal = await convex.mutation(internal.meals.updateMeal, {
+      clerkUserId: userId,
+      id: data.id,
+      ...(data.name !== undefined && { name: data.name.trim() }),
+      ...(data.date !== undefined && { date: data.date }),
+      ...(data.mealType !== undefined && { mealType: data.mealType }),
+      ...(data.notes !== undefined && { notes: data.notes }),
     });
 
     return toMealResponse(meal);
@@ -316,18 +273,10 @@ export const deleteMeal = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
-    const householdId = await getCurrentUserHouseholdId();
-    const prisma = await getPrisma();
-
-    const existingMeal = await prisma.meal.findFirst({
-      where: { id: data.id, householdId },
+    const userId = await getClerkUserId();
+    const convex = getConvexClient();
+    return convex.mutation(internal.meals.deleteMeal, {
+      clerkUserId: userId,
+      id: data.id,
     });
-
-    if (!existingMeal) {
-      throw new Error("Meal not found or not authorized");
-    }
-
-    await prisma.meal.delete({ where: { id: data.id } });
-
-    return { success: true };
   });

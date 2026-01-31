@@ -4,13 +4,10 @@ import type {
   HouseholdRole,
   MemberLocale,
 } from "@prisma/client";
-import { getPrisma, getPrismaErrors } from "@/server/db";
-import {
-  DEFAULT_MEMBER_LOCALE,
-  DEFAULT_NEW_MEMBER_ROLE,
-  DEFAULT_OWNER_RELATION,
-  DEFAULT_OWNER_ROLE,
-} from "@/data/household";
+import { DEFAULT_NEW_MEMBER_ROLE } from "@/data/household";
+import { getConvexClient } from "@/server/convex";
+import { getClerkUserId } from "@/server/clerk";
+import { internal } from "../../convex/_generated/api";
 
 type EnsureHouseholdResult = {
   householdId: string;
@@ -18,94 +15,58 @@ type EnsureHouseholdResult = {
   created: boolean;
 };
 
-const DEFAULT_HOUSEHOLD_NAME = "My Household";
+type HouseholdMemberRecord = {
+  id: string;
+  householdId: string;
+  clerkUserId: string | null;
+  name: string;
+  role: HouseholdRole;
+  locale: MemberLocale;
+  relation: HouseholdRelation | null;
+  relationLabel: string | null;
+  color: string | null;
+  createdAt: number;
+  updatedAt: number;
+};
+
+function toHouseholdMemberResponse(
+  member: HouseholdMemberRecord
+): HouseholdMemberResponse {
+  return {
+    id: member.id,
+    householdId: member.householdId,
+    clerkUserId: member.clerkUserId,
+    name: member.name,
+    role: member.role,
+    locale: member.locale,
+    relation: member.relation,
+    relationLabel: member.relationLabel,
+    color: member.color,
+    createdAt: new Date(member.createdAt),
+    updatedAt: new Date(member.updatedAt),
+  };
+}
 
 export const ensureHouseholdForCurrentUser = createServerFn({
   method: "POST",
 }).handler(async (): Promise<EnsureHouseholdResult> => {
-  const { auth, clerkClient } =
+  const { clerkClient } =
     await import("@clerk/tanstack-react-start/server");
-  const prisma = await getPrisma();
-  const { userId } = await auth();
+  const userId = await getClerkUserId();
 
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
+  // Fetch user info from Clerk for personalized name
+  const user = await clerkClient().users.getUser(userId);
+  const memberName =
+    user.firstName ||
+    user.username ||
+    user.emailAddresses[0]?.emailAddress?.split("@")[0] ||
+    "Owner";
 
-  try {
-    return await prisma.$transaction(async (tx) => {
-      const existing = await tx.householdMember.findUnique({
-        where: { clerkUserId: userId },
-      });
-
-      if (existing) {
-        return {
-          householdId: existing.householdId,
-          memberId: existing.id,
-          created: false,
-        };
-      }
-
-      // Fetch user info from Clerk for personalized name
-      const user = await clerkClient().users.getUser(userId);
-      const memberName =
-        user.firstName ||
-        user.username ||
-        user.emailAddresses[0]?.emailAddress?.split("@")[0] ||
-        "Owner";
-
-      // Create member with nested household creation (2 ops instead of 3)
-      const member = await tx.householdMember.create({
-        data: {
-          clerkUserId: userId,
-          name: memberName,
-          locale: DEFAULT_MEMBER_LOCALE,
-          role: DEFAULT_OWNER_ROLE,
-          relation: DEFAULT_OWNER_RELATION,
-          household: {
-            create: {
-              name: DEFAULT_HOUSEHOLD_NAME,
-            },
-          },
-        },
-      });
-
-      // Set the owner reference on the household
-      await tx.household.update({
-        where: { id: member.householdId },
-        data: { ownerId: member.id },
-      });
-
-      return {
-        householdId: member.householdId,
-        memberId: member.id,
-        created: true,
-      };
-    });
-  } catch (error) {
-    // Handle race condition: unique constraint violation on clerkUserId
-    // This can happen if two requests try to create the same user simultaneously
-    const Prisma = await getPrismaErrors();
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2002"
-    ) {
-      const existing = await prisma.householdMember.findUnique({
-        where: { clerkUserId: userId },
-      });
-
-      if (existing) {
-        return {
-          householdId: existing.householdId,
-          memberId: existing.id,
-          created: false,
-        };
-      }
-    }
-
-    // Re-throw all other errors (connection issues, schema errors, etc.)
-    throw error;
-  }
+  const convex = getConvexClient();
+  return convex.mutation(internal.households.ensureHouseholdForClerkUser, {
+    clerkUserId: userId,
+    memberName,
+  });
 });
 
 // ============================================================================
@@ -129,38 +90,30 @@ export type HouseholdMemberResponse = {
 
 // Helper to get current user's household ID
 export async function getCurrentUserHouseholdId(): Promise<string> {
-  const { auth } = await import("@clerk/tanstack-react-start/server");
-  const prisma = await getPrisma();
-  const { userId } = await auth();
-
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
-
-  const member = await prisma.householdMember.findUnique({
-    where: { clerkUserId: userId },
-    select: { householdId: true },
-  });
-
-  if (!member) {
-    throw new Error("No household found for user");
-  }
-
-  return member.householdId;
+  const userId = await getClerkUserId();
+  const convex = getConvexClient();
+  const result = await convex.query(
+    internal.households.getHouseholdIdForClerkUser,
+    {
+      clerkUserId: userId,
+    }
+  );
+  return result.householdId;
 }
 
 // GET: Fetch all members for the current user's household
 export const getHouseholdMembers = createServerFn({ method: "GET" }).handler(
   async (): Promise<HouseholdMemberResponse[]> => {
-    const householdId = await getCurrentUserHouseholdId();
-    const prisma = await getPrisma();
+    const userId = await getClerkUserId();
+    const convex = getConvexClient();
+    const members = await convex.query(
+      internal.households.getHouseholdMembers,
+      {
+        clerkUserId: userId,
+      }
+    );
 
-    const members = await prisma.householdMember.findMany({
-      where: { householdId },
-      orderBy: { createdAt: "asc" },
-    });
-
-    return members;
+    return members.map(toHouseholdMemberResponse);
   }
 );
 
@@ -178,17 +131,17 @@ export const getHouseholdMemberById = createServerFn({ method: "GET" })
     return input;
   })
   .handler(async ({ data }): Promise<HouseholdMemberResponse | null> => {
-    const householdId = await getCurrentUserHouseholdId();
-    const prisma = await getPrisma();
-
-    const member = await prisma.householdMember.findFirst({
-      where: {
+    const userId = await getClerkUserId();
+    const convex = getConvexClient();
+    const member = await convex.query(
+      internal.households.getHouseholdMemberById,
+      {
+        clerkUserId: userId,
         id: data.id,
-        householdId,
-      },
-    });
+      }
+    );
 
-    return member;
+    return member ? toHouseholdMemberResponse(member) : null;
   });
 
 // Type for creating a new member
@@ -210,39 +163,24 @@ export const createHouseholdMember = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<HouseholdMemberResponse> => {
-    const householdId = await getCurrentUserHouseholdId();
-    const prisma = await getPrisma();
-
-    // Generate a color if not provided
-    const colors = [
-      "bg-pink-500",
-      "bg-blue-500",
-      "bg-green-500",
-      "bg-yellow-500",
-      "bg-purple-500",
-      "bg-orange-500",
-      "bg-red-500",
-      "bg-indigo-500",
-    ];
-
-    // Get current member count to pick a color
-    const memberCount = await prisma.householdMember.count({
-      where: { householdId },
-    });
-
-    const member = await prisma.householdMember.create({
-      data: {
-        householdId,
+    const userId = await getClerkUserId();
+    const convex = getConvexClient();
+    const member = await convex.mutation(
+      internal.households.createHouseholdMember,
+      {
+        clerkUserId: userId,
         name: data.name.trim(),
         role: data.role || DEFAULT_NEW_MEMBER_ROLE,
         ...(data.locale !== undefined && { locale: data.locale }),
-        relation: data.relation,
-        relationLabel: data.relationLabel?.trim() || null,
-        color: data.color || colors[memberCount % colors.length],
-      },
-    });
+        ...(data.relation !== undefined && { relation: data.relation }),
+        ...(data.relationLabel !== undefined && {
+          relationLabel: data.relationLabel?.trim() || null,
+        }),
+        ...(data.color !== undefined && { color: data.color }),
+      }
+    );
 
-    return member;
+    return toHouseholdMemberResponse(member);
   });
 
 // Type for updating a member
@@ -265,24 +203,13 @@ export const updateHouseholdMember = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<HouseholdMemberResponse> => {
-    const householdId = await getCurrentUserHouseholdId();
-    const prisma = await getPrisma();
-
-    // Verify the member belongs to the current user's household
-    const existingMember = await prisma.householdMember.findFirst({
-      where: {
+    const userId = await getClerkUserId();
+    const convex = getConvexClient();
+    const member = await convex.mutation(
+      internal.households.updateHouseholdMember,
+      {
+        clerkUserId: userId,
         id: data.id,
-        householdId,
-      },
-    });
-
-    if (!existingMember) {
-      throw new Error("Member not found or not authorized");
-    }
-
-    const member = await prisma.householdMember.update({
-      where: { id: data.id },
-      data: {
         ...(data.name !== undefined && { name: data.name.trim() }),
         ...(data.role !== undefined && { role: data.role }),
         ...(data.locale !== undefined && { locale: data.locale }),
@@ -291,10 +218,10 @@ export const updateHouseholdMember = createServerFn({ method: "POST" })
           relationLabel: data.relationLabel?.trim() || null,
         }),
         ...(data.color !== undefined && { color: data.color }),
-      },
-    });
+      }
+    );
 
-    return member;
+    return toHouseholdMemberResponse(member);
   });
 
 // Type for deleting a member
@@ -311,29 +238,10 @@ export const deleteHouseholdMember = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
-    const householdId = await getCurrentUserHouseholdId();
-    const prisma = await getPrisma();
-
-    // Verify the member belongs to the current user's household
-    const existingMember = await prisma.householdMember.findFirst({
-      where: {
-        id: data.id,
-        householdId,
-      },
+    const userId = await getClerkUserId();
+    const convex = getConvexClient();
+    return convex.mutation(internal.households.deleteHouseholdMember, {
+      clerkUserId: userId,
+      id: data.id,
     });
-
-    if (!existingMember) {
-      throw new Error("Member not found or not authorized");
-    }
-
-    // Prevent deleting the owner
-    if (existingMember.clerkUserId) {
-      throw new Error("Cannot delete the household owner");
-    }
-
-    await prisma.householdMember.delete({
-      where: { id: data.id },
-    });
-
-    return { success: true };
   });

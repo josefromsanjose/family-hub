@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import type { EventRecurrence } from "@prisma/client";
-import { getPrisma } from "@/server/db";
-import { getCurrentUserHouseholdId } from "@/server/household";
+import { getClerkUserId } from "@/server/clerk";
+import { getConvexClient } from "@/server/convex";
+import { internal } from "../../convex/_generated/api";
 
 // ============================================================================
 // Type Definitions
@@ -49,24 +49,27 @@ export type DeleteCalendarEventInput = {
   id: string;
 };
 
-const toCalendarEventResponse = (event: {
+type CalendarEventRecord = {
   id: string;
   title: string;
   description: string | null;
-  date: Date;
+  date: number;
   time: string | null;
-  recurrence: EventRecurrence | null;
-  endDate: Date | null;
+  recurrence: CalendarEventResponse["recurrence"] | null;
+  endDate: number | null;
   participantId: string | null;
-}): CalendarEventResponse => ({
+};
+
+const toCalendarEventResponse = (
+  event: CalendarEventRecord
+): CalendarEventResponse => ({
   id: event.id,
   title: event.title,
   description: event.description || undefined,
-  date: event.date.toISOString(),
+  date: new Date(event.date).toISOString(),
   time: event.time || undefined,
-  recurrence:
-    (event.recurrence as CalendarEventResponse["recurrence"]) || undefined,
-  endDate: event.endDate ? event.endDate.toISOString() : undefined,
+  recurrence: event.recurrence || undefined,
+  endDate: event.endDate ? new Date(event.endDate).toISOString() : undefined,
   participantId: event.participantId || undefined,
 });
 
@@ -92,28 +95,15 @@ export const getCalendarEvents = createServerFn({ method: "GET" })
     return input;
   })
   .handler(async ({ data }): Promise<CalendarEventResponse[]> => {
-    const householdId = await getCurrentUserHouseholdId();
-    const prisma = await getPrisma();
+    const userId = await getClerkUserId();
+    const convex = getConvexClient();
     const filters = data ?? {};
-    const startDate = filters.startDate ? new Date(filters.startDate) : null;
-    const endDate = filters.endDate ? new Date(filters.endDate) : null;
 
-    const events = await prisma.calendarEvent.findMany({
-      where: {
-        householdId,
-        ...(filters.participantId
-          ? { participantId: filters.participantId }
-          : {}),
-        ...(startDate || endDate
-          ? {
-              date: {
-                ...(startDate ? { gte: startDate } : {}),
-                ...(endDate ? { lte: endDate } : {}),
-              },
-            }
-          : {}),
-      },
-      orderBy: [{ date: "asc" }, { time: "asc" }],
+    const events = await convex.query(internal.calendar.getCalendarEvents, {
+      clerkUserId: userId,
+      ...(filters.startDate ? { startDate: filters.startDate } : {}),
+      ...(filters.endDate ? { endDate: filters.endDate } : {}),
+      ...(filters.participantId ? { participantId: filters.participantId } : {}),
     });
 
     return events.map(toCalendarEventResponse);
@@ -147,35 +137,21 @@ export const createCalendarEvent = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<CalendarEventResponse> => {
-    const householdId = await getCurrentUserHouseholdId();
-    const prisma = await getPrisma();
-
-    if (data.participantId) {
-      const member = await prisma.householdMember.findFirst({
-        where: {
-          id: data.participantId,
-          householdId,
-        },
-      });
-
-      if (!member) {
-        throw new Error("Participant not found or not authorized");
-      }
-    }
-
-    const event = await prisma.calendarEvent.create({
-      data: {
-        householdId,
-        title: data.title.trim(),
-        description: data.description?.trim() || null,
-        date: new Date(data.date),
-        time: data.time || null,
-        recurrence: data.recurrence
-          ? (data.recurrence as EventRecurrence)
-          : null,
-        endDate: data.endDate ? new Date(data.endDate) : null,
-        participantId: data.participantId || null,
-      },
+    const userId = await getClerkUserId();
+    const convex = getConvexClient();
+    const event = await convex.mutation(internal.calendar.createCalendarEvent, {
+      clerkUserId: userId,
+      title: data.title.trim(),
+      ...(data.description !== undefined
+        ? { description: data.description }
+        : {}),
+      date: data.date,
+      ...(data.time !== undefined ? { time: data.time } : {}),
+      ...(data.recurrence !== undefined ? { recurrence: data.recurrence } : {}),
+      ...(data.endDate !== undefined ? { endDate: data.endDate } : {}),
+      ...(data.participantId !== undefined
+        ? { participantId: data.participantId }
+        : {}),
     });
 
     return toCalendarEventResponse(event);
@@ -211,48 +187,22 @@ export const updateCalendarEvent = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<CalendarEventResponse> => {
-    const householdId = await getCurrentUserHouseholdId();
-    const prisma = await getPrisma();
-
-    const existingEvent = await prisma.calendarEvent.findFirst({
-      where: { id: data.id, householdId },
-    });
-
-    if (!existingEvent) {
-      throw new Error("Event not found or not authorized");
-    }
-
-    if (data.participantId !== undefined && data.participantId !== null) {
-      const member = await prisma.householdMember.findFirst({
-        where: { id: data.participantId, householdId },
-      });
-
-      if (!member) {
-        throw new Error("Participant not found or not authorized");
-      }
-    }
-
-    const event = await prisma.calendarEvent.update({
-      where: { id: data.id },
-      data: {
-        ...(data.title !== undefined && { title: data.title.trim() }),
-        ...(data.description !== undefined && {
-          description: data.description?.trim() || null,
-        }),
-        ...(data.date !== undefined && { date: new Date(data.date) }),
-        ...(data.time !== undefined && { time: data.time || null }),
-        ...(data.recurrence !== undefined && {
-          recurrence: data.recurrence
-            ? (data.recurrence as EventRecurrence)
-            : null,
-        }),
-        ...(data.endDate !== undefined && {
-          endDate: data.endDate ? new Date(data.endDate) : null,
-        }),
-        ...(data.participantId !== undefined && {
-          participantId: data.participantId || null,
-        }),
-      },
+    const userId = await getClerkUserId();
+    const convex = getConvexClient();
+    const event = await convex.mutation(internal.calendar.updateCalendarEvent, {
+      clerkUserId: userId,
+      id: data.id,
+      ...(data.title !== undefined && { title: data.title.trim() }),
+      ...(data.description !== undefined
+        ? { description: data.description }
+        : {}),
+      ...(data.date !== undefined ? { date: data.date } : {}),
+      ...(data.time !== undefined ? { time: data.time } : {}),
+      ...(data.recurrence !== undefined ? { recurrence: data.recurrence } : {}),
+      ...(data.endDate !== undefined ? { endDate: data.endDate } : {}),
+      ...(data.participantId !== undefined
+        ? { participantId: data.participantId }
+        : {}),
     });
 
     return toCalendarEventResponse(event);
@@ -266,23 +216,10 @@ export const deleteCalendarEvent = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
-    const householdId = await getCurrentUserHouseholdId();
-    const prisma = await getPrisma();
-
-    const existingEvent = await prisma.calendarEvent.findFirst({
-      where: {
-        id: data.id,
-        householdId,
-      },
+    const userId = await getClerkUserId();
+    const convex = getConvexClient();
+    return convex.mutation(internal.calendar.deleteCalendarEvent, {
+      clerkUserId: userId,
+      id: data.id,
     });
-
-    if (!existingEvent) {
-      throw new Error("Event not found or not authorized");
-    }
-
-    await prisma.calendarEvent.delete({
-      where: { id: data.id },
-    });
-
-    return { success: true };
   });

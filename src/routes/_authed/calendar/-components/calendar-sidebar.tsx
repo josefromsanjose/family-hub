@@ -1,6 +1,4 @@
 import { Check, Plus } from "lucide-react";
-
-import type { HouseholdMember } from "@/contexts/HouseholdContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";

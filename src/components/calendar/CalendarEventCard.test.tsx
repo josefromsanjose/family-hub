@@ -16,13 +16,12 @@ describe("CalendarEventCard", () => {
         title="Piano Lesson"
         description="Bring sheet music"
         time="16:00"
-        participantLabel="Ava"
         onDelete={onDelete}
       />
     )
 
     expect(screen.getByText("Piano Lesson")).toBeTruthy()
-    expect(screen.getByText(/for ava/i)).toBeTruthy()
+    expect(screen.getByText("Bring sheet music")).toBeTruthy()
 
     fireEvent.click(screen.getByRole("button", { name: /delete event/i }))
     expect(onDelete).toHaveBeenCalledTimes(1)

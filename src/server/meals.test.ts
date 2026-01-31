@@ -1,28 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const mockPrisma = vi.hoisted(() => ({
-  meal: {
-    findMany: vi.fn(),
-    create: vi.fn(),
-    findFirst: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
-  },
-  mealLibraryItem: {
-    findMany: vi.fn(),
-    findFirst: vi.fn(),
-    create: vi.fn(),
-  },
+const mockConvexClient = vi.hoisted(() => ({
+  query: vi.fn(),
+  mutation: vi.fn(),
 }));
 
-const mockGetCurrentUserHouseholdId = vi.hoisted(() => vi.fn());
+const mockGetClerkUserId = vi.hoisted(() => vi.fn());
 
-vi.mock("@/db", () => ({
-  prisma: mockPrisma,
+vi.mock("@/server/convex", () => ({
+  getConvexClient: () => mockConvexClient,
 }));
 
-vi.mock("@/server/household", () => ({
-  getCurrentUserHouseholdId: mockGetCurrentUserHouseholdId,
+vi.mock("@/server/clerk", () => ({
+  getClerkUserId: mockGetClerkUserId,
 }));
 
 vi.mock("@tanstack/react-start", () => ({
@@ -59,30 +49,32 @@ describe("meals server functions", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetCurrentUserHouseholdId.mockResolvedValue("household-1");
+    mockGetClerkUserId.mockResolvedValue("user-1");
   });
 
   it("maps meals to ISO dates for getMeals", async () => {
-    mockPrisma.meal.findMany.mockResolvedValue([
+    mockConvexClient.query.mockResolvedValue([
       {
         id: "meal-1",
         householdId: "household-1",
         name: "Pasta",
-        date: baseDate,
+        date: baseDate.valueOf(),
         mealType: "dinner",
         notes: null,
         mealLibraryItemId: null,
-        createdAt: baseDate,
-        updatedAt: baseDate,
+        createdAt: baseDate.valueOf(),
+        updatedAt: baseDate.valueOf(),
       },
     ]);
 
     const result = await getMeals({ data: {} });
 
-    expect(mockPrisma.meal.findMany).toHaveBeenCalledWith({
-      where: { householdId: "household-1" },
-      orderBy: [{ date: "asc" }, { mealType: "asc" }, { createdAt: "asc" }],
-    });
+    expect(mockConvexClient.query).toHaveBeenCalledWith(
+      expect.anything(),
+      {
+        clerkUserId: "user-1",
+      }
+    );
     expect(result).toEqual([
       {
         id: "meal-1",
@@ -98,23 +90,27 @@ describe("meals server functions", () => {
   });
 
   it("returns a meal by id when it exists", async () => {
-    mockPrisma.meal.findFirst.mockResolvedValue({
+    mockConvexClient.query.mockResolvedValue({
       id: "meal-1",
       householdId: "household-1",
       name: "Pasta",
-      date: baseDate,
+      date: baseDate.valueOf(),
       mealType: "dinner",
       notes: null,
       mealLibraryItemId: null,
-      createdAt: baseDate,
-      updatedAt: baseDate,
+      createdAt: baseDate.valueOf(),
+      updatedAt: baseDate.valueOf(),
     });
 
     const result = await getMealById({ data: { id: "meal-1" } });
 
-    expect(mockPrisma.meal.findFirst).toHaveBeenCalledWith({
-      where: { id: "meal-1", householdId: "household-1" },
-    });
+    expect(mockConvexClient.query).toHaveBeenCalledWith(
+      expect.anything(),
+      {
+        clerkUserId: "user-1",
+        id: "meal-1",
+      }
+    );
     expect(result).toEqual({
       id: "meal-1",
       householdId: "household-1",
@@ -128,23 +124,25 @@ describe("meals server functions", () => {
   });
 
   it("returns library items for getMealLibraryItems", async () => {
-    mockPrisma.mealLibraryItem.findMany.mockResolvedValue([
+    mockConvexClient.query.mockResolvedValue([
       {
         id: "library-1",
         householdId: "household-1",
         name: "Tacos",
         notes: "Use salsa",
-        createdAt: baseDate,
-        updatedAt: baseDate,
+        createdAt: baseDate.valueOf(),
+        updatedAt: baseDate.valueOf(),
       },
     ]);
 
     const result = await getMealLibraryItems({ data: {} });
 
-    expect(mockPrisma.mealLibraryItem.findMany).toHaveBeenCalledWith({
-      where: { householdId: "household-1" },
-      orderBy: [{ updatedAt: "desc" }, { name: "asc" }],
-    });
+    expect(mockConvexClient.query).toHaveBeenCalledWith(
+      expect.anything(),
+      {
+        clerkUserId: "user-1",
+      }
+    );
     expect(result).toEqual([
       {
         id: "library-1",
@@ -169,8 +167,10 @@ describe("meals server functions", () => {
     ).rejects.toThrow("Meal name is required");
   });
 
-  it("rejects updateMeal when meal is not found for household", async () => {
-    mockPrisma.meal.findFirst.mockResolvedValue(null);
+  it("surfaces errors from updateMeal mutation", async () => {
+    mockConvexClient.mutation.mockRejectedValue(
+      new Error("Meal not found or not authorized")
+    );
 
     await expect(
       updateMeal({
