@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev --port 3000",
+    "dev:all": "concurrently \"npx convex dev\" \"vite dev --port 3000\"",
     "build": "npm test && convex deploy --cmd \"npm run build:app\" && npm run convex:seed",
     "build:app": "vite build",
     "convex:seed": "npx convex run seed:seedAll",
@@ -80,6 +81,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.4",
+    "concurrently": "^9.1.0",
     "jsdom": "^27.0.0",
     "typescript": "^5.7.2",
     "vite": "^7.1.7",
