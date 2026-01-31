@@ -4,9 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev --port 3000",
-    "build": "npm test && convex deploy --cmd \"npm run build:app\"",
+    "build": "npm test && convex deploy --cmd \"npm run build:app\" && npm run convex:seed",
     "build:app": "vite build",
-    "convex:seed": "npx convex run seedAll",
+    "convex:seed": "npx convex run seed:seedAll",
     "preview": "vite preview",
     "test": "vitest run",
     "db:generate": "dotenv -e .env.local -- prisma generate",
