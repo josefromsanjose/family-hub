@@ -4,11 +4,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev --port 3000",
-    "build": "convex deploy --cmd \"npm run build:app\"",
+    "build": "npm test && convex deploy --cmd \"npm run build:app\" && npm run convex:seed",
     "build:app": "vite build",
+    "convex:seed": "npx convex run seedAll",
     "preview": "vite preview",
     "test": "vitest run",
-    "deploy:vercel": "convex deploy --cmd \"npm run build\"",
     "db:generate": "dotenv -e .env.local -- prisma generate",
     "db:push": "dotenv -e .env.local -- prisma db push",
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev",

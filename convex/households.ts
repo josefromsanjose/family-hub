@@ -7,6 +7,7 @@ import {
   requireHouseholdId,
 } from "./lib/household";
 import { generateId } from "./lib/ids";
+import { ensureMemberPermissionsForRole } from "./lib/permissions";
 
 const DEFAULT_MEMBER_LOCALE = "en";
 const DEFAULT_NEW_MEMBER_ROLE = "child";
@@ -88,6 +89,8 @@ export const ensureHouseholdForClerkUser = internalMutation({
       updatedAt: now,
     });
 
+    await ensureMemberPermissionsForRole(ctx, memberId, DEFAULT_OWNER_ROLE);
+
     await ctx.db.patch(householdDocId, {
       ownerId: memberId,
       updatedAt: now,
@@ -165,6 +168,7 @@ export const createHouseholdMember = internalMutation({
     };
 
     await ctx.db.insert("householdMembers", member);
+    await ensureMemberPermissionsForRole(ctx, member.id, member.role);
     return member;
   },
 });

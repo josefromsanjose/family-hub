@@ -12,7 +12,9 @@ import type * as calendar from "../calendar.js";
 import type * as households from "../households.js";
 import type * as lib_household from "../lib/household.js";
 import type * as lib_ids from "../lib/ids.js";
+import type * as lib_permissions from "../lib/permissions.js";
 import type * as meals from "../meals.js";
+import type * as seed from "../seed.js";
 import type * as shopping from "../shopping.js";
 import type * as tasks from "../tasks.js";
 
@@ -27,7 +29,9 @@ declare const fullApi: ApiFromModules<{
   households: typeof households;
   "lib/household": typeof lib_household;
   "lib/ids": typeof lib_ids;
+  "lib/permissions": typeof lib_permissions;
   meals: typeof meals;
+  seed: typeof seed;
   shopping: typeof shopping;
   tasks: typeof tasks;
 }>;

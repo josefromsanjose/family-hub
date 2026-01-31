@@ -7,6 +7,7 @@
 - Calendar UI primitives live in `src/components/calendar` for reuse across views.
 - Convex functions should reuse shared household scoping helpers from `convex/lib/household`.
 - Convex server calls use `getConvexClient` with `actingAsIdentity`; Convex functions read Clerk identity via `requireClerkUserId`.
+- Seed Convex role/member permissions via `convex/seed.ts` and `npm run convex:seed`.
 
 ## 2026-01-15 23:59 - US-001
 Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
@@ -232,4 +233,13 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Patterns discovered: Convex internal functions should rely on `ctx.auth.getUserIdentity()` via `requireClerkUserId`.
   - Gotchas encountered: `ConvexHttpClient` is stateful; create it per request when setting auth/identity.
   - Useful context: Convex auth config requires `CLERK_ISSUER_URL` and `CLERK_JWT_AUDIENCE`.
+---
+## 2026-01-30 19:15 - US-004
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Added Convex seed mutation for role/member permissions, wired member creation to copy role defaults, and documented the seed command.
+- Files changed: `convex/lib/permissions.ts`, `convex/seed.ts`, `convex/households.ts`, `package.json`, `docs/system/DATABASE.md`, `docs/prd/prd-migrate-to-convex.md`, `docs/progress.txt`
+- **Learnings for future iterations:**
+  - Patterns discovered: Seed role/member permissions via `seedPermissions` and reuse helper to copy defaults on member creation.
+  - Gotchas encountered: None.
+  - Useful context: Seed command is `npm run convex:seed` once Convex dev is running.
 ---

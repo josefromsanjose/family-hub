@@ -62,13 +62,13 @@ passes: true
 
 **Description:** As a developer, I want the roles/permissions seed logic to exist in Convex so the app can rely on consistent defaults.
 
-passes: false
+passes: true
 
 **Acceptance Criteria:**
 
-- [ ] Convex includes a migration/seed path to populate role permissions and default member permissions.
-- [ ] Seed logic is idempotent.
-- [ ] Seed is invoked in a documented, repeatable way.
+- [x] Convex includes a migration/seed path to populate role permissions and default member permissions.
+- [x] Seed logic is idempotent.
+- [x] Seed is invoked in a documented, repeatable way.
 - [ ] Typecheck/lint passes.
 
 ### US-005: Remove Prisma/Postgres infrastructure and scripts
