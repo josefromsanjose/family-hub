@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev --port 3000",
-    "build": "vite build",
+    "build": "convex deploy --cmd \"npm run build:app\"",
+    "build:app": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "deploy:vercel": "convex deploy --cmd \"npm run build\"",
