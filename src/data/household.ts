@@ -1,8 +1,18 @@
-import type {
-  HouseholdRelation,
-  HouseholdRole,
-  MemberLocale,
-} from "@prisma/client";
+export type HouseholdRole = "admin" | "adult" | "child";
+
+export type HouseholdRelation =
+  | "parent"
+  | "child"
+  | "grandparent"
+  | "sibling"
+  | "aunt_uncle"
+  | "cousin"
+  | "guardian"
+  | "partner"
+  | "roommate"
+  | "other";
+
+export type MemberLocale = "en" | "es";
 
 export const DEFAULT_OWNER_ROLE: HouseholdRole = "admin";
 export const DEFAULT_OWNER_RELATION: HouseholdRelation = "parent";

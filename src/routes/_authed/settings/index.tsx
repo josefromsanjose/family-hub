@@ -6,7 +6,7 @@ import {
   deleteHouseholdMember,
   type HouseholdMemberResponse,
 } from "@/server/household";
-import type { HouseholdRole } from "@prisma/client";
+import type { HouseholdRole } from "@/data/household";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";

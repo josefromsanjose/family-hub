@@ -2,12 +2,12 @@
 
 - Prefer existing helper utilities for cross-cutting concerns (auth, household scoping, validation) instead of re-implementing logic.
 - Keep server function CRUD patterns consistent: validate inputs, enforce ownership/authorization, and return typed, frontend-friendly data.
-- Avoid top-level imports of Node-only modules (e.g., `@/db`, Prisma, `pg`) in code that may be bundled for the client; use server-only helpers or dynamic imports (e.g., `getPrisma()` from `src/server/db.ts`) inside server handlers.
 - Reuse `src/utils/date.ts` helpers (`getWeekDates`, `getDayKey`) for week/day calculations to avoid duplicate date logic in features like meals.
 - NEVER reset the database
 - Use Zod (or existing schema helpers) for server input validation; return typed errors, not exceptions for flow control.
 - Prefer TanStack Router loaders/actions for data fetching/mutations; keep route files thin and delegate to server modules.
 - Keep Prisma access inside server-only modules; expose a narrow API from src/server/* to UI.
+- Use `src/data/household.ts` as the source of truth for household role, relation, and locale types.
 - Follow src/components/ui/* patterns for UI primitives; avoid one-off variants unless needed.
 - Write RTL/Vitest tests for new UI components and for route behavior in src/routes/* tests.
 - Build React components as small, focused functional components with hooks at top level.

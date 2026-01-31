@@ -1,6 +1,6 @@
 import { createContext, useContext, ReactNode, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { HouseholdRelation, HouseholdRole } from "@prisma/client";
+import type { HouseholdRelation, HouseholdRole } from "@/data/household";
 import {
   getHouseholdMembers,
   createHouseholdMember,

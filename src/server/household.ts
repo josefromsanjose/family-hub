@@ -3,7 +3,7 @@ import type {
   HouseholdRelation,
   HouseholdRole,
   MemberLocale,
-} from "@prisma/client";
+} from "@/data/household";
 import { DEFAULT_NEW_MEMBER_ROLE } from "@/data/household";
 import { getConvexClient } from "@/server/convex";
 import { getClerkUserId } from "@/server/clerk";

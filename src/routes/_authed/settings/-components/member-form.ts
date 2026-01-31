@@ -1,4 +1,4 @@
-import type { HouseholdRelation, HouseholdRole } from "@prisma/client";
+import type { HouseholdRelation, HouseholdRole } from "@/data/household";
 
 export type MemberFormData = {
   name: string;

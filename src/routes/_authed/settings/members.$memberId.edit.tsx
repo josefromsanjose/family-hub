@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
-import type { HouseholdRole } from "@prisma/client";
+import type { HouseholdRole } from "@/data/household";
 import { getHouseholdMembers, updateHouseholdMember } from "@/server/household";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

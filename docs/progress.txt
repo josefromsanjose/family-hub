@@ -243,3 +243,12 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Gotchas encountered: None.
   - Useful context: Seed command is `npm run convex:seed` once Convex dev is running.
 ---
+## 2026-01-30 22:03 - US-005
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- What was implemented: Removed Prisma/Postgres dependencies and scripts, deleted Prisma schema/migrations/config, and replaced Prisma type imports with local household types.
+- Files changed: `package.json`, `package-lock.json`, `src/data/household.ts`, `src/server/household.ts`, `src/contexts/HouseholdContext.tsx`, `src/routes/_authed/settings/index.tsx`, `src/routes/_authed/settings/members.$memberId.edit.tsx`, `src/routes/_authed/settings/-components/member-form.ts`, `src/routes/_authed/settings/-components/MemberRoleSection.tsx`, `docs/prd/prd-migrate-to-convex.md`, `docs/progress.txt` (removed `src/db.ts`, `src/server/db.ts`, `prisma/*`, `prisma.config.ts`)
+- **Learnings for future iterations:**
+  - Patterns discovered: Household role/relation/locale types now live in `src/data/household.ts` instead of Prisma.
+  - Gotchas encountered: None.
+  - Useful context: Removing Prisma requires cleaning `db:*` scripts plus the Prisma config/migrations folder.
+---

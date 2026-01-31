@@ -69,20 +69,20 @@ passes: true
 - [x] Convex includes a migration/seed path to populate role permissions and default member permissions.
 - [x] Seed logic is idempotent.
 - [x] Seed is invoked in a documented, repeatable way.
-- [ ] Typecheck/lint passes.
+- [x] Typecheck/lint passes.
 
 ### US-005: Remove Prisma/Postgres infrastructure and scripts
 
 **Description:** As a developer, I want the old database tooling removed to simplify the project and avoid confusion.
 
-passes: false
+passes: true
 
 **Acceptance Criteria:**
 
-- [ ] Prisma dependencies and config are removed from `package.json`.
-- [ ] Prisma scripts (`db:*`) are removed or replaced with Convex equivalents.
-- [ ] Prisma schema/config files are removed from the repo.
-- [ ] Typecheck/lint passes.
+- [x] Prisma dependencies and config are removed from `package.json`.
+- [x] Prisma scripts (`db:*`) are removed or replaced with Convex equivalents.
+- [x] Prisma schema/config files are removed from the repo.
+- [x] Typecheck/lint passes.
 
 ## Functional Requirements
 

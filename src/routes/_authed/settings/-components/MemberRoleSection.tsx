@@ -1,4 +1,4 @@
-import type { HouseholdRole } from "@prisma/client";
+import type { HouseholdRole } from "@/data/household";
 import { SelectionCard } from "@/components/touch/SelectionCard";
 import { ROLE_OPTIONS } from "@/data/household";
 import type { MemberFormData } from "@/routes/_authed/settings/-components/member-form";
