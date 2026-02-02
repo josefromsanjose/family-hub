@@ -1,5 +1,4 @@
 import type { UIMessage } from "@tanstack/ai";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChatComposer } from "./chat-composer";
 import { ChatError } from "./chat-error";
 import { ChatThread } from "./chat-thread";
@@ -22,9 +21,9 @@ export function ChatPanel({
   onSubmit,
 }: ChatPanelProps) {
   return (
-    <div className="flex h-full flex-col space-y-4">
-    
-        <ChatThread messages={messages} isLoading={isLoading} />
+    <div className="flex h-full min-h-0 flex-col gap-4">
+      <ChatThread messages={messages} isLoading={isLoading} />
+      <div className="space-y-2">
         <ChatComposer
           input={input}
           isLoading={isLoading}
@@ -32,6 +31,7 @@ export function ChatPanel({
           onSubmit={onSubmit}
         />
         <ChatError error={error} />
+      </div>
     </div>
   );
 }

@@ -9,8 +9,8 @@ type ChatThreadProps = {
 
 export function ChatThread({ messages, isLoading }: ChatThreadProps) {
   return (
-    <ScrollArea className="flex-1 rounded-md border bg-muted/30 p-4">
-      <div className="flex min-h-full flex-col gap-4">
+    <ScrollArea className="min-h-0 flex-1 rounded-md border bg-muted/30 p-4">
+      <div className="flex flex-col gap-4">
         {messages.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             Ask the agent a question to get started.
