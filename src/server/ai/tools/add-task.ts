@@ -8,14 +8,27 @@ export const addTaskTool = addTaskDefinition.server(async (args) => {
       ? (args as { title?: string }).title?.trim()
       : "";
   if (!title) {
-    return JSON.stringify("Missing task title. Provide a title for add_task.");
+    return {
+      message: "Missing task title. Provide a title for add_task.",
+      task: null,
+    };
   }
   try {
     const convex = await getConvexClient();
     const task = await convex.mutation(internal.tasks.createTask, { title });
-    return JSON.stringify(`Created task "${task.title}".`);
+    return {
+      message: `Created task "${task.title}".`,
+      task: {
+        id: task.id,
+        title: task.title,
+        completed: task.completed,
+      },
+    };
   } catch (error) {
     console.error("add_task tool failed", error);
-    return JSON.stringify("Unable to create the task right now.");
+    return {
+      message: "Unable to create the task right now.",
+      task: null,
+    };
   }
 });

@@ -1,5 +1,5 @@
 import { currentTimeDefinition } from "./definitions";
 
-export const currentTimeTool = currentTimeDefinition.server(async () =>
-  JSON.stringify(new Date().toISOString())
-);
+export const currentTimeTool = currentTimeDefinition.server(async () => ({
+  iso: new Date().toISOString(),
+}));

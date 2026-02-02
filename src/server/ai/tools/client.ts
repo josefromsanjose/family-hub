@@ -24,7 +24,16 @@ export const getChatClientTools = () =>
         ? addTaskDefinition.inputSchema.parse(args)
         : (args as { title: string });
       const task = await createTask({ data: { title: input.title } });
-      return `Created task "${task.title}".`;
+      return {
+        message: `Created task "${task.title}".`,
+        task: {
+          id: task.id,
+          title: task.title,
+          completed: task.completed,
+        },
+      };
     }),
-    currentTimeDefinition.client(async () => new Date().toISOString())
+    currentTimeDefinition.client(async () => ({
+      iso: new Date().toISOString(),
+    }))
   );

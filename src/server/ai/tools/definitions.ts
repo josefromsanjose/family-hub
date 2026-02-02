@@ -23,12 +23,23 @@ export const addTaskDefinition = toolDefinition({
   inputSchema: z.object({
     title: z.string().min(1, "Title is required"),
   }),
-  outputSchema: z.string(),
+  outputSchema: z.object({
+    message: z.string(),
+    task: z
+      .object({
+        id: z.string(),
+        title: z.string(),
+        completed: z.boolean(),
+      })
+      .nullable(),
+  }),
 });
 
 export const currentTimeDefinition = toolDefinition({
   name: "current_time",
   description: "Returns the current server time in ISO format. Input must be {}.",
   inputSchema: z.object({}),
-  outputSchema: z.string(),
+  outputSchema: z.object({
+    iso: z.string(),
+  }),
 });
