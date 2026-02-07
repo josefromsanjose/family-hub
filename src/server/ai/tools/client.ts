@@ -1,5 +1,6 @@
 import { clientTools } from "@tanstack/ai-client";
 import { getTasks, createTask } from "@/server/tasks";
+import type { CreateTaskInput } from "@/server/tasks";
 import {
   addTaskDefinition,
   currentTimeDefinition,
@@ -22,15 +23,39 @@ export const getChatClientTools = () =>
     addTaskDefinition.client(async (args) => {
       const input = addTaskDefinition.inputSchema
         ? addTaskDefinition.inputSchema.parse(args)
-        : (args as { title: string });
-      const task = await createTask({ data: { title: input.title } });
-      return {
-        message: `Created task "${task.title}".`,
-        task: {
-          id: task.id,
-          title: task.title,
-          completed: task.completed,
+        : (args as CreateTaskInput);
+      const hasAssignmentInput =
+        !!input.assignedTo ||
+        (Array.isArray(input.rotationAssignees) &&
+          input.rotationAssignees.length > 0) ||
+        (!!input.rotationMode && input.rotationMode !== "none") ||
+        !!input.rotationAnchorDate;
+      const task = await createTask({
+        data: {
+          title: input.title,
+          ...(input.description ? { description: input.description } : {}),
+          ...(input.dueDate ? { dueDate: input.dueDate } : {}),
+          ...(input.priority ? { priority: input.priority } : {}),
+          ...(input.recurrence ? { recurrence: input.recurrence } : {}),
+          ...(input.recurrenceDays !== undefined
+            ? { recurrenceDays: input.recurrenceDays }
+            : {}),
+          ...(input.recurrenceDayOfMonth !== undefined
+            ? { recurrenceDayOfMonth: input.recurrenceDayOfMonth }
+            : {}),
+          ...(input.recurrenceWeekday !== undefined
+            ? { recurrenceWeekday: input.recurrenceWeekday }
+            : {}),
+          ...(input.recurrenceWeekOfMonth !== undefined
+            ? { recurrenceWeekOfMonth: input.recurrenceWeekOfMonth }
+            : {}),
         },
+      });
+      return {
+        message: hasAssignmentInput
+          ? `Created task "${task.title}". Assignment fields are ignored by the agent right now.`
+          : `Created task "${task.title}".`,
+        task,
       };
     }),
     currentTimeDefinition.client(async () => ({

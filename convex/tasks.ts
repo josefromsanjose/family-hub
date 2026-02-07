@@ -11,24 +11,21 @@ import { generateId } from "./lib/ids";
 const taskPriority = v.union(
   v.literal("low"),
   v.literal("medium"),
-  v.literal("high")
+  v.literal("high"),
 );
 const taskRecurrence = v.union(
   v.literal("daily"),
   v.literal("weekly"),
-  v.literal("monthly")
+  v.literal("monthly"),
 );
-const taskRotationMode = v.union(
-  v.literal("none"),
-  v.literal("odd_even_week")
-);
+const taskRotationMode = v.union(v.literal("none"), v.literal("odd_even_week"));
 
 type DbCtx = QueryCtx | MutationCtx;
 
 async function getTaskByIdInHousehold(
   ctx: DbCtx,
   householdId: string,
-  taskId: string
+  taskId: string,
 ) {
   return ctx.db
     .query("tasks")
@@ -40,7 +37,7 @@ async function getTaskByIdInHousehold(
 async function assertMembersInHousehold(
   ctx: DbCtx,
   householdId: string,
-  memberIds: string[]
+  memberIds: string[],
 ) {
   for (const memberId of memberIds) {
     const member = await getMemberByIdInHousehold(ctx, householdId, memberId);
@@ -75,7 +72,7 @@ export const getTasks = internalQuery({
             assignedToId: override.assignedToId,
           })),
         };
-      })
+      }),
     );
 
     return tasksWithOverrides;
@@ -116,22 +113,18 @@ export const createTask = internalMutation({
     const householdId = await requireHouseholdId(ctx);
 
     if (args.assignedTo) {
+      console.log("checking assignedTo", args.assignedTo);
       const member = await getMemberByIdInHousehold(
         ctx,
         householdId,
-        args.assignedTo
+        args.assignedTo,
       );
       if (!member) {
         throw new Error("Assigned member not found or not authorized");
       }
     }
-
     if (args.rotationAssignees && args.rotationAssignees.length > 0) {
-      await assertMembersInHousehold(
-        ctx,
-        householdId,
-        args.rotationAssignees
-      );
+      await assertMembersInHousehold(ctx, householdId, args.rotationAssignees);
     }
 
     const shouldAnchorRotation =
@@ -191,7 +184,7 @@ export const updateTask = internalMutation({
     const existingTask = await getTaskByIdInHousehold(
       ctx,
       householdId,
-      args.id
+      args.id,
     );
 
     if (!existingTask) {
@@ -202,19 +195,22 @@ export const updateTask = internalMutation({
       const member = await getMemberByIdInHousehold(
         ctx,
         householdId,
-        args.assignedTo
+        args.assignedTo,
       );
       if (!member) {
         throw new Error("Assigned member not found or not authorized");
       }
     }
 
-    if (args.rotationAssignees !== undefined && args.rotationAssignees !== null) {
+    if (
+      args.rotationAssignees !== undefined &&
+      args.rotationAssignees !== null
+    ) {
       if (args.rotationAssignees.length > 0) {
         await assertMembersInHousehold(
           ctx,
           householdId,
-          args.rotationAssignees
+          args.rotationAssignees,
         );
       }
     }
@@ -285,7 +281,7 @@ export const deleteTask = internalMutation({
     const existingTask = await getTaskByIdInHousehold(
       ctx,
       householdId,
-      args.id
+      args.id,
     );
 
     if (!existingTask) {
